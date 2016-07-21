@@ -1,0 +1,26 @@
+{
+    "name": "Laravel jet pages",
+    "description": "Pages package for Laravel. Fast as a jet plane. Provides markdown support, localization and static cache.",
+    "keywords": ["pages", "content", "laravel", "php"],
+    "homepage": "https://github.com/ShvetsGroup/laravel-jet-pages",
+    "license": "MIT",
+    "version": "1.0",
+    "autoload": {
+        "psr-4": {
+            "ShvetsGroup\\JetPages\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=5.5.0",
+        "laravel/framework": "~5.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.*",
+        "orchestra/testbench": "~3.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ShvetsGroup\\JetPages\\Tests\\": "tests/"
+        }
+    }
+}
