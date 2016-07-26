@@ -1,19 +1,28 @@
 <?php namespace ShvetsGroup\JetPages\Controllers;
 
-use App\Http\Controllers\Controller;
-use ShvetsGroup\JetPages\Page\Pageable;
+use Illuminate\Routing\Controller;
+use ShvetsGroup\JetPages\Page\Pagelike;
 
 class PageController extends Controller
 {
+    private $pages;
+
+    /**
+     * @param Pagelike $pages
+     */
+    public function __construct(Pagelike $pages)
+    {
+        $this->pages = $pages;
+    }
+
     /**
      * Display the specified resource.
      * @param string $uri
-     * @param Pageable $pages
      * @return \Illuminate\Http\Response
      */
-    public function show($uri = '/', Pageable $pages)
+    public function show($uri = '/')
     {
-        $page = $pages->findByUriOrFail($uri);
+        $page = $this->pages->findByUriOrFail($uri);
         return response()->view('sg/jetpages::page', $page->toArray());
     }
 
@@ -21,10 +30,10 @@ class PageController extends Controller
      * This timestamp can be used to invalidate local client content cache.
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getContentTimestamp(Pageable $pages)
+    public function getContentTimestamp()
     {
         return response()->json([
-            'timestamp' => $pages->lastUpdatedTime()
+            'timestamp' => $this->pages->lastUpdatedTime()
         ]);
     }
 }

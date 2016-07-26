@@ -2,7 +2,8 @@
 
 use Illuminate\Contracts\Cache\Repository as Cache;
 
-class CachePage implements Pageable {
+class CachePage implements Pagelike
+{
     use PageTrait;
 
     private $cache;
@@ -11,19 +12,42 @@ class CachePage implements Pageable {
     public function __construct(array $attributes = [], Cache $cache)
     {
         $this->cache = $cache;
-        $this->attributes = $attributes ?: [];
+        $this->setRawAttributes($attributes);
+    }
+
+    /**
+     * Convert page to array.
+     * @return $this
+     */
+    public function setRawAttributes(array $attributes = [])
+    {
+        $this->attributes = $attributes;
+        $this->updateTimestamps();
+        return $this;
+    }
+
+    /**
+     * Make sure timestamps are set.
+     */
+    protected function updateTimestamps()
+    {
+        if (!$this->getAttribute('created_at')) {
+            $this->setAttribute('created_at', time());
+        }
+        if (!$this->getAttribute('updated_at')) {
+            $this->setAttribute('updated_at', time());
+        }
     }
 
     /**
      * Helper to get attribute.
      *
      * @param $key
-     * @param null $default
      * @return mixed
      */
     public function getAttribute($key)
     {
-        return array_get($this->attributes, $key, $default);
+        return array_get($this->attributes, $key);
     }
 
     /**
@@ -31,23 +55,15 @@ class CachePage implements Pageable {
      *
      * @param $key
      * @param $value
+     * @return $this
      */
     public function setAttribute($key, $value)
     {
-        array_set($this->attributes, $key, $value);
-    }
-
-    /**
-     * Remove a key from attributes.
-     *
-     * @param $key
-     */
-    public function removeAttribute($key)
-    {
-        if (!isset($this->{$key})) {
-            return;
+        if (($key == 'created_at' || $key == 'updated_at') && is_object($value)) {
+            $value = $value->timestamp;
         }
-        unset($this->attributes[$key]);
+        array_set($this->attributes, $key, $value);
+        return $this;
     }
 
     /**
@@ -56,8 +72,34 @@ class CachePage implements Pageable {
      * @param array $attributes
      * @return static
      */
-    private static function create(array $attributes = []) {
-        return new static($attributes, app('cache.store'));
+    public static function create(array $attributes = [])
+    {
+        return value(new static($attributes, app('cache.store')))->save();
+    }
+
+    /**
+     * Remove a key from attributes.
+     *
+     * @param $key
+     * @return $this
+     */
+    public function removeAttribute($key)
+    {
+        if (isset($this->{$key})) {
+            unset($this->attributes[$key]);
+        }
+        return $this;
+    }
+
+    /**
+     * Save page back to cache.
+     */
+    public function save(array $options = [])
+    {
+        $slug = $this->checkSlug();
+        $this->cache->forever("jetpage:{$slug}", $this->toArray());
+        $this->lastUpdatedTime($this->updated_at);
+        return $this;
     }
 
     /**
@@ -70,22 +112,30 @@ class CachePage implements Pageable {
     }
 
     /**
-     * Save page back to cache.
+     * Get (or set) the time of last page update.
+     * @param null $time
+     * @return int
      */
-    public function save(array $options = []) {
-        if ($slug = $this->getAttribute('slug')) {
-            $this->cache->forever("jetpage:{$slug}", $this->toArray());
+    public function lastUpdatedTime($time = null)
+    {
+        if ($time != null) {
+            $this->cache->forever("jetpage_last_updated", $time);
+            return $time;
         }
+        return $this->cache->get("jetpage_last_updated", 0);
     }
 
     /**
      * Fill the page with an array of attributes.
      * @param array $attributes
+     * @return $this
      */
-    public function fill(array $attributes = []) {
+    public function fill(array $attributes = [])
+    {
         foreach ($attributes as $key => $value) {
             $this->{$key} = $value;
         }
+        return $this;
     }
 
     /**
@@ -94,30 +144,21 @@ class CachePage implements Pageable {
      * @param $uri
      * @return null|CachePage
      */
-    public function findByUri($uri) {
+    public function findByUri($uri)
+    {
         $slug = $this->uriToSlug($uri);
         $page = $this->cache->get("jetpage:{$slug}");
         if ($page) {
-            return $this->create($page);
-        }
-        else {
+            return new static($page, $this->cache);
+        } else {
             return null;
         }
     }
 
     /**
-     * Get the time of last page update.
-     * @return int
-     */
-    public function lastUpdatedTime()
-    {
-        return $this->cache->get("jetpage_last_updated", 0);
-    }
-
-    /**
      * Dynamically retrieve attributes on the page.
      *
-     * @param  string  $key
+     * @param  string $key
      * @return mixed
      */
     public function __get($key)
@@ -128,8 +169,8 @@ class CachePage implements Pageable {
     /**
      * Dynamically set attributes on the page.
      *
-     * @param  string  $key
-     * @param  mixed  $value
+     * @param  string $key
+     * @param  mixed $value
      * @return void
      */
     public function __set($key, $value)
@@ -140,22 +181,22 @@ class CachePage implements Pageable {
     /**
      * Determine if an attribute or relation exists on the page.
      *
-     * @param  string  $key
+     * @param  string $key
      * @return bool
      */
     public function __isset($key)
     {
-        return ! is_null($this->getAttribute($key));
+        return !is_null($this->getAttribute($key));
     }
 
     /**
      * Unset an attribute on the page.
      *
-     * @param  string  $key
+     * @param  string $key
      * @return void
      */
     public function __unset($key)
     {
-        unset($this->data[$key]);
+        unset($this->attributes[$key]);
     }
 }

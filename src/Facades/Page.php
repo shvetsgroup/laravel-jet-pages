@@ -14,6 +14,6 @@ class Page extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return \ShvetsGroup\JetPages\Page\Pageable::class;
+        return \ShvetsGroup\JetPages\Page\Pagelike::class;
     }
 }

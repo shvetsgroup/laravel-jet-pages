@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 
 class CreatePagesTable extends Migration
 {
@@ -16,7 +16,6 @@ class CreatePagesTable extends Migration
         Schema::create('pages', function (Blueprint $table) {
             $table->increments('id');
             $table->string('slug')->unique();
-            $table->string('locale')->default('');
             $table->string('title')->default('');
             $table->text('data')->nullable();
             $table->timestamp('created_at')->nullable();
