@@ -27,6 +27,14 @@ class JetPagesServiceProvider extends RouteServiceProvider
                 throw new \Exception("Unknown pages driver '{$driver}'.");
         }
         $this->app->alias(Page\Pagelike::class, 'page');
+
+        $this->app->singleton('command.jetpages.build', function ($app) {
+            return new Commands\Build();
+        });
+        $this->commands(['command.jetpages.build']);
+
+        $this->app->bind(Page\Pagelike::class, Page\EloquentPage::class);
+
     }
 
     /**
