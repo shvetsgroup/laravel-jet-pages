@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Routing\Router;
+use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
 
 class JetPagesServiceProvider extends RouteServiceProvider
 {
@@ -29,12 +30,9 @@ class JetPagesServiceProvider extends RouteServiceProvider
         $this->app->alias(Page\Pagelike::class, 'page');
 
         $this->app->singleton('command.jetpages.build', function ($app) {
-            return new Commands\Build();
+            return new Commands\Build($this->getDefaultScanners());
         });
         $this->commands(['command.jetpages.build']);
-
-        $this->app->bind(Page\Pagelike::class, Page\EloquentPage::class);
-
     }
 
     /**
@@ -63,5 +61,23 @@ class JetPagesServiceProvider extends RouteServiceProvider
         $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => 'web'], function () {
             require __DIR__ . '/routes.php';
         });
+    }
+
+    protected function getDefaultScanners()
+    {
+        return config('jetpages.scanners', [PageScanner::class => [content_path('pages')]]);
+    }
+}
+
+if (! function_exists('content_path')) {
+    /**
+     * Get the content path.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    function content_path($path = '')
+    {
+        return config('jetpages.content_dir', resource_path('content')).($path ? DIRECTORY_SEPARATOR.$path : $path);
     }
 }

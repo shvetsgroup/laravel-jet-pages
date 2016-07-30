@@ -16,6 +16,15 @@ class CachePage implements Pagelike
     }
 
     /**
+     * Get the array of all page slugs.
+     * @return string[]
+     */
+    public function index()
+    {
+        return $this->cache->get("jetpage_index", []);
+    }
+
+    /**
      * Convert page to array.
      * @return $this
      */
@@ -57,10 +66,13 @@ class CachePage implements Pagelike
      * @param $value
      * @return $this
      */
-    public function setAttribute($key, $value)
+    public function setAttribute($key, $value, $force = false)
     {
         if (($key == 'created_at' || $key == 'updated_at') && is_object($value)) {
             $value = $value->timestamp;
+        }
+        if ($key == 'slug' && !$force) {
+            array_set($this->attributes, 'old_slug', array_get($this->attributes, 'slug'));
         }
         array_set($this->attributes, $key, $value);
         return $this;
@@ -70,9 +82,9 @@ class CachePage implements Pagelike
      * Create a new page object.
      *
      * @param array $attributes
-     * @return static
+     * @return CachePage
      */
-    public static function create(array $attributes = [])
+    public function createAndSave(array $attributes = [])
     {
         return value(new static($attributes, app('cache.store')))->save();
     }
@@ -85,7 +97,7 @@ class CachePage implements Pagelike
      */
     public function removeAttribute($key)
     {
-        if (isset($this->{$key})) {
+        if (isset($this->attributes[$key])) {
             unset($this->attributes[$key]);
         }
         return $this;
@@ -97,9 +109,50 @@ class CachePage implements Pagelike
     public function save(array $options = [])
     {
         $slug = $this->checkSlug();
+        $old_slug = $this->checkSlug('old_slug', false);
+        if ($old_slug) {
+            $this->removeAttribute('old_slug');
+        }
         $this->cache->forever("jetpage:{$slug}", $this->toArray());
         $this->lastUpdatedTime($this->updated_at);
+        $this->updateIndex($slug, $old_slug);
         return $this;
+    }
+
+    /**
+     * Remove the page.
+     * @return $this
+     */
+    public function delete()
+    {
+        $slug = $this->checkSlug();
+        $old_slug = $this->checkSlug('old_slug', false);
+        $this->cache->forget("jetpage:{$slug}");
+        $this->updateIndex($slug, $old_slug, true);
+        return $this;
+    }
+
+    /**
+     * Add or remove a page from index.
+     *
+     * @param $slug
+     * @param null $old_slug
+     * @param bool $delete
+     */
+    private function updateIndex($slug, $old_slug = null, $delete = false) {
+        $index = $this->cache->get("jetpage_index", []);
+
+        if ($delete) {
+            $index = array_diff($index, [$old_slug ? $old_slug : $slug]);
+        }
+        else {
+            if ($old_slug) {
+                $index = array_diff($index, [$old_slug]);
+            }
+            $index[] = $slug;
+        }
+
+        $this->cache->forever("jetpage_index", $index);
     }
 
     /**
@@ -133,7 +186,7 @@ class CachePage implements Pagelike
     public function fill(array $attributes = [])
     {
         foreach ($attributes as $key => $value) {
-            $this->{$key} = $value;
+            $this->setAttribute($key, $value);
         }
         return $this;
     }

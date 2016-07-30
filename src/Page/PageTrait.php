@@ -20,16 +20,21 @@ trait PageTrait
     /**
      * Make sure slug is correct.
      */
-    protected function checkSlug()
+    protected function checkSlug($slugAttribute = 'slug', $required = true)
     {
-        $slug = $this->getAttribute('slug');
+        $slug = $this->getAttribute($slugAttribute);
 
         if (!$slug) {
-            throw new SlugIsRequired();
+            if ($required) {
+                throw new PageAttributeException("Page requires a slug field.");
+            }
+            else {
+                return null;
+            }
         }
 
         $slug = $this->uriToSlug($slug);
-        $this->setAttribute('slug', $slug);
+        $this->setAttribute($slugAttribute, $slug, true);
         return $slug;
     }
 

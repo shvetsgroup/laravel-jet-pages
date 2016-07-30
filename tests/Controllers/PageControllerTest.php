@@ -1,11 +1,19 @@
 <?php namespace ShvetsGroup\Tests\JetPages\Controllers;
 
+use ShvetsGroup\JetPages\Page\Pagelike;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 use ShvetsGroup\JetPages\Controllers\PageController;
 
 class PageControllerTest extends AbstractTestCase
 {
+    /**
+     * @var PageController
+     */
     private $controller;
+
+    /**
+     * @var Pagelike
+     */
     private $page;
 
     public function setUp()
@@ -20,7 +28,7 @@ class PageControllerTest extends AbstractTestCase
      */
     public function testIndex()
     {
-        $this->page->create([
+        $this->page->createAndSave([
             'slug' => 'index',
             'title' => 'Test Index'
         ]);
@@ -32,7 +40,7 @@ class PageControllerTest extends AbstractTestCase
      */
     public function testAPage()
     {
-        $this->page->create([
+        $this->page->createAndSave([
             'slug' => 'a-page',
             'title' => 'Test title',
             'content' => 'Test content'
@@ -55,7 +63,7 @@ class PageControllerTest extends AbstractTestCase
      */
     public function testTimestamp()
     {
-        $page = $this->page->create(['slug' => 'a-page']);
+        $page = $this->page->createAndSave(['slug' => 'a-page']);
         $this->visit('ajax/jetpages/timestamp')->seeStatusCode(200)->seeJson(['timestamp' => $page->updated_at]);
     }
 }

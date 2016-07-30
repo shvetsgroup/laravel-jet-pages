@@ -1,7 +1,8 @@
 <?php namespace ShvetsGroup\Tests\JetPages;
 
-use ShvetsGroup\JetPages\JetPagesServiceProvider;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use GrahamCampbell\TestBench\AbstractPackageTestCase;
+use ShvetsGroup\JetPages\JetPagesServiceProvider;
 use ShvetsGroup\JetPages\Page\Pagelike;
 
 /**
@@ -11,6 +12,8 @@ use ShvetsGroup\JetPages\Page\Pagelike;
  */
 abstract class AbstractTestCase extends AbstractPackageTestCase
 {
+    use MockeryPHPUnitIntegration;
+
     /**
      * Override in subclasses to run migrations on setUp.
      * @var bool
@@ -66,6 +69,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
                 '--realpath' => realpath(__DIR__ . '/../src/resources/migrations'),
             ]);
         }
+        @link(__DIR__.'/fixture/resources/content', $this->getBasePath() . '/resources/content');
     }
 
     public function assertPageEquals(array $data, Pagelike $page, $ignore_timestamps = true) {

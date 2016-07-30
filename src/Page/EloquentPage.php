@@ -27,6 +27,26 @@ class EloquentPage extends Model implements Pagelike
     protected $known_fields = ['id', 'slug', 'title', 'data', 'created_at', 'updated_at'];
 
     /**
+     * Create a new page object.
+     *
+     * @param array $attributes
+     * @return EloquentPage
+     */
+    public function createAndSave(array $attributes = [])
+    {
+        return static::create($attributes);
+    }
+
+    /**
+     * Get the array of all page slugs.
+     * @return string[]
+     */
+    public function index()
+    {
+        return app('Illuminate\Database\Connection')->table($this->table)->pluck('slug');
+    }
+
+    /**
      * Remove a key from attributes.
      *
      * @param $key
