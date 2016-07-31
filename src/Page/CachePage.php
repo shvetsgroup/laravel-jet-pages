@@ -95,7 +95,9 @@ class CachePage implements Page
         if (!$this->getAttribute('created_at')) {
             $this->setAttribute('created_at', time());
         }
-        $this->setAttribute('updated_at', time());
+        if (!$this->getAttribute('created_at')) {
+            $this->setAttribute('updated_at', time());
+        }
     }
 
     /**

@@ -78,6 +78,7 @@ class PageScanner implements Scanner
             'type' => $this->type,
             'path' => $file->getRealPath(),
             'src' => $file->getContents(),
+            'updated_at' => $file->getMTime(),
         ]);
     }
 }
