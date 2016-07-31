@@ -22,17 +22,17 @@ class BaseBuilder
      *
      * @param $scanner
      * @param $paths
-     * @throws ScannerPairIsInvalid
+     * @throws BuilderException
      */
     public function registerScanner($scanner, $paths)
     {
         if (!$paths || (!is_string($paths) && !is_array($paths))) {
-            throw new ScannerPairIsInvalid('Scanner path should be a valid path or array of paths.');
+            throw new BuilderException('Scanner path should be a valid path or array of paths.');
         }
         $paths = is_array($paths) ? $paths : [$paths];
         foreach ($paths as $path) {
             if (!is_dir($path)) {
-                throw new ScannerPairIsInvalid("Scanner path should be a directory, '$path' given.");
+                throw new BuilderException("Scanner path should be a directory, '$path' given.");
             }
         }
 

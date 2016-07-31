@@ -82,6 +82,7 @@ class CachePage implements Page
             $this->removeAttribute('old_slug');
         }
         $this->updateTimestamps();
+        $this->cache->forever("jetpage_last_updated", $this->getAttribute('updated_at'));
         $this->cache->forever("jetpage:{$slug}", $this->toArray());
         $this->updateIndex($slug, $old_slug);
         return $this;
@@ -95,7 +96,7 @@ class CachePage implements Page
         if (!$this->getAttribute('created_at')) {
             $this->setAttribute('created_at', time());
         }
-        if (!$this->getAttribute('created_at')) {
+        if (!$this->getAttribute('updated_at')) {
             $this->setAttribute('updated_at', time());
         }
     }
@@ -110,6 +111,7 @@ class CachePage implements Page
         $old_slug = $this->checkSlug('old_slug', false);
         $this->cache->forget("jetpage:{$slug}");
         $this->updateIndex($slug, $old_slug, true);
+        $this->cache->forever("jetpage_last_updated", time());
         return $this;
     }
 
@@ -134,7 +136,6 @@ class CachePage implements Page
         }
 
         $this->cache->forever("jetpage_index", $index);
-        $this->cache->forever("jetpage_last_updated", time());
     }
 
     /**

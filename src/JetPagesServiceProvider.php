@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Routing\Router;
 use ShvetsGroup\JetPages\Builders\Decorators\MetaInfoDecorator;
+use ShvetsGroup\JetPages\Builders\OutlineBuilder;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
 
 class JetPagesServiceProvider extends RouteServiceProvider
@@ -45,6 +46,10 @@ class JetPagesServiceProvider extends RouteServiceProvider
             }
         });
         $this->app->alias(Page\PageRegistry::class, 'pages');
+
+        $this->app->singleton('outline', function () {
+            return new OutlineBuilder();
+        });
 
         $this->app->singleton('command.jetpages.build', function () {
             return new Commands\Build(

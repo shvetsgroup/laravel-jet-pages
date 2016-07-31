@@ -32,6 +32,15 @@ interface PageRegistry
     public function createAndSave(array $attributes = []);
 
     /**
+     * Load a set of fields values from a page by its slug.
+     *
+     * @param $slug
+     * @param array $fields
+     * @return mixed
+     */
+    public function getPageData($slug, array $fields);
+
+    /**
      * @param $uri
      * @return Page
      */

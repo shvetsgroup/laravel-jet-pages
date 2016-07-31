@@ -54,7 +54,7 @@ class BaseBuilderTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \ShvetsGroup\JetPages\Builders\ScannerPairIsInvalid
+     * @expectedException \ShvetsGroup\JetPages\Builders\BuilderException
      */
     public function testFindFilesErrorPathNotString()
     {
@@ -62,7 +62,7 @@ class BaseBuilderTest extends AbstractTestCase
     }
 
     /**
-     * @expectedException \ShvetsGroup\JetPages\Builders\ScannerPairIsInvalid
+     * @expectedException \ShvetsGroup\JetPages\Builders\BuilderException
      */
     public function testFindFilesErrorPathNonExistent()
     {

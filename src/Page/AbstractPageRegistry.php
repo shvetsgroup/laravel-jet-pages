@@ -27,6 +27,22 @@ abstract class AbstractPageRegistry implements PageRegistry
     }
 
     /**
+     * Load a set of fields values from a page by its slug.
+     *
+     * @param $slug
+     * @param array $fields
+     * @return mixed
+     */
+    public function getPageData($slug, array $fields) {
+        $page = $this->findByUri($slug);
+        $result = [];
+        foreach ($fields as $field) {
+            $result[$field] = $page->getAttribute($field);
+        }
+        return $result;
+    }
+
+    /**
      * Get the array of all page objects.
      * @return Page[]
      */

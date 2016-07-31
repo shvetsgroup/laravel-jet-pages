@@ -1,5 +1,5 @@
 <?php namespace ShvetsGroup\JetPages\Builders;
 
-class ScannerPairIsInvalid extends \Exception
+class BuilderException extends \Exception
 {
 }
