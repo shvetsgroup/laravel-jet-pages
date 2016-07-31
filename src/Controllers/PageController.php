@@ -1,18 +1,18 @@
 <?php namespace ShvetsGroup\JetPages\Controllers;
 
 use Illuminate\Routing\Controller;
-use ShvetsGroup\JetPages\Page\Pagelike;
+use ShvetsGroup\JetPages\Page\PageRegistry;
 
 class PageController extends Controller
 {
+    /**
+     * @var PageRegistry
+     */
     private $pages;
 
-    /**
-     * @param Pagelike $pages
-     */
-    public function __construct(Pagelike $pages)
+    public function __construct()
     {
-        $this->pages = $pages;
+        $this->pages = app('pages');
     }
 
     /**

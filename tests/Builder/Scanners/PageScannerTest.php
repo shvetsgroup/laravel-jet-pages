@@ -24,12 +24,6 @@ class PageScannerTest extends AbstractTestCase
         $this->files = app('Illuminate\Filesystem\Filesystem');
     }
 
-    protected function getEnvironmentSetUp($app)
-    {
-        parent::getEnvironmentSetUp($app);
-        $app->config->set('jetpages.scanners', []);
-    }
-
     public function testScan()
     {
         $pages = $this->scanner->scan(content_path('pages'));
@@ -46,18 +40,17 @@ class PageScannerTest extends AbstractTestCase
     {
         $path = content_path('pages') . '/index.md';
         $file = new SplFileInfo($path, '', 'index.md');
-        $data = $this->scanner->processFile($file);
-        $this->assertEquals(4, count($data));
-        $this->assertEquals('index', $data['slug']);
-        $this->assertEquals('page', $data['type']);
-        $this->assertEquals(realpath($path), $data['path']);
+        $page = $this->scanner->processFile($file);
+        $this->assertEquals('index', $page->getAttribute('slug'));
+        $this->assertEquals('page', $page->getAttribute('type'));
+        $this->assertEquals(realpath($path), $page->getAttribute('path'));
         $this->assertEquals(<<<SRC
 ---
 title: "Test md"
 ---
 Some **test** <i>content</i>.
 SRC
-, $data['src']);
+, $page->getAttribute('src'));
     }
 
     /**

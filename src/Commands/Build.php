@@ -22,6 +22,7 @@ class Build extends Command
 
     /**
      * Execute console command.
+     * @param BaseBuilder $builder
      */
     public function handle(BaseBuilder $builder)
     {

@@ -1,10 +1,9 @@
 <?php namespace ShvetsGroup\Tests\JetPages\Builders;
 
-use Faker\Provider\Base;
 use Mockery;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
+use ShvetsGroup\JetPages\Builders\Decorators\MetaInfoDecorator;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
-use ShvetsGroup\JetPages\Page\Pagelike;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 use function ShvetsGroup\JetPages\content_path;
 
@@ -30,25 +29,27 @@ class BaseBuilderTest extends AbstractTestCase
     /**
      * Test that registed scanner is run during the scan.
      */
-    public function testRegisterScanner()
+    public function testBuild()
     {
+        $page = app()->make('page', [['slug' => 'slug', 'title' => 'test', 'content' => 'content']]);
+
         $scanner_mock = Mockery::mock(PageScanner::class)
             ->shouldReceive('scan')
+            ->withAnyArgs()
+            ->andReturn([$page])
             ->once()
-            ->andReturn([['slug' => 'slug', 'title' => 'test', 'content' => 'content']])
             ->getMock();
         $this->app->instance(PageScanner::class, $scanner_mock);
 
-        $page_mock = Mockery::mock(Pagelike::class)
-            ->shouldReceive('fill')
-            ->once()
-            ->andReturnSelf()
-            ->shouldReceive('save')
+        $decorator_mock = Mockery::mock(MetaInfoDecorator::class)
+            ->shouldReceive('decorate')
+            ->withAnyArgs()
             ->once()
             ->getMock();
-        $this->app->instance(Pagelike::class, $page_mock);
+        $this->app->instance(MetaInfoDecorator::class, $decorator_mock);
 
         $this->builder->registerScanner(PageScanner::class, content_path('pages'));
+        $this->builder->registerDecorator(MetaInfoDecorator::class);
         $this->builder->build();
     }
 
@@ -59,6 +60,7 @@ class BaseBuilderTest extends AbstractTestCase
     {
         $this->builder->registerScanner(PageScanner::class, 123);
     }
+
     /**
      * @expectedException \ShvetsGroup\JetPages\Builders\ScannerPairIsInvalid
      */

@@ -1,51 +1,27 @@
 <?php namespace ShvetsGroup\JetPages\Page;
 
-use Illuminate\Contracts\Cache\Repository as Cache;
-
-class CachePage implements Pagelike
+class CachePage implements Page
 {
     use PageTrait;
 
     private $cache;
     private $attributes;
 
-    public function __construct(array $attributes = [], Cache $cache)
+    public function __construct(array $attributes = [])
     {
-        $this->cache = $cache;
+        $this->cache = app('cache.store');
         $this->setRawAttributes($attributes);
     }
 
     /**
-     * Get the array of all page slugs.
-     * @return string[]
-     */
-    public function index()
-    {
-        return $this->cache->get("jetpage_index", []);
-    }
-
-    /**
      * Convert page to array.
+     * @param array $attributes
      * @return $this
      */
     public function setRawAttributes(array $attributes = [])
     {
         $this->attributes = $attributes;
-        $this->updateTimestamps();
         return $this;
-    }
-
-    /**
-     * Make sure timestamps are set.
-     */
-    protected function updateTimestamps()
-    {
-        if (!$this->getAttribute('created_at')) {
-            $this->setAttribute('created_at', time());
-        }
-        if (!$this->getAttribute('updated_at')) {
-            $this->setAttribute('updated_at', time());
-        }
     }
 
     /**
@@ -62,8 +38,9 @@ class CachePage implements Pagelike
     /**
      * Helper to set attribute.
      *
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed $value
+     * @param bool $force
      * @return $this
      */
     public function setAttribute($key, $value, $force = false)
@@ -76,17 +53,6 @@ class CachePage implements Pagelike
         }
         array_set($this->attributes, $key, $value);
         return $this;
-    }
-
-    /**
-     * Create a new page object.
-     *
-     * @param array $attributes
-     * @return CachePage
-     */
-    public function createAndSave(array $attributes = [])
-    {
-        return value(new static($attributes, app('cache.store')))->save();
     }
 
     /**
@@ -105,6 +71,8 @@ class CachePage implements Pagelike
 
     /**
      * Save page back to cache.
+     * @param array $options
+     * @return $this
      */
     public function save(array $options = [])
     {
@@ -113,10 +81,21 @@ class CachePage implements Pagelike
         if ($old_slug) {
             $this->removeAttribute('old_slug');
         }
+        $this->updateTimestamps();
         $this->cache->forever("jetpage:{$slug}", $this->toArray());
-        $this->lastUpdatedTime($this->updated_at);
         $this->updateIndex($slug, $old_slug);
         return $this;
+    }
+
+    /**
+     * Make sure timestamps are set.
+     */
+    protected function updateTimestamps()
+    {
+        if (!$this->getAttribute('created_at')) {
+            $this->setAttribute('created_at', time());
+        }
+        $this->setAttribute('updated_at', time());
     }
 
     /**
@@ -153,6 +132,7 @@ class CachePage implements Pagelike
         }
 
         $this->cache->forever("jetpage_index", $index);
+        $this->cache->forever("jetpage_last_updated", time());
     }
 
     /**
@@ -162,20 +142,6 @@ class CachePage implements Pagelike
     public function toArray()
     {
         return $this->attributes ?: [];
-    }
-
-    /**
-     * Get (or set) the time of last page update.
-     * @param null $time
-     * @return int
-     */
-    public function lastUpdatedTime($time = null)
-    {
-        if ($time != null) {
-            $this->cache->forever("jetpage_last_updated", $time);
-            return $time;
-        }
-        return $this->cache->get("jetpage_last_updated", 0);
     }
 
     /**
@@ -189,23 +155,6 @@ class CachePage implements Pagelike
             $this->setAttribute($key, $value);
         }
         return $this;
-    }
-
-    /**
-     * Find a page by string uri.
-     *
-     * @param $uri
-     * @return null|CachePage
-     */
-    public function findByUri($uri)
-    {
-        $slug = $this->uriToSlug($uri);
-        $page = $this->cache->get("jetpage:{$slug}");
-        if ($page) {
-            return new static($page, $this->cache);
-        } else {
-            return null;
-        }
     }
 
     /**

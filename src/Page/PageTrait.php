@@ -3,22 +3,11 @@
 trait PageTrait
 {
     /**
-     * Load page object by its uri.
-     *
-     * @param $uri
-     * @return mixed
-     */
-    public function findByUriOrFail($uri)
-    {
-        $page = $this->findByUri($uri);
-        if (!$page) {
-            return abort(404);
-        }
-        return $page;
-    }
-
-    /**
      * Make sure slug is correct.
+     * @param string $slugAttribute
+     * @param bool $required
+     * @return null|string
+     * @throws PageException
      */
     protected function checkSlug($slugAttribute = 'slug', $required = true)
     {
@@ -26,7 +15,7 @@ trait PageTrait
 
         if (!$slug) {
             if ($required) {
-                throw new PageAttributeException("Page requires a slug field.");
+                throw new PageException("Page requires a slug field.");
             }
             else {
                 return null;

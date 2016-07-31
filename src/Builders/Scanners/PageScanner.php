@@ -1,24 +1,33 @@
 <?php namespace ShvetsGroup\JetPages\Builders\Scanners;
 
+use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\PageRegistry;
 use Symfony\Component\Finder\SplFileInfo;
 
-class PageScanner
+class PageScanner implements Scanner
 {
     /**
      * @var \Illuminate\Filesystem\Filesystem
      */
     protected $files;
+
+    /**
+     * @var PageRegistry
+     */
+    protected $pages;
+
     protected $type = 'page';
     protected $regex = '#\.(txt|html|md)$#';
 
     public function __construct()
     {
         $this->files = app('Illuminate\Filesystem\Filesystem');
+        $this->pages = app('pages');
     }
 
     /**
-     * @param $directory
-     * @return array
+     * @param string $directory
+     * @return Page[]
      */
     public function scan($directory)
     {
@@ -27,7 +36,7 @@ class PageScanner
     }
 
     /**
-     * @param $directory
+     * @param string $directory
      * @return array
      * @throws PageScanningException
      */
@@ -51,29 +60,24 @@ class PageScanner
     {
         $map = [];
         foreach ($files as $file) {
-            $result = $this->processFile($file);
-            if (!isset($result['slug'])) {
-                throw new PageProcessingException("No slug in file $file.");
-            }
-            $slug = (string)$result['slug'];
-            $map[$slug] = $result;
+            $map[] = $this->processFile($file);
         }
         return $map;
     }
 
     /**
      * @param SplFileInfo $file
-     * @return array
+     * @return Page
      */
     public function processFile(SplFileInfo $file)
     {
         $slug = $file->getRelativePathname();
         $slug = preg_replace($this->regex, '', $slug);
-        return [
+        return $this->pages->new([
             'slug' => $slug,
             'type' => $this->type,
-            'path' => $file->getRealpath(),
+            'path' => $file->getRealPath(),
             'src' => $file->getContents(),
-        ];
+        ]);
     }
 }

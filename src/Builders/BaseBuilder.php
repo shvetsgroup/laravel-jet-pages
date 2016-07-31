@@ -1,18 +1,29 @@
 <?php namespace ShvetsGroup\JetPages\Builders;
 
 use ShvetsGroup\JetPages\Builders\Scanners\Scanner;
-use ShvetsGroup\JetPages\Page\Pagelike;
+use ShvetsGroup\JetPages\Page\ArrayPageRegistry;
 
 class BaseBuilder
 {
     protected $scanners = [];
+    protected $decorators = [];
 
-    public function __construct($default_scanners = []) {
+    public function __construct($default_scanners = [], $default_decorators = []) {
         foreach ($default_scanners as $scanner => $paths) {
             $this->registerScanner($scanner, $paths);
         }
+        foreach ($default_decorators as $decorator) {
+            $this->registerDecorator($decorator);
+        }
     }
 
+    /**
+     * Register scanners and their paths.
+     *
+     * @param $scanner
+     * @param $paths
+     * @throws ScannerPairIsInvalid
+     */
     public function registerScanner($scanner, $paths)
     {
         if (!$paths || (!is_string($paths) && !is_array($paths))) {
@@ -31,12 +42,32 @@ class BaseBuilder
         ];
     }
 
-    public function build()
+    /**
+     * Register decorators.
+     *
+     * @param $decorator
+     */
+    public function registerDecorator($decorator)
     {
-        $this->scan();
+        $this->decorators[] = $decorator;
     }
 
-    protected function scan()
+    /**
+     * Build and save the page maps.
+     */
+    public function build()
+    {
+        $tempRegistry = new ArrayPageRegistry();
+        $this->scan($tempRegistry);
+        $this->decorate($tempRegistry);
+        $tempRegistry->save();
+    }
+
+    /**
+     * Scan raw files for basic page information.
+     * @param ArrayPageRegistry $registry
+     */
+    protected function scan(ArrayPageRegistry $registry)
     {
         foreach ($this->scanners as $scanner_pair) {
             /**
@@ -46,16 +77,22 @@ class BaseBuilder
             if (is_string($scanner)) {
                 $scanner = app()->make($scanner);
             }
-            $new = $scanner->scan($scanner_pair['paths']);
-            $this->saveScanned($new);
+            $pages = $scanner->scan($scanner_pair['paths']);
+            $registry->add($pages);
         }
     }
 
-    private function saveScanned(array $new)
+    /**
+     * Parse and decorate basic page objects.
+     * @param ArrayPageRegistry $registry
+     */
+    protected function decorate(ArrayPageRegistry $registry)
     {
-        foreach ($new as $data) {
-            $page = app()->make(Pagelike::class);
-            $page->fill($data)->save();
+        foreach ($this->decorators as $decorator) {
+            $decorator = app()->make($decorator);
+            foreach ($registry->getAll() as $page) {
+                $decorator->decorate($page, $registry);
+            }
         }
     }
 }

@@ -7,6 +7,6 @@ class CachePageTest extends AbstractPageTest
     public function setUp()
     {
         parent::setUp();
-        $this->page = new CachePage([], app('cache.store'));
+        $this->page = new CachePage();
     }
 }

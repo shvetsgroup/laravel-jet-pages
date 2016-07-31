@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\Model;
 
-class EloquentPage extends Model implements Pagelike
+class EloquentPage extends Model implements Page
 {
     use PageTrait;
 
@@ -27,26 +27,6 @@ class EloquentPage extends Model implements Pagelike
     protected $known_fields = ['id', 'slug', 'title', 'data', 'created_at', 'updated_at'];
 
     /**
-     * Create a new page object.
-     *
-     * @param array $attributes
-     * @return EloquentPage
-     */
-    public function createAndSave(array $attributes = [])
-    {
-        return static::create($attributes);
-    }
-
-    /**
-     * Get the array of all page slugs.
-     * @return string[]
-     */
-    public function index()
-    {
-        return app('Illuminate\Database\Connection')->table($this->table)->pluck('slug');
-    }
-
-    /**
      * Remove a key from attributes.
      *
      * @param $key
@@ -61,19 +41,6 @@ class EloquentPage extends Model implements Pagelike
     }
 
     /**
-     * Find a page by string uri.
-     *
-     * @param $uri
-     * @return null|EloquentPage
-     */
-    public function findByUri($uri)
-    {
-        $slug = $this->uriToSlug($uri);
-        $page = $this->where('slug', $slug)->first();
-        return $page ?: null;
-    }
-
-    /**
      * Helper to get data attribute sub keys.
      *
      * @param $key
@@ -82,7 +49,7 @@ class EloquentPage extends Model implements Pagelike
      */
     public function getData($key, $default = null)
     {
-        return array_get($this->data, $key, $default);
+        return array_get($this->getAttribute('data'), $key, $default);
     }
 
     /**
@@ -93,13 +60,16 @@ class EloquentPage extends Model implements Pagelike
      */
     public function setData($key, $value)
     {
-        $data = $this->data;
+        $data = $this->getAttribute('data');
         array_set($data, $key, $value);
-        $this->data = $data;
+        $this->setAttribute('data', $data);
     }
 
     /**
      * Data, which does not fit into database columns should be stored in "data" column as json.
+     *
+     * @param array $options
+     * @return $this
      */
     public function save(array $options = [])
     {
@@ -107,7 +77,7 @@ class EloquentPage extends Model implements Pagelike
 
         // Check if slug exists, because it might have changed.
         if (!$this->exists) {
-            if ($existing = $this->where('slug', $slug)->first()) {
+            if ($existing = static::where('slug', $slug)->first()) {
                 $this->exists = true;
                 $key = $this->getKeyName();
                 $this->setAttribute($key, $existing->getAttribute($key));
@@ -159,11 +129,12 @@ class EloquentPage extends Model implements Pagelike
      */
     public function setRawAttributes(array $attributes, $sync = false)
     {
-        parent::setRawAttributes($attributes, $sync);
         if (isset($attributes['data'])) {
             $data = is_string($attributes['data']) ? (array)json_decode($attributes['data']) : $attributes['data'];
-            parent::setRawAttributes(array_merge($attributes, $data), $sync);
+            unset($attributes['data']);
+            $attributes = array_merge($attributes, $data);
         }
+        parent::setRawAttributes($attributes, $sync);
         return $this;
     }
 
@@ -180,6 +151,7 @@ class EloquentPage extends Model implements Pagelike
 
     /**
      * Remove from the model id and data fields so that it would be compatible with Pagelike output.
+     *
      * @return array
      */
     public function toArray()
@@ -191,18 +163,5 @@ class EloquentPage extends Model implements Pagelike
             unset($result['title']);
         }
         return $result;
-    }
-
-    /**
-     * Get the time of last page update.
-     * @return int
-     */
-    public function lastUpdatedTime()
-    {
-        $last_updated = static::orderBy('updated_at', 'DESC')->first();
-        if ($last_updated) {
-            $last_updated->fresh();
-        }
-        return $last_updated ? $last_updated->updated_at : 0;
     }
 }

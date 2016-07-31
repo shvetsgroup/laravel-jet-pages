@@ -3,7 +3,7 @@
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use GrahamCampbell\TestBench\AbstractPackageTestCase;
 use ShvetsGroup\JetPages\JetPagesServiceProvider;
-use ShvetsGroup\JetPages\Page\Pagelike;
+use ShvetsGroup\JetPages\Page\Page;
 
 /**
  * This is the abstract test case class.
@@ -72,7 +72,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
         @link(__DIR__.'/fixture/resources/content', $this->getBasePath() . '/resources/content');
     }
 
-    public function assertPageEquals(array $data, Pagelike $page, $ignore_timestamps = true) {
+    public function assertPageEquals(array $data, Page $page, $ignore_timestamps = true) {
         $page_data = $page->toArray();
         unset($data['created_at']);
         unset($data['updated_at']);
