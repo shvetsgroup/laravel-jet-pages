@@ -2,9 +2,8 @@
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Routing\Router;
-use ShvetsGroup\JetPages\Builders\Decorators\MetaInfoDecorator;
-use ShvetsGroup\JetPages\Builders\OutlineBuilder;
-use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
+use ShvetsGroup\JetPages\Builders\BaseBuilder;
+use ShvetsGroup\JetPages\Builders\Outline;
 
 class JetPagesServiceProvider extends RouteServiceProvider
 {
@@ -17,7 +16,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
     {
         parent::register();
 
-        $this->app->bind(Page\Page::class, function($app, $parameters){
+        $this->app->bind('page', function($app, $parameters){
             $driver = config('jetpages.driver', 'cache');
             switch ($driver) {
                 case "cache":
@@ -30,9 +29,9 @@ class JetPagesServiceProvider extends RouteServiceProvider
                     throw new \Exception("Unknown pages driver '{$driver}'.");
             }
         });
-        $this->app->alias(Page\Page::class, 'page');
+        $this->app->alias('page', Page\Page::class);
 
-        $this->app->bind(Page\PageRegistry::class, function($app, $parameters){
+        $this->app->bind('pages', function($app, $parameters){
             $driver = config('jetpages.driver', 'cache');
             switch ($driver) {
                 case "cache":
@@ -45,17 +44,21 @@ class JetPagesServiceProvider extends RouteServiceProvider
                     throw new \Exception("Unknown pages driver '{$driver}'.");
             }
         });
-        $this->app->alias(Page\PageRegistry::class, 'pages');
+        $this->app->alias('pages', Page\PageRegistry::class);
 
         $this->app->singleton('outline', function () {
-            return new OutlineBuilder();
+            return new Outline();
         });
-
-        $this->app->singleton('command.jetpages.build', function () {
-            return new Commands\Build(
+        $this->app->singleton('builder', function () {
+            return new BaseBuilder(
                 $this->getDefaultScanners(),
                 $this->getDefaultDecorators()
             );
+        });
+        $this->app->alias('builder', BaseBuilder::class);
+
+        $this->app->singleton('command.jetpages.build', function () {
+            return new Commands\Build();
         });
         $this->commands(['command.jetpages.build']);
     }
@@ -88,14 +91,33 @@ class JetPagesServiceProvider extends RouteServiceProvider
         });
     }
 
+    /**
+     * Get default scanner config.
+     *
+     * @return mixed
+     */
     protected function getDefaultScanners()
     {
-        return config('jetpages.scanners', [PageScanner::class => [content_path('pages')]]);
+        return config('jetpages.content_scanners', ['pages']);
     }
 
+    /**
+     * Get default decorator config.
+     *
+     * @return mixed
+     */
     protected function getDefaultDecorators()
     {
-        return config('jetpages.decorators', [MetaInfoDecorator::class]);
+        // TODO: update decorators
+        return config('jetpages.content_decorators', [
+            '\ShvetsGroup\JetPages\Builders\Decorators\LocaleDecorator',
+            '\ShvetsGroup\JetPages\Builders\Decorators\MetaInfoDecorator',
+            '\ShvetsGroup\JetPages\Builders\Decorators\NavigationDecorator',
+            '\ShvetsGroup\JetPages\Builders\Decorators\MenuDecorator',
+            '\ShvetsGroup\JetPages\Builders\Decorators\Content\IncludeDecorator',
+            '\ShvetsGroup\JetPages\Builders\Decorators\Content\MarkdownDecorator',
+            '\ShvetsGroup\JetPages\Builders\Decorators\Content\EscapePreTagDecorator',
+        ]);
     }
 }
 
@@ -108,6 +130,6 @@ if (! function_exists('content_path')) {
      */
     function content_path($path = '')
     {
-        return config('jetpages.content_dir', resource_path('content')).($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return config('jetpages.content_root', resource_path('content')).($path ? DIRECTORY_SEPARATOR.$path : $path);
     }
 }

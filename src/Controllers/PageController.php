@@ -22,8 +22,37 @@ class PageController extends Controller
      */
     public function show($uri = '/')
     {
-        $page = $this->pages->findByUriOrFail($uri);
-        return response()->view('sg/jetpages::page', $page->toArray());
+        $uri = $this->processLocale($uri);
+
+        if (config('jetpages.rebuild_page_on_view', env('APP_DEBUG', false))) {
+            $page = app('builder')->reBuild($uri);
+        }
+        else {
+            $page = $this->pages->findByUriOrFail($uri);
+        }
+
+        $view = array_get($page, 'view', 'page');
+        foreach ([$view, "sg/jetpages::$view"] as $v) {
+            if (view()->exists($v)) {
+                $view = $v;
+            }
+        }
+        return response()->view($view, $page->toArray());
+    }
+
+    /**
+     * If LaravelLocalization package installed, then make sure that uri contains the locale.
+     *
+     * @param $uri
+     * @return string
+     */
+    public function processLocale($uri)
+    {
+        if (app()->bound('laravellocalization') && $localization = app('laravellocalization')) {
+            $locale = $localization->setLocale(null) ?: $localization->getCurrentLocale();
+            $uri = $locale . '/' . ltrim(preg_replace('|^' . preg_quote($locale, '|') . '|', '', $uri), '/');
+        }
+        return $uri;
     }
 
     /**

@@ -9,7 +9,7 @@ class CachePage implements Page
 
     public function __construct(array $attributes = [])
     {
-        $this->cache = app('cache.store');
+        $this->cache = app('cache.store')->tags('jetpages');
         $this->setRawAttributes($attributes);
     }
 
@@ -49,7 +49,7 @@ class CachePage implements Page
             $value = $value->timestamp;
         }
         if ($key == 'slug' && !$force) {
-            array_set($this->attributes, 'old_slug', array_get($this->attributes, 'slug'));
+            array_set($this->attributes, 'oldSlug', array_get($this->attributes, 'slug'));
         }
         array_set($this->attributes, $key, $value);
         return $this;
@@ -76,15 +76,22 @@ class CachePage implements Page
      */
     public function save(array $options = [])
     {
+        $locale = $this->getAttribute('locale') ?: '';
         $slug = $this->checkSlug();
-        $old_slug = $this->checkSlug('old_slug', false);
-        if ($old_slug) {
-            $this->removeAttribute('old_slug');
+        $localeSlug = $this->makeLocaleSlug($locale, $slug);
+
+        $oldSlug = $this->checkSlug('oldSlug', false);
+        $oldLocaleSlug = $this->makeLocaleSlug($locale, $oldSlug);
+        if ($oldSlug) {
+            $this->removeAttribute('oldSlug');
+            $this->cache->forget("jetpage:$oldLocaleSlug");
         }
+
         $this->updateTimestamps();
+        $this->cache->forever("jetpage:$localeSlug", $this->toArray());
         $this->cache->forever("jetpage_last_updated", $this->getAttribute('updated_at'));
-        $this->cache->forever("jetpage:{$slug}", $this->toArray());
-        $this->updateIndex($slug, $old_slug);
+        $this->updateIndex($localeSlug, $oldLocaleSlug);
+
         return $this;
     }
 
@@ -107,10 +114,12 @@ class CachePage implements Page
      */
     public function delete()
     {
-        $slug = $this->checkSlug();
-        $old_slug = $this->checkSlug('old_slug', false);
-        $this->cache->forget("jetpage:{$slug}");
-        $this->updateIndex($slug, $old_slug, true);
+        $slugToDelete = $this->checkSlug('oldSlug', false) ?: $this->checkSlug();
+        $locale = $this->getAttribute('locale') ?: '';
+        $localeSlug = $this->makeLocaleSlug($locale, $slugToDelete);
+
+        $this->cache->forget("jetpage:{$localeSlug}");
+        $this->updateIndex($localeSlug, null, true);
         $this->cache->forever("jetpage_last_updated", time());
         return $this;
     }
@@ -119,32 +128,23 @@ class CachePage implements Page
      * Add or remove a page from index.
      *
      * @param $slug
-     * @param null $old_slug
+     * @param null $oldSlug
      * @param bool $delete
      */
-    private function updateIndex($slug, $old_slug = null, $delete = false) {
+    private function updateIndex($slug, $oldSlug = null, $delete = false) {
         $index = $this->cache->get("jetpage_index", []);
 
         if ($delete) {
-            $index = array_diff($index, [$old_slug ? $old_slug : $slug]);
+            $index = array_diff($index, [$oldSlug ? $oldSlug : $slug]);
         }
         else {
-            if ($old_slug) {
-                $index = array_diff($index, [$old_slug]);
+            if ($oldSlug) {
+                $index = array_diff($index, [$oldSlug]);
             }
             $index[] = $slug;
         }
 
         $this->cache->forever("jetpage_index", $index);
-    }
-
-    /**
-     * Convert page to array.
-     * @return array
-     */
-    public function toArray()
-    {
-        return $this->attributes ?: [];
     }
 
     /**

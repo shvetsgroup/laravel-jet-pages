@@ -24,7 +24,7 @@ class EloquentPage extends Model implements Page
         'updated_at' => 'timestamp',
     ];
 
-    protected $known_fields = ['id', 'slug', 'title', 'data', 'created_at', 'updated_at'];
+    protected $known_fields = ['id', 'locale', 'slug', 'title', 'data', 'created_at', 'updated_at'];
 
     /**
      * Remove a key from attributes.
@@ -73,11 +73,12 @@ class EloquentPage extends Model implements Page
      */
     public function save(array $options = [])
     {
+        $locale = $this->getAttribute('locale') ?: '';
         $slug = $this->checkSlug();
 
         // Check if slug exists, because it might have changed.
         if (!$this->exists) {
-            if ($existing = static::where('slug', $slug)->first()) {
+            if ($existing = static::where('locale', $locale)->where('slug', $slug)->first()) {
                 $this->exists = true;
                 $key = $this->getKeyName();
                 $this->setAttribute($key, $existing->getAttribute($key));
@@ -130,7 +131,7 @@ class EloquentPage extends Model implements Page
     public function setRawAttributes(array $attributes, $sync = false)
     {
         if (isset($attributes['data'])) {
-            $data = is_string($attributes['data']) ? (array)json_decode($attributes['data']) : $attributes['data'];
+            $data = is_string($attributes['data']) ? json_decode($attributes['data'], true) : $attributes['data'];
             unset($attributes['data']);
             $attributes = array_merge($attributes, $data);
         }
@@ -150,7 +151,7 @@ class EloquentPage extends Model implements Page
     }
 
     /**
-     * Remove from the model id and data fields so that it would be compatible with Pagelike output.
+     * Remove from the model id and data fields so that it would be compatible with Page output.
      *
      * @return array
      */
@@ -159,9 +160,13 @@ class EloquentPage extends Model implements Page
         $result = parent::toArray();
         unset($result['id']);
         unset($result['data']);
-        if (!$result['title']) {
+        if (isset($result['title']) && !$result['title']) {
             unset($result['title']);
         }
+        if (isset($result['locale']) && !$result['locale']) {
+            unset($result['locale']);
+        }
+        $result['uri'] = $this->uri();
         return $result;
     }
 }

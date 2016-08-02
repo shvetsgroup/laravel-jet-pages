@@ -29,7 +29,7 @@ class PageScanner implements Scanner
      * @param string $directory
      * @return Page[]
      */
-    public function scan($directory)
+    public function scanDirectory($directory)
     {
         $files = $this->findFiles($directory);
         return $this->processFiles($files);
@@ -72,13 +72,25 @@ class PageScanner implements Scanner
     public function processFile(SplFileInfo $file)
     {
         $slug = $file->getRelativePathname();
-        $slug = preg_replace($this->regex, '', $slug);
+        $extension = pathinfo($slug, PATHINFO_EXTENSION);
+        $slug = preg_replace("/\.[^.]+$/", "", $slug);
         return $this->pages->new([
             'slug' => $slug,
             'type' => $this->type,
+            'extension' => $extension,
             'path' => $file->getRealPath(),
-            'src' => $file->getContents(),
+            'content' => $file->getContents(),
             'updated_at' => $file->getMTime(),
         ]);
+    }
+
+    /**
+     * @param string $filename
+     * @return Page
+     */
+    public function scanFile($filename)
+    {
+        $file = new SplFileInfo($filename, '', basename($filename));
+        return $this->processFile($file);
     }
 }

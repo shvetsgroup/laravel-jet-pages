@@ -22,7 +22,8 @@ class BaseBuilderTest extends AbstractTestCase
     protected function getEnvironmentSetUp($app)
     {
         parent::getEnvironmentSetUp($app);
-        $app->config->set('jetpages.scanners', []);
+        $app->config->set('jetpages.content_scanners', []);
+        $app->config->set('jetpages.content_decorators', []);
         $this->builder = app()->make(BaseBuilder::class);
     }
 
@@ -34,7 +35,7 @@ class BaseBuilderTest extends AbstractTestCase
         $page = app()->make('page', [['slug' => 'slug', 'title' => 'test', 'content' => 'content']]);
 
         $scanner_mock = Mockery::mock(PageScanner::class)
-            ->shouldReceive('scan')
+            ->shouldReceive('scanDirectory')
             ->withAnyArgs()
             ->andReturn([$page])
             ->once()
@@ -48,7 +49,7 @@ class BaseBuilderTest extends AbstractTestCase
             ->getMock();
         $this->app->instance(MetaInfoDecorator::class, $decorator_mock);
 
-        $this->builder->registerScanner(PageScanner::class, content_path('pages'));
+        $this->builder->registerScanner(PageScanner::class, 'pages');
         $this->builder->registerDecorator(MetaInfoDecorator::class);
         $this->builder->build();
     }

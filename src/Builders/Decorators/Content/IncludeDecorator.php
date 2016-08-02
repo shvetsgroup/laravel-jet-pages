@@ -1,25 +1,27 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Decorators;
+<?php namespace ShvetsGroup\JetPages\Builders\Decorators\Content;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use function ShvetsGroup\JetPages\content_path;
 
-class IncludeDecorator implements Decorator
+class IncludeDecorator extends ContentDecorator
 {
     /**
+     * @param $content
      * @param Page $page
      * @param PageRegistry $registry
+     * @return string
      */
-    public function decorate(Page $page, PageRegistry $registry = null)
+    public function decorateContent($content, Page $page, PageRegistry $registry)
     {
         $files = app('Illuminate\Filesystem\Filesystem');
-        $src = $page->getAttribute('src');
         $regexp = '|!INCLUDE\s+"([^"]*)"|';
-        $src = preg_replace_callback($regexp, function($matches) use ($files) {
+        $content = preg_replace_callback($regexp, function($matches) use ($files) {
             $include_path = $matches[1];
             $contents = $files->get(content_path($include_path));
             return $contents;
-        }, $src);
-        $page->setAttribute('src', $src);
+        }, $content);
+
+        return $content;
     }
 }

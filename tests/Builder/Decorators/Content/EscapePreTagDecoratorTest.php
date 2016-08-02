@@ -1,7 +1,8 @@
 <?php namespace ShvetsGroup\Tests\JetPages\Builders\Scanners;
 
 use ShvetsGroup\JetPages\Builders\Decorators\Decorator;
-use ShvetsGroup\JetPages\Builders\Decorators\EscapePreTagDecorator;
+use ShvetsGroup\JetPages\Builders\Decorators\Content\EscapePreTagDecorator;
+use ShvetsGroup\JetPages\Page\ArrayPageRegistry;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class EscapePreTagDecoratorTest extends AbstractTestCase
@@ -10,11 +11,13 @@ class EscapePreTagDecoratorTest extends AbstractTestCase
      * @var Decorator
      */
     private $decorator;
+    private $pages;
 
     public function setUp()
     {
         parent::setUp();
         $this->decorator = new EscapePreTagDecorator();
+        $this->pages = new ArrayPageRegistry();
     }
 
     /**
@@ -22,10 +25,10 @@ class EscapePreTagDecoratorTest extends AbstractTestCase
      */
     public function testDecorate($src, $expected)
     {
-        $data = ['slug' => 'test', 'src' => $src];
+        $data = ['slug' => 'test', 'content' => $src];
         $page = app()->make('page', [$data]);
-        $this->decorator->decorate($page);
-        $this->assertEquals($expected, $page->getAttribute('src'));
+        $this->decorator->decorate($page, $this->pages);
+        $this->assertEquals($expected, $page->getAttribute('content'));
     }
 
     public function noMetaData()

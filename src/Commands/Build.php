@@ -10,7 +10,8 @@ class Build extends Command
      *
      * @var string
      */
-    protected $signature = 'jp:build';
+    protected $signature = 'jp:build
+                            {--c|clear : Clear all generated data and re-import from scratch.}';
 
     /**
      * The console command description.
@@ -19,13 +20,13 @@ class Build extends Command
      */
     protected $description = 'Build content cache.';
 
-
     /**
      * Execute console command.
      * @param BaseBuilder $builder
      */
     public function handle(BaseBuilder $builder)
     {
-        $builder->build();
+        $clear = $this->option('clear');
+        $builder->build($clear);
     }
 }

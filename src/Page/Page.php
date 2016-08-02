@@ -25,6 +25,19 @@ interface Page extends Arrayable
     public function delete();
 
     /**
+     * Get the locale / slug string.
+     * This should be the same for [locale => 'en', 'slug' => 'test'] and [locale => '', 'slug' => 'en/test']
+     * @return string
+     */
+    public function localeSlug();
+
+    /**
+     * Generate page uri.
+     * @return string
+     */
+    public function uri();
+
+    /**
      * @param $key
      * @return mixed
      */

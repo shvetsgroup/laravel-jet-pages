@@ -10,26 +10,26 @@ class MetaInfoDecorator implements Decorator
      * @param Page $page
      * @param PageRegistry $registry
      */
-    public function decorate(Page $page, PageRegistry $registry = null)
+    public function decorate(Page $page, PageRegistry $registry)
     {
-        $src = $page->getAttribute('src');
+        $content = $page->getAttribute('content');
 
-        if (!$src) {
+        if (!$content) {
             return;
         }
 
         $matches = [];
-        if (!preg_match_all('#(^|(?<=[\n\r]))\-\-\-\R#', $src, $matches) || count($matches[0]) < 2) {
+        if (!preg_match_all('#(^|(?<=[\n\r]))\-\-\-\R#', $content, $matches) || count($matches[0]) < 2) {
             return;
         }
 
-        $values = preg_split('|^\-\-\-\R|m', $src, 2, PREG_SPLIT_NO_EMPTY);
+        $values = preg_split('|^\-\-\-\R|m', $content, 2, PREG_SPLIT_NO_EMPTY);
 
         if (count($values) == 1) {
-            $page->setAttribute('src', $values[0]);
+            $page->setAttribute('content', $values[0]);
         } else {
-            list($meta, $src) = $values;
-            $page->setAttribute('src', $src);
+            list($meta, $content) = $values;
+            $page->setAttribute('content', $content);
 
             $meta = Yaml::parse($meta);
             foreach ($meta as $key => $value) {

@@ -72,8 +72,16 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
         @link(__DIR__.'/fixture/resources/content', $this->getBasePath() . '/resources/content');
     }
 
-    public function assertPageEquals(array $data, Page $page, $ignore_timestamps = true) {
+    /**
+     * Ignore timestamps when comparing Pages.
+     *
+     * @param array $data
+     * @param Page $page
+     */
+    public function assertPageEquals(array $data, Page $page) {
         $page_data = $page->toArray();
+        unset($data['uri']);
+        unset($page_data['uri']);
         unset($data['created_at']);
         unset($data['updated_at']);
         unset($page_data['created_at']);

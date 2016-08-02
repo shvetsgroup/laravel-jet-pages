@@ -1,19 +1,19 @@
 <?php namespace ShvetsGroup\Tests\JetPages\Builders;
 
-use ShvetsGroup\JetPages\Builders\OutlineBuilder;
+use ShvetsGroup\JetPages\Builders\Outline;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class OutlineBuilderTest extends AbstractTestCase
 {
     /**
-     * @var OutlineBuilder
+     * @var Outline
      */
     private $outline;
 
     public function setUp()
     {
         parent::setUp();
-        $this->outline = app()->make(OutlineBuilder::class);
+        $this->outline = app()->make(Outline::class);
     }
 
     public function testGetRawOutline()

@@ -10,20 +10,20 @@ class ArrayPageRegistry extends AbstractPageRegistry
     public function __construct(array $pages = [])
     {
         foreach ($pages as $page) {
-            $this->pages[$page->getAttribute('slug')] = $page;
+            $this->pages[$page->localeSlug()] = $page;
         }
     }
 
     /**
-     * Find a page by string uri.
+     * Load a page by its locale and slug pair.
      *
-     * @param $uri
-     * @return null|Page
+     * @param $locale
+     * @param $slug
+     * @return Page
      */
-    public function findByUri($uri)
+    public function findBySlug($locale, $slug)
     {
-        $slug = $this->uriToSlug($uri);
-        return $this->pages[$slug];
+        return $this->pages[$this->makeLocaleSlug($locale, $slug)];
     }
 
     /**
@@ -76,21 +76,11 @@ class ArrayPageRegistry extends AbstractPageRegistry
             return;
         }
         if (!is_array($pages)) {
-            $this->pages[$pages->getAttribute('slug')] = $pages;
+            $this->pages[$pages->localeSlug()] = $pages;
         } else {
             foreach ($pages as $page) {
-                $this->pages[$page->getAttribute('slug')] = $page;
+                $this->pages[$page->localeSlug()] = $page;
             }
-        }
-    }
-
-    /**
-     * Save all page objects.
-     */
-    public function save()
-    {
-        foreach ($this->pages as $page) {
-            $page->save();
         }
     }
 }

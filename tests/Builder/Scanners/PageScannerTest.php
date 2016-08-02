@@ -26,7 +26,7 @@ class PageScannerTest extends AbstractTestCase
 
     public function testScan()
     {
-        $pages = $this->scanner->scan(content_path('pages'));
+        $pages = $this->scanner->scanDirectory(content_path('pages'));
         $this->assertEquals(4, count($pages));
     }
 
@@ -50,7 +50,7 @@ title: "Test md"
 ---
 Some **test** <i>content</i>.
 SRC
-, $page->getAttribute('src'));
+, $page->getAttribute('content'));
     }
 
     /**

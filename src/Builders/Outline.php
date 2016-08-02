@@ -3,7 +3,7 @@
 use Symfony\Component\Yaml\Yaml;
 use function ShvetsGroup\JetPages\content_path;
 
-class OutlineBuilder
+class Outline
 {
     private $flat_outline = [];
 

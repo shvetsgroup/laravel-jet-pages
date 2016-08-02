@@ -21,11 +21,11 @@ class NavigationDecoratorTest extends AbstractTestCase
     public function testDecorate()
     {
         $index = ['test-1', 'test0', 'test1', 'test2', 'test3', 'test4'];
-        $data = [];
+        $test_result = [];
         $pages = [];
         foreach ($index as $i) {
-            $data[$i] = ['slug' => $i, 'title' => $i];
-            $pages[$i] = app()->make('page', [$data[$i]]);
+            $test_result[$i] = ['uri' => $i, 'title' => $i];
+            $pages[$i] = app()->make('page', [['slug' => $i, 'title' => $i]]);
         }
         $registry = new ArrayPageRegistry($pages);
 
@@ -37,27 +37,27 @@ class NavigationDecoratorTest extends AbstractTestCase
 
         $this->decorator->decorate($pages['test0'], $registry);
         $this->assertEquals(null, $pages['test0']->prev);
-        $this->assertEquals($data['test-1'], $pages['test0']->next);
-        $this->assertEquals($data['test0'], $pages['test0']->parent);
+        $this->assertEquals($test_result['test-1'], $pages['test0']->next);
+        $this->assertEquals($test_result['test0'], $pages['test0']->parent);
 
         $this->decorator->decorate($pages['test1'], $registry);
         $this->assertEquals(null, $pages['test1']->prev);
         $this->assertEquals(null, $pages['test1']->next);
-        $this->assertEquals($data['test1'], $pages['test1']->parent);
+        $this->assertEquals($test_result['test1'], $pages['test1']->parent);
 
         $this->decorator->decorate($pages['test2'], $registry);
         $this->assertEquals(null, $pages['test2']->prev);
-        $this->assertEquals($data['test3'], $pages['test2']->next);
-        $this->assertEquals($data['test2'], $pages['test2']->parent);
+        $this->assertEquals($test_result['test3'], $pages['test2']->next);
+        $this->assertEquals($test_result['test2'], $pages['test2']->parent);
 
         $this->decorator->decorate($pages['test3'], $registry);
-        $this->assertEquals($data['test2'], $pages['test3']->prev);
-        $this->assertEquals($data['test4'], $pages['test3']->next);
-        $this->assertEquals($data['test2'], $pages['test3']->parent);
+        $this->assertEquals($test_result['test2'], $pages['test3']->prev);
+        $this->assertEquals($test_result['test4'], $pages['test3']->next);
+        $this->assertEquals($test_result['test2'], $pages['test3']->parent);
 
         $this->decorator->decorate($pages['test4'], $registry);
-        $this->assertEquals($data['test3'], $pages['test4']->prev);
+        $this->assertEquals($test_result['test3'], $pages['test4']->prev);
         $this->assertEquals(null, $pages['test4']->next);
-        $this->assertEquals($data['test2'], $pages['test4']->parent);
+        $this->assertEquals($test_result['test2'], $pages['test4']->parent);
     }
 }

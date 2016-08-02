@@ -2,23 +2,35 @@
 
 class CachePageRegistry extends AbstractPageRegistry
 {
+    /**
+     * @var \Illuminate\Contracts\Cache\Store
+     */
     private $cache;
 
     public function __construct()
     {
-        $this->cache = app('cache.store');
+        $this->cache = app('cache.store')->tags('jetpages');
     }
 
     /**
-     * Find a page by string uri.
-     *
-     * @param $uri
-     * @return null|Page
+     * Clear all generated content.
      */
-    public function findByUri($uri)
+    public function reset()
     {
-        $slug = $this->uriToSlug($uri);
-        $page = $this->cache->get("jetpage:{$slug}");
+        $this->cache->flush();
+    }
+
+    /**
+     * Load a page by its locale and slug pair.
+     *
+     * @param $locale
+     * @param $slug
+     * @return Page
+     */
+    public function findBySlug($locale, $slug)
+    {
+        $localeSlug = $this->makeLocaleSlug($locale, $slug);
+        $page = $this->cache->get("jetpage:{$localeSlug}");
         if ($page) {
             return new CachePage($page, $this->cache);
         } else {
