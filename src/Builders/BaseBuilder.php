@@ -177,7 +177,7 @@ class BaseBuilder
             foreach ($scanner_pair['paths'] as $path) {
                 if (strpos($filepath, $path) !== false) {
                     $scanner = $this->makeScanner($scanner_pair);
-                    $page = $scanner->scanFile($filename);
+                    $page = $scanner->scanFile($filename, $path);
                     return $page;
                 }
             }

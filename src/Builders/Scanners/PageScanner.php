@@ -85,12 +85,23 @@ class PageScanner implements Scanner
     }
 
     /**
-     * @param string $filename
+     * @param string $filepath
+     * @param string $directory
      * @return Page
      */
-    public function scanFile($filename)
+    public function scanFile($filepath, $directory)
     {
-        $file = new SplFileInfo($filename, '', basename($filename));
+        $relativePath = $this->getRelativePath($directory, $filepath);
+        $file = new SplFileInfo($filepath, dirname($relativePath), $relativePath);
         return $this->processFile($file);
+    }
+
+    public function getRelativePath($base, $path) {
+        // Detect directory separator
+        $separator = substr($base, 0, 1);
+        $base = array_slice(explode($separator, rtrim($base,$separator)),1);
+        $path = array_slice(explode($separator, rtrim($path,$separator)),1);
+
+        return implode($separator, array_slice($path, count($base)));
     }
 }

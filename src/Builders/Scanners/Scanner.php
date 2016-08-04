@@ -11,9 +11,10 @@ interface Scanner
     public function scanDirectory($directory);
 
     /**
-     * @param string $filename
+     * @param string $filepath
+     * @param string $directory
      * @return Page
      */
-    public function scanFile($filename);
+    public function scanFile($filepath, $directory);
 
 }

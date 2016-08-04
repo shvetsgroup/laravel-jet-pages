@@ -24,7 +24,7 @@ class EloquentPage extends Model implements Page
         'updated_at' => 'timestamp',
     ];
 
-    protected $known_fields = ['id', 'locale', 'slug', 'title', 'data', 'created_at', 'updated_at'];
+    public static $known_fields = ['id', 'locale', 'slug', 'title', 'data', 'created_at', 'updated_at'];
 
     /**
      * Remove a key from attributes.
@@ -88,7 +88,7 @@ class EloquentPage extends Model implements Page
         $attributes = $this->getAttributes();
         $new_attributes = $new_data = [];
         foreach ($attributes as $key => $attr) {
-            if (in_array($key, $this->known_fields)) {
+            if (in_array($key, static::$known_fields)) {
                 $new_attributes[$key] = $attr;
             } else {
                 $new_data[$key] = $attr;

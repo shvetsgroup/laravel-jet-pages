@@ -77,9 +77,24 @@ class EloquentPageRegistry extends AbstractPageRegistry
      */
     public function findAllBy($key, $value = null)
     {
-        // TODO: doesn't search for title_en
-        $pages = $this->makeWhere($key, $value)->all()->all();
-        return $this->listByKey($pages);
+        list($database_filters, $iteration_filters) = $this->makeFilters($key, $value);
+
+        $pages = EloquentPage::where($database_filters)->get()->all();
+
+        if (!$iteration_filters) {
+            return $this->listByKey($pages);
+        }
+
+        $result = [];
+        foreach ($pages as $page) {
+            foreach ($iteration_filters as list($k, $v)) {
+                if ($page->getAttribute($k) != $v) {
+                    continue 2;
+                }
+            }
+            $result[$page->localeSlug()] = $page;
+        }
+        return $result;
     }
 
     /**
@@ -91,7 +106,11 @@ class EloquentPageRegistry extends AbstractPageRegistry
      */
     public function findFirstBy($key, $value = null)
     {
-        return $this->makeWhere($key, $value)->first();
+        $result = $this->findAllBy($key, $value);
+        if (is_array($result)) {
+            return reset($result);
+        }
+        return $result;
     }
 
     /**
@@ -99,16 +118,27 @@ class EloquentPageRegistry extends AbstractPageRegistry
      * @param null $value
      * @return mixed
      */
-    private function makeWhere($key, $value = null) {
+    private function makeFilters($key, $value = null) {
         if (is_array($key)) {
             $filters = [];
             foreach ($key as $k => $v) {
                 $filters[] = [$k, $v];
             }
-            return EloquentPage::where($filters);
+            $all_filters = $filters;
         }
         else {
-            return EloquentPage::where($key, $value);
+            $all_filters = [[$key, $value]];
         }
+        $database_filters = [];
+        $iteration_filters = [];
+        foreach ($all_filters as list($k, $v)) {
+            if (in_array($k, EloquentPage::$known_fields)) {
+                $database_filters[] = [$k, $v];
+            }
+            else {
+                $iteration_filters[] = [$k, $v];
+            }
+        }
+        return [$database_filters, $iteration_filters];
     }
 }
