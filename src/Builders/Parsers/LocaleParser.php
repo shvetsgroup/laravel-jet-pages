@@ -1,10 +1,9 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Decorators;
+<?php namespace ShvetsGroup\JetPages\Builders\Parsers;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Page\PageTrait;
 
-class LocaleDecorator implements Decorator
+class LocaleParser implements Parser
 {
     /**
      * @var \Mcamara\LaravelLocalization\LaravelLocalization
@@ -22,13 +21,13 @@ class LocaleDecorator implements Decorator
      * @param Page $page
      * @param PageRegistry $registry
      */
-    public function decorate(Page $page, PageRegistry $registry)
+    public function parse(Page $page, PageRegistry $registry)
     {
         if (!$this->laravellocalization) {
             return;
         }
 
-        list($locale, $slug) = PageTrait::extractLocale($page->getAttribute('slug'));
+        list($locale, $slug) = Page::extractLocale($page->getAttribute('slug'));
 
         if ($this->isValidLocale($locale)) {
             $page->setAttribute('locale', $locale);

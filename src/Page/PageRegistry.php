@@ -37,10 +37,29 @@ interface PageRegistry
     public function createAndSave(array $attributes = []);
 
     /**
-     * Import pages from other registry.
-     * @param PageRegistry $registry
+     * Make sure page timestamps are set.
+     * @param Page $page
+     * @return $this
      */
-    public function import(PageRegistry $registry);
+    public function prepare(Page $page);
+
+    /**
+     * Import pages from other registry.
+     * @param PageRegistry|array $registry
+     */
+    public function import($registry);
+
+    /**
+     * @param Page $page
+     * @return Page
+     */
+    public function save(Page $page);
+
+    /**
+     * @param Page $page
+     * @return $this
+     */
+    public function delete(Page $page);
 
     /**
      * Load a set of fields values from a page by its slug.

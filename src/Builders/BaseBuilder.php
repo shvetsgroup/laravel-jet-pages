@@ -9,12 +9,14 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 class BaseBuilder
 {
     protected $scanners = [];
-    protected $decorators = [];
+    protected $parsers = [];
+    protected $renderers = [];
+    protected $postProcessors = [];
 
-    public function __construct($default_scanners = [], $default_decorators = [])
+    public function __construct($defaultScanners = [], $defaultParsers = [], $defaultRenderers = [], $defaultPostProcessors = [])
     {
         $scanners = [];
-        foreach ($default_scanners as $scanner => $paths) {
+        foreach ($defaultScanners as $scanner => $paths) {
             if (!is_array($paths)) {
                 $paths = [$paths];
             }
@@ -31,8 +33,14 @@ class BaseBuilder
         foreach ($scanners as $scanner => $paths) {
             $this->registerScanner($scanner, $paths);
         }
-        foreach ($default_decorators as $decorator) {
-            $this->registerDecorator($decorator);
+        foreach ($defaultParsers as $parser) {
+            $this->registerParser($parser);
+        }
+        foreach ($defaultRenderers as $renderer) {
+            $this->registerRenderer($renderer);
+        }
+        foreach ($defaultPostProcessors as $postProcessor) {
+            $this->registerPostProcessor($postProcessor);
         }
     }
 
@@ -63,13 +71,33 @@ class BaseBuilder
     }
 
     /**
-     * Register decorators.
+     * Register parser.
      *
-     * @param $decorator
+     * @param $parser
      */
-    public function registerDecorator($decorator)
+    public function registerParser($parser)
     {
-        $this->decorators[] = $decorator;
+        $this->parsers[] = $parser;
+    }
+
+    /**
+     * Register renderer.
+     *
+     * @param $renderer
+     */
+    public function registerRenderer($renderer)
+    {
+        $this->renderers[] = $renderer;
+    }
+
+    /**
+     * Register renderer.
+     *
+     * @param $post_processor
+     */
+    public function registerPostProcessor($post_processor)
+    {
+        $this->postProcessors[] = $post_processor;
     }
 
     /**
@@ -78,11 +106,12 @@ class BaseBuilder
      */
     public function build($reset = false)
     {
-        $pages = $this->scan();
-
         $tempRegistry = new ArrayPageRegistry();
-        $tempRegistry->add($pages);
-        $this->decorate($tempRegistry);
+
+        $pages = $this->scan($tempRegistry);
+        $this->do('parse', $tempRegistry, $pages);
+        $this->do('render', $tempRegistry, $pages);
+        $this->do('postProcess', $tempRegistry, $pages);
 
         $pages = app('pages');
         if ($reset) {
@@ -93,8 +122,10 @@ class BaseBuilder
 
     /**
      * Scan raw files for basic page information.
+     * @param PageRegistry $registry
+     * @return Page[]
      */
-    protected function scan()
+    protected function scan(PageRegistry $registry)
     {
         $pages = [];
         foreach ($this->scanners as $scanner_pair) {
@@ -103,6 +134,7 @@ class BaseBuilder
                 $pages = array_merge($pages, $scanner->scanDirectory($path));
             }
         }
+        $registry->import($pages);
         return $pages;
     }
 
@@ -121,17 +153,22 @@ class BaseBuilder
 
     /**
      * Parse and decorate basic page objects.
+     * @param string $method
      * @param PageRegistry $registry
-     * @param array $pages
+     * @param Page[] $pages
      */
-    protected function decorate(PageRegistry $registry, $pages = [])
+    protected function do($method, PageRegistry $registry, $pages = [])
     {
-        $state = [];
         $pages = $pages ?: $registry->getAll();
-        foreach ($this->decorators as $decorator) {
-            $decorator = app()->make($decorator);
+        $lists = [
+            'parse' => 'parsers',
+            'render' => 'renderers',
+            'postProcess' => 'postProcessors',
+        ];
+        foreach ($this->{$lists[$method]} as $obj_name) {
+            $obj = app()->make($obj_name);
             foreach ($pages as $page) {
-                $decorator->decorate($page, $registry, $state);
+                call_user_func(array($obj, $method), $page, $registry);
             }
         }
     }
@@ -147,14 +184,18 @@ class BaseBuilder
         $page = $registry->findByUri($uri);
 
         if (!$page) {
-            $this->build();
+            $tempRegistry = new ArrayPageRegistry();
+            $pages = $this->scan($tempRegistry);
+            app('pages')->import($pages);
             return $registry->findByUriOrFail($uri);
         } else {
             $page = $this->reScan($page);
             abort_unless($page, 404);
 
-            $this->reDecorate($page, $registry);
-            $page->save();
+            $this->do('parse', $registry);
+            $this->do('render', $registry, [$page]);
+            $this->do('postProcess', $registry, [$page]);
+            app('pages')->save($page);
 
             return $page;
         }
@@ -184,15 +225,4 @@ class BaseBuilder
         }
         return null;
     }
-
-    /**
-     * Parse and decorate basic page objects.
-     * @param Page $page
-     * @param PageRegistry $registry
-     */
-    protected function reDecorate(Page $page, PageRegistry $registry)
-    {
-        $this->decorate($registry, [$page]);
-    }
-
 }

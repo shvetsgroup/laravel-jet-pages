@@ -17,6 +17,7 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
     {
         parent::setUp();
         $this->data = [
+            'locale' => 'en',
             'slug' => 'test',
             'title' => 'title',
             'content' => 'content'
@@ -56,12 +57,12 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
         $data = ['slug' => 'index', 'payload' => '1'];
         $this->registry->createAndSave($data);
         $page = $this->registry->findByUri('/');
-        $this->assertPageEquals($data, $page);
+        $this->assertPageEquals($data + ['locale' => 'en'], $page);
 
         $data = ['slug' => '/', 'payload' => '2'];
         $this->registry->createAndSave($data);
         $page = $this->registry->findByUri('/');
-        $this->assertPageEquals(['slug' => 'index', 'payload' => '2'], $page);
+        $this->assertPageEquals(['slug' => 'index', 'payload' => '2', 'locale' => 'en'], $page);
     }
 
     public function testLastUpdated()
@@ -69,8 +70,8 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
         $this->assertEquals(0, $this->registry->lastUpdatedTime());
         $page = $this->registry->createAndSave(array_merge($this->data));
         $this->assertEquals($page->getAttribute('updated_at'), $this->registry->lastUpdatedTime());
-        $first_updated = $page->updated_at = new Carbon('2011-01-01');
-        $page->setAttribute('title', 'test')->save();
+        $first_updated = $page->updated_at = (new Carbon('2011-01-01'))->format('Y-m-d H:i:s');
+        $this->registry->save($page->setAttribute('title', 'test'));
         $this->assertEquals($page->getAttribute('updated_at'), $this->registry->lastUpdatedTime());
         $this->assertNotEquals($page->getAttribute('updated_at'), $first_updated);
     }
@@ -78,23 +79,23 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
     public function testIndex()
     {
         $page = $this->registry->createAndSave($this->data);
-        $this->assertEquals(['test'], $this->registry->index());
+        $this->assertEquals(['en/test'], $this->registry->index());
         $page->slug = 'new';
-        $page->save();
-        $this->assertEquals(['new'], $this->registry->index());
-        $page->delete();
+        $this->registry->save($page);
+        $this->assertEquals(['en/new'], $this->registry->index());
+        $this->registry->delete($page);
         $this->assertEquals([], $this->registry->index());
     }
 
     public function testGetAll()
     {
         $page = $this->registry->createAndSave($this->data);
-        $this->assertArrayHasKey($this->data['slug'], $this->registry->getAll());
+        $this->assertArrayHasKey('en/' . $this->data['slug'], $this->registry->getAll());
         $page->slug = 'new';
-        $page->save();
-        $this->assertArrayHasKey('new', $this->registry->getAll());
-        $this->assertArrayNotHasKey($this->data['slug'], $this->registry->getAll());
-        $page->delete();
+        $this->registry->save($page);
+        $this->assertArrayHasKey('en/new', $this->registry->getAll());
+        $this->assertArrayNotHasKey('en/' . $this->data['slug'], $this->registry->getAll());
+        $this->registry->delete($page);
         $this->assertEquals([], $this->registry->getAll());
     }
 

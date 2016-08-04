@@ -1,16 +1,16 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Decorators;
+<?php namespace ShvetsGroup\JetPages\Builders\Parsers;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use Symfony\Component\Yaml\Yaml;
 
-class MetaInfoDecorator implements Decorator
+class MetaInfoParser implements Parser
 {
     /**
      * @param Page $page
      * @param PageRegistry $registry
      */
-    public function decorate(Page $page, PageRegistry $registry)
+    public function parse(Page $page, PageRegistry $registry)
     {
         $content = $page->getAttribute('content');
 

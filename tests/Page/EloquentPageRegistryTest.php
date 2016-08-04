@@ -16,5 +16,6 @@ class EloquentPageRegistryTest extends AbstractPageRegistryTest
     {
         parent::setUp();
         $this->registry = new EloquentPageRegistry();
+        $this->registry->reset();
     }
 }

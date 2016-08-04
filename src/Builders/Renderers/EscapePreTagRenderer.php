@@ -1,9 +1,9 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Decorators\Content;
+<?php namespace ShvetsGroup\JetPages\Builders\Renderers;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
-class EscapePreTagDecorator extends ContentDecorator
+class EscapePreTagRenderer extends AbstractRenderer
 {
     /**
      * @param $content
@@ -11,7 +11,7 @@ class EscapePreTagDecorator extends ContentDecorator
      * @param PageRegistry $registry
      * @return string
      */
-    public function decorateContent($content, Page $page, PageRegistry $registry)
+    public function renderContent($content, Page $page, PageRegistry $registry)
     {
         if ($content) {
             $content = preg_replace_callback('|<pre([^>]*?)class="([^"]* )?code( [^"]*)?"([^>]*?)>([\s\S]*?)</pre>|', function ($matches) {

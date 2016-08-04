@@ -1,17 +1,22 @@
 <?php namespace ShvetsGroup\JetPages\Page;
 
+use Carbon\Carbon;
+
 abstract class AbstractPageRegistry implements PageRegistry
 {
-    use PageTrait;
-
     /**
      * Import pages from other registry.
-     * @param PageRegistry $registry
+     * @param PageRegistry|array $registry
      */
-    public function import(PageRegistry $registry)
+    public function import($registry)
     {
-        foreach ($registry->getAll() as $page) {
-            $page->save();
+        if (is_array($registry)) {
+            $pages = $registry;
+        } else {
+            $pages = $registry->getAll();
+        }
+        foreach ($pages as $page) {
+            $this->save($page);
         }
     }
 
@@ -23,7 +28,7 @@ abstract class AbstractPageRegistry implements PageRegistry
      */
     public function new(array $attributes = [])
     {
-        return app()->make('page', [$attributes]);
+        return new Page($attributes);
     }
 
     /**
@@ -34,7 +39,35 @@ abstract class AbstractPageRegistry implements PageRegistry
      */
     public function createAndSave(array $attributes = [])
     {
-        return $this->new($attributes)->save();
+        return $this->save($this->new($attributes));
+    }
+
+    /**
+     * Make sure page ready for saving.
+     * @param Page $page
+     * @return $this
+     */
+    public function prepare(Page $page)
+    {
+        if (!$page->getAttribute('created_at')) {
+            $page->setAttribute('created_at', Carbon::now()->format('Y-m-d H:i:s'));
+        }
+        $page->setAttribute('updated_at', Carbon::now()->format('Y-m-d H:i:s'));
+        return $this;
+    }
+
+    /**
+     * Get (or set) the time of last page update.
+     * @return int
+     */
+    public function lastUpdatedTime()
+    {
+        $max = 0;
+        foreach ($this->getAll() as $page) {
+            $updated_at = $page->getAttribute('updated_at');
+            $max = $updated_at > $max ? $updated_at : $max;
+        }
+        return $max;
     }
 
     /**
@@ -45,7 +78,8 @@ abstract class AbstractPageRegistry implements PageRegistry
      * @param array $fields
      * @return mixed
      */
-    public function getPageData($locale, $slug, array $fields) {
+    public function getPageData($locale, $slug, array $fields)
+    {
         $page = $this->findBySlug($locale, $slug);
         $result = [];
         foreach ($fields as $field) {
@@ -63,7 +97,7 @@ abstract class AbstractPageRegistry implements PageRegistry
         $index = $this->index();
         $all = [];
         foreach ($index as $localeSlug) {
-            $all[$localeSlug] = $this->findByUri($localeSlug);
+            $all[$localeSlug] = $this->findBySlug('', $localeSlug);
         }
         return $all;
     }
@@ -76,7 +110,7 @@ abstract class AbstractPageRegistry implements PageRegistry
      */
     public function findByUri($uri)
     {
-        list($locale, $slug) = $this->uriToLocaleSlugArray($uri);
+        list($locale, $slug) = Page::uriToLocaleSlugArray($uri);
         return $this->findBySlug($locale, $slug);
     }
 
@@ -100,9 +134,10 @@ abstract class AbstractPageRegistry implements PageRegistry
      *
      * @param string|array $key
      * @param $value
+     * @param array $pages
      * @return Page[]
      */
-    public function findAllBy($key, $value = null)
+    public function findAllBy($key, $value = null, $pages = [])
     {
         return $this->findBy($key, $value);
     }
@@ -112,25 +147,29 @@ abstract class AbstractPageRegistry implements PageRegistry
      *
      * @param string|array $key
      * @param $value
+     * @param array $pages
      * @return Page
      */
-    public function findFirstBy($key, $value = null)
+    public function findFirstBy($key, $value = null, $pages = [])
     {
-        return $this->findBy($key, $value, 1);
+        return $this->findBy($key, $value, 1, $pages);
     }
 
     /**
      * @param string|array $key
      * @param null $value
      * @param bool $returnSingle
+     * @param array $pages
      * @return array|Page
      */
-    private function findBy($key, $value = null, $returnSingle = false) {
+    protected function findBy($key, $value = null, $returnSingle = false, $pages = [])
+    {
         $results = [];
         if (!is_array($key)) {
             $key = [$key => $value];
         }
-        foreach ($this->getAll() as $localeSlug => $page) {
+        $pages = $pages ?: $this->getAll();
+        foreach ($pages as $localeSlug => $page) {
             $allTrue = true;
             foreach ($key as $k => $v) {
                 if ($page->getAttribute($k) != $v) {
@@ -141,12 +180,67 @@ abstract class AbstractPageRegistry implements PageRegistry
             if ($allTrue) {
                 if ($returnSingle) {
                     return $page;
-                }
-                else {
+                } else {
                     $results[$localeSlug] = $page;
                 }
             }
         }
         return $results;
     }
+
+    /**
+     * Save page back to cache.
+     * @param Page $page
+     * @return Page
+     */
+    public function save(Page $page)
+    {
+        $this->removeOld($page);
+        $this->prepare($page);
+        $this->write($page);
+        return $page;
+    }
+
+    /**
+     * Remove old page from the store and index.
+     *
+     * @param Page $page
+     * @return string
+     */
+    private function removeOld(Page $page)
+    {
+        $oldLocaleSlug = $page->localeSlug('oldSlug');
+        if ($oldLocaleSlug) {
+            $page->removeAttribute('oldSlug');
+            $this->scratch($oldLocaleSlug);
+        }
+        return $oldLocaleSlug;
+    }
+
+    /**
+     * Remove the page.
+     * @param Page $page
+     * @return $this
+     */
+    public function delete(Page $page)
+    {
+        if (!$this->removeOld($page)) {
+            $localeSlug = $page->localeSlug();
+            $this->scratch($localeSlug);
+        }
+        return $this;
+    }
+
+    /**
+     * Write page data to repository.
+     * @param Page $page
+     * @return Page
+     */
+    abstract protected function write(Page $page);
+
+    /**
+     * Scratch page data to repository.
+     * @param string $localeSlug
+     */
+    abstract protected function scratch($localeSlug);
 }

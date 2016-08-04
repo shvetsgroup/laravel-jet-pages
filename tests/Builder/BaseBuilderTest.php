@@ -2,8 +2,9 @@
 
 use Mockery;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
-use ShvetsGroup\JetPages\Builders\Decorators\MetaInfoDecorator;
+use ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
+use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 use function ShvetsGroup\JetPages\content_path;
 
@@ -23,7 +24,9 @@ class BaseBuilderTest extends AbstractTestCase
     {
         parent::getEnvironmentSetUp($app);
         $app->config->set('jetpages.content_scanners', []);
-        $app->config->set('jetpages.content_decorators', []);
+        $app->config->set('jetpages.content_parsers', []);
+        $app->config->set('jetpages.content_renderers', []);
+        $app->config->set('jetpages.content_post_processors', []);
         $this->builder = app()->make(BaseBuilder::class);
     }
 
@@ -32,7 +35,7 @@ class BaseBuilderTest extends AbstractTestCase
      */
     public function testBuild()
     {
-        $page = app()->make('page', [['slug' => 'slug', 'title' => 'test', 'content' => 'content']]);
+        $page = new Page(['locale' => 'en', 'slug' => 'slug', 'title' => 'test', 'content' => 'content']);
 
         $scanner_mock = Mockery::mock(PageScanner::class)
             ->shouldReceive('scanDirectory')
@@ -42,15 +45,15 @@ class BaseBuilderTest extends AbstractTestCase
             ->getMock();
         $this->app->instance(PageScanner::class, $scanner_mock);
 
-        $decorator_mock = Mockery::mock(MetaInfoDecorator::class)
-            ->shouldReceive('decorate')
+        $decorator_mock = Mockery::mock(MetaInfoParser::class)
+            ->shouldReceive('parse')
             ->withAnyArgs()
             ->once()
             ->getMock();
-        $this->app->instance(MetaInfoDecorator::class, $decorator_mock);
+        $this->app->instance(MetaInfoParser::class, $decorator_mock);
 
         $this->builder->registerScanner(PageScanner::class, 'pages');
-        $this->builder->registerDecorator(MetaInfoDecorator::class);
+        $this->builder->registerParser(MetaInfoParser::class);
         $this->builder->build();
     }
 

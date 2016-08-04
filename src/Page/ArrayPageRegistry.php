@@ -23,7 +23,7 @@ class ArrayPageRegistry extends AbstractPageRegistry
      */
     public function findBySlug($locale, $slug)
     {
-        return $this->pages[$this->makeLocaleSlug($locale, $slug)];
+        return $this->pages[Page::makeLocaleSlug($locale, $slug)] ?? null;
     }
 
     /**
@@ -45,20 +45,6 @@ class ArrayPageRegistry extends AbstractPageRegistry
     }
 
     /**
-     * Get (or set) the time of last page update.
-     * @return int
-     */
-    public function lastUpdatedTime()
-    {
-        $max = 0;
-        foreach ($this->pages as $page) {
-            $updated_at = $page->getAttribute('updated_at');
-            $max = $updated_at > $max ? $updated_at : $max;
-        }
-        return $max;
-    }
-
-    /**
      * Reset pages list.
      */
     public function reset()
@@ -67,20 +53,22 @@ class ArrayPageRegistry extends AbstractPageRegistry
     }
 
     /**
-     * Add a page (or pages) to the repo.
-     * @param Page|Page[] $pages
+     * Write page data to repository.
+     * @param Page $page
+     * @return Page
      */
-    public function add($pages)
+    protected function write(Page $page)
     {
-        if (!$pages) {
-            return;
-        }
-        if (!is_array($pages)) {
-            $this->pages[$pages->localeSlug()] = $pages;
-        } else {
-            foreach ($pages as $page) {
-                $this->pages[$page->localeSlug()] = $page;
-            }
-        }
+        $this->pages[$page->localeSlug()] = $page;
+        return $page;
+    }
+
+    /**
+     * Scratch page data to repository.
+     * @param string $localeSlug
+     */
+    protected function scratch($localeSlug)
+    {
+        unset($this->pages[$localeSlug]);
     }
 }

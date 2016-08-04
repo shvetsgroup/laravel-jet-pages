@@ -1,15 +1,15 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Decorators;
+<?php namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
-class MenuDecorator implements Decorator
+class MenuPostProcessor implements PostProcessor
 {
     /**
      * @param Page $page
      * @param PageRegistry $registry
      */
-    public function decorate(Page $page, PageRegistry $registry)
+    public function postProcess(Page $page, PageRegistry $registry)
     {
         // TODO: jetpages decorator
     }

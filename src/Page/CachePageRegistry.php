@@ -29,10 +29,12 @@ class CachePageRegistry extends AbstractPageRegistry
      */
     public function findBySlug($locale, $slug)
     {
-        $localeSlug = $this->makeLocaleSlug($locale, $slug);
+        $localeSlug = Page::makeLocaleSlug($locale, $slug);
+
         $page = $this->cache->get("jetpage:{$localeSlug}");
+
         if ($page) {
-            return new CachePage($page, $this->cache);
+            return new Page($page, $this->cache);
         } else {
             return null;
         }
@@ -49,15 +51,57 @@ class CachePageRegistry extends AbstractPageRegistry
 
     /**
      * Get (or set) the time of last page update.
-     * @param null $time
      * @return int
      */
-    public function lastUpdatedTime($time = null)
+    public function lastUpdatedTime()
     {
-        if ($time != null) {
+        $time = $this->cache->get("jetpage_last_updated", 0);
+        if (!$time) {
+            $time = parent::lastUpdatedTime();
             $this->cache->forever("jetpage_last_updated", $time);
-            return $time;
         }
-        return $this->cache->get("jetpage_last_updated", 0);
+        return $time;
+    }
+
+    /**
+     * Write page data to repository.
+     * @param Page $page
+     * @return Page
+     */
+    protected function write(Page $page)
+    {
+        $localeSlug = $page->localeSlug();
+        $this->updateIndex($localeSlug);
+        $this->cache->forever("jetpage:$localeSlug", $page->toArray());
+        $this->cache->forget("jetpage_last_updated");
+        return $page;
+    }
+
+    /**
+     * Scratch page data to repository.
+     * @param string $localeSlug
+     */
+    protected function scratch($localeSlug)
+    {
+        $this->updateIndex($localeSlug, true);
+        $this->cache->forget("jetpage:$localeSlug");
+        $this->cache->forget("jetpage_last_updated");
+    }
+
+    /**
+     * Add or remove a page from index.
+     *
+     * @param $slug
+     * @param bool $delete
+     */
+    private function updateIndex($slug, $delete = false) {
+        $index = $this->cache->get("jetpage_index", []);
+        if ($delete) {
+            $index = array_diff($index, [$slug]);
+        }
+        else {
+            $index[] = $slug;
+        }
+        $this->cache->forever("jetpage_index", $index);
     }
 }

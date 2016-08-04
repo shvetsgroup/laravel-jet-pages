@@ -1,30 +1,31 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Builders\Scanners;
+<?php namespace ShvetsGroup\Tests\JetPages\Builders\Renderers;
 
-use ShvetsGroup\JetPages\Builders\Decorators\Decorator;
-use ShvetsGroup\JetPages\Builders\Decorators\Content\IncludeDecorator;
+use ShvetsGroup\JetPages\Builders\Renderers\Renderer;
+use ShvetsGroup\JetPages\Builders\Renderers\IncludeRenderer;
 use ShvetsGroup\JetPages\Page\ArrayPageRegistry;
+use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class IncludeDecoratorTest extends AbstractTestCase
 {
     /**
-     * @var Decorator
+     * @var Renderer
      */
-    private $decorator;
+    private $renderer;
     private $pages;
 
     public function setUp()
     {
         parent::setUp();
-        $this->decorator = new IncludeDecorator();
+        $this->renderer = new IncludeRenderer();
         $this->pages = new ArrayPageRegistry();
     }
 
     public function testDecorate()
     {
         $data = ['slug' => 'test', 'content' => "test\n!INCLUDE  \"includes/test.txt\"\ntest"];
-        $page = app()->make('page', [$data]);
-        $this->decorator->decorate($page, $this->pages);
+        $page = new Page($data);
+        $this->renderer->render($page, $this->pages);
         $this->assertEquals("test\ntest\ninclude\ntest", $page->getAttribute('content'));
     }
 
@@ -34,8 +35,8 @@ class IncludeDecoratorTest extends AbstractTestCase
     public function testIncludeDoesNotExist()
     {
         $data = ['slug' => 'test', 'content' => "test\n!INCLUDE  \"123\"\ntest"];
-        $page = app()->make('page', [$data]);
-        $this->decorator->decorate($page, $this->pages);
+        $page = new Page($data);
+        $this->renderer->render($page, $this->pages);
     }
 
 }

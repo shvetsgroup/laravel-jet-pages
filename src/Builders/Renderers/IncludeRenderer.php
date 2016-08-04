@@ -1,10 +1,10 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Decorators\Content;
+<?php namespace ShvetsGroup\JetPages\Builders\Renderers;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use function ShvetsGroup\JetPages\content_path;
 
-class IncludeDecorator extends ContentDecorator
+class IncludeRenderer extends AbstractRenderer
 {
     /**
      * @param $content
@@ -12,7 +12,7 @@ class IncludeDecorator extends ContentDecorator
      * @param PageRegistry $registry
      * @return string
      */
-    public function decorateContent($content, Page $page, PageRegistry $registry)
+    public function renderContent($content, Page $page, PageRegistry $registry)
     {
         $files = app('Illuminate\Filesystem\Filesystem');
         $regexp = '|!INCLUDE\s+"([^"]*)"|';

@@ -1,6 +1,5 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Decorators\Content;
+<?php namespace ShvetsGroup\JetPages\Builders\Renderers;
 
-use ShvetsGroup\JetPages\Builders\Decorators\Decorator;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
@@ -8,23 +7,24 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
  * This class eases decoration of multiple content fields. You only need to define one function to decorate all content
  * fields.
  */
-abstract class ContentDecorator implements Decorator
+abstract class AbstractRenderer implements Renderer
 {
     /**
      * @param Page $page
      * @param PageRegistry $registry
      */
-    public function decorate(Page $page, PageRegistry $registry)
+    public function render(Page $page, PageRegistry $registry)
     {
         foreach ($this->getContentFields($page) as $field) {
             $content = $page->getAttribute($field);
-            $content = $this->decorateContent($content, $page, $registry);
+            $content = $this->renderContent($content, $page, $registry);
             $page->setAttribute($field, $content);
         }
     }
 
     /**
      * Return "content" and all fields with start with "content_".
+     * @param Page $page
      * @return array
      */
     public function getContentFields(Page $page) {
@@ -39,5 +39,5 @@ abstract class ContentDecorator implements Decorator
      * @param PageRegistry $registry
      * @return string
      */
-    abstract public function decorateContent($content, Page $page, PageRegistry $registry);
+    abstract public function renderContent($content, Page $page, PageRegistry $registry);
 }

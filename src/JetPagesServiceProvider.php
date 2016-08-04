@@ -16,22 +16,8 @@ class JetPagesServiceProvider extends RouteServiceProvider
     {
         parent::register();
 
-        $this->app->bind('page', function($app, $parameters){
-            $driver = config('jetpages.driver', 'cache');
-            switch ($driver) {
-                case "cache":
-                    return $this->app->make(Page\CachePage::class, $parameters);
-                    break;
-                case "database":
-                    return $this->app->make(Page\EloquentPage::class, $parameters);
-                    break;
-                default:
-                    throw new \Exception("Unknown pages driver '{$driver}'.");
-            }
-        });
-        $this->app->alias('page', Page\Page::class);
-
-        $this->app->bind('pages', function($app, $parameters){
+        $this->app->bind('page', Page\Page::class);
+        $this->app->bind('pages', function ($app, $parameters) {
             $driver = config('jetpages.driver', 'cache');
             switch ($driver) {
                 case "cache":
@@ -52,7 +38,9 @@ class JetPagesServiceProvider extends RouteServiceProvider
         $this->app->singleton('builder', function () {
             return new BaseBuilder(
                 $this->getDefaultScanners(),
-                $this->getDefaultDecorators()
+                $this->getDefaultParsers(),
+                $this->getDefaultRenderers(),
+                $this->getDefaultPostProcessors()
             );
         });
         $this->app->alias('builder', BaseBuilder::class);
@@ -106,30 +94,54 @@ class JetPagesServiceProvider extends RouteServiceProvider
      *
      * @return mixed
      */
-    protected function getDefaultDecorators()
+    protected function getDefaultParsers()
     {
         // TODO: update decorators
-        return config('jetpages.content_decorators', [
-            '\ShvetsGroup\JetPages\Builders\Decorators\LocaleDecorator',
-            '\ShvetsGroup\JetPages\Builders\Decorators\MetaInfoDecorator',
-            '\ShvetsGroup\JetPages\Builders\Decorators\NavigationDecorator',
-            '\ShvetsGroup\JetPages\Builders\Decorators\MenuDecorator',
-            '\ShvetsGroup\JetPages\Builders\Decorators\Content\IncludeDecorator',
-            '\ShvetsGroup\JetPages\Builders\Decorators\Content\MarkdownDecorator',
-            '\ShvetsGroup\JetPages\Builders\Decorators\Content\EscapePreTagDecorator',
+        return config('jetpages.content_parsers', [
+            '\ShvetsGroup\JetPages\Builders\Parsers\LocaleParser',
+            '\ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser',
+            '\ShvetsGroup\JetPages\Builders\Parsers\NavigationParser',
+        ]);
+    }
+
+    /**
+     * Get default decorator config.
+     *
+     * @return mixed
+     */
+    protected function getDefaultRenderers()
+    {
+        // TODO: update decorators
+        return config('jetpages.content_renderers', [
+            '\ShvetsGroup\JetPages\Builders\Renderers\IncludeRenderer',
+            '\ShvetsGroup\JetPages\Builders\Renderers\MarkdownRenderer',
+            '\ShvetsGroup\JetPages\Builders\Renderers\EscapePreTagRenderer',
+        ]);
+    }
+
+    /**
+     * Get default decorator config.
+     *
+     * @return mixed
+     */
+    protected function getDefaultPostProcessors()
+    {
+        // TODO: update decorators
+        return config('jetpages.content_post_processors', [
+            '\ShvetsGroup\JetPages\Builders\PostProcessors\MenuPostProcessor',
         ]);
     }
 }
 
-if (! function_exists('content_path')) {
+if (!function_exists('content_path')) {
     /**
      * Get the content path.
      *
-     * @param  string  $path
+     * @param  string $path
      * @return string
      */
     function content_path($path = '')
     {
-        return config('jetpages.content_root', resource_path('content')).($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return config('jetpages.content_root', resource_path('content')) . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 }
