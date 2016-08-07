@@ -21,6 +21,19 @@ abstract class AbstractPageRegistry implements PageRegistry
     }
 
     /**
+     * Get the array of all page slugs.
+     * @return string[]
+     */
+    public function index()
+    {
+        $result = [];
+        foreach ($this->getAll() as $page) {
+            $result[$page->localeSlug()] = $page->updated_at;
+        }
+        return $result;
+    }
+
+    /**
      * Create a new page object.
      *
      * @param array $attributes
@@ -52,7 +65,9 @@ abstract class AbstractPageRegistry implements PageRegistry
         if (!$page->getAttribute('created_at')) {
             $page->setAttribute('created_at', Carbon::now()->format('Y-m-d H:i:s'));
         }
-        $page->setAttribute('updated_at', Carbon::now()->format('Y-m-d H:i:s'));
+        if (!$page->getAttribute('updated_at')) {
+            $page->setAttribute('updated_at', Carbon::now()->format('Y-m-d H:i:s'));
+        }
         return $this;
     }
 
@@ -68,6 +83,18 @@ abstract class AbstractPageRegistry implements PageRegistry
             $max = $updated_at > $max ? $updated_at : $max;
         }
         return $max;
+    }
+
+    /**
+     * Check if repository has an older version of a page.
+     * @return bool
+     */
+    public function needsUpdate(Page $page)
+    {
+        $index = $this->index();
+        $localeSlug = $page->localeSlug();
+        $current = $index[$localeSlug] ?? null;
+        return !$current || $page->updated_at > $current;
     }
 
     /**
@@ -96,7 +123,7 @@ abstract class AbstractPageRegistry implements PageRegistry
     {
         $index = $this->index();
         $all = [];
-        foreach ($index as $localeSlug) {
+        foreach ($index as $localeSlug => $updated_at) {
             $all[$localeSlug] = $this->findBySlug('', $localeSlug);
         }
         return $all;

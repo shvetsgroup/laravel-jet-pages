@@ -133,11 +133,12 @@ class Page implements Arrayable
      * Extract locale from uri.
      *
      * @param $uri
+     * @param null $localeInUrl
      * @return array
      */
-    static function extractLocale($uri) {
+    static function extractLocale($uri, $localeInUrl = null) {
         $defaultLocale = config('app.locale', '');
-        $defaultLocaleIsInUrl = config('jetpages.default_locale_in_url', true);
+        $defaultLocaleIsInUrl = $localeInUrl === null ? config('jetpages.default_locale_in_url', true) : $localeInUrl;
         $uri_has_parts = strpos($uri, '/') !== false;
 
         if ($uri_has_parts) {

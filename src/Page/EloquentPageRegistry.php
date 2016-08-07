@@ -23,27 +23,15 @@ class EloquentPageRegistry extends AbstractPageRegistry
     }
 
     /**
-     * Load a page by its locale and slug pair.
-     *
-     * @param $locale
-     * @param $slug
-     * @return Page
-     */
-    public function findBySlug($locale, $slug)
-    {
-        $page = $this->db->table('pages')->where('locale', $locale)->where('slug', $slug)->first();
-        return $page ? $this->fromDbRecord($page) : null;
-    }
-
-    /**
      * Get the array of all page slugs.
      * @return string[]
      */
     public function index()
     {
         $results = [];
-        foreach ($this->db->table('pages')->get(['locale', 'slug']) as $record) {
-            $results[] = Page::makeLocaleSlug($record->locale, $record->slug);
+        foreach ($this->db->table('pages')->get(['locale', 'slug', 'updated_at']) as $record) {
+            $localeSlug = Page::makeLocaleSlug($record->locale, $record->slug);
+            $results[$localeSlug] = $record->updated_at;
         }
         return $results;
     }
@@ -56,6 +44,19 @@ class EloquentPageRegistry extends AbstractPageRegistry
     {
         $pages = $this->db->table('pages')->get();
         return $this->listRecordsByKey($pages);
+    }
+
+    /**
+     * Load a page by its locale and slug pair.
+     *
+     * @param $locale
+     * @param $slug
+     * @return Page
+     */
+    public function findBySlug($locale, $slug)
+    {
+        $page = $this->db->table('pages')->where('locale', $locale)->where('slug', $slug)->first();
+        return $page ? $this->fromDbRecord($page) : null;
     }
 
     /**

@@ -118,4 +118,9 @@ interface PageRegistry
      * @return int
      */
     public function lastUpdatedTime();
+
+    /**
+     * @return int
+     */
+    public function needsUpdate(Page $freshPage);
 }

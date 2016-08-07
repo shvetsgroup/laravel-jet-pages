@@ -15,24 +15,11 @@ class ArrayPageRegistry extends AbstractPageRegistry
     }
 
     /**
-     * Load a page by its locale and slug pair.
-     *
-     * @param $locale
-     * @param $slug
-     * @return Page
+     * Reset pages list.
      */
-    public function findBySlug($locale, $slug)
+    public function reset()
     {
-        return $this->pages[Page::makeLocaleSlug($locale, $slug)] ?? null;
-    }
-
-    /**
-     * Get the array of all page slugs.
-     * @return string[]
-     */
-    public function index()
-    {
-        return array_keys($this->pages);
+        $this->pages = [];
     }
 
     /**
@@ -45,11 +32,15 @@ class ArrayPageRegistry extends AbstractPageRegistry
     }
 
     /**
-     * Reset pages list.
+     * Load a page by its locale and slug pair.
+     *
+     * @param $locale
+     * @param $slug
+     * @return Page
      */
-    public function reset()
+    public function findBySlug($locale, $slug)
     {
-        $this->pages = [];
+        return $this->pages[Page::makeLocaleSlug($locale, $slug)] ?? null;
     }
 
     /**

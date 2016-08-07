@@ -17,7 +17,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
         parent::register();
 
         $this->app->bind('page', Page\Page::class);
-        $this->app->bind('pages', function ($app, $parameters) {
+        $this->app->singleton('pages', function ($app, $parameters) {
             $driver = config('jetpages.driver', 'cache');
             switch ($driver) {
                 case "cache":
@@ -98,7 +98,6 @@ class JetPagesServiceProvider extends RouteServiceProvider
     {
         // TODO: update decorators
         return config('jetpages.content_parsers', [
-            '\ShvetsGroup\JetPages\Builders\Parsers\LocaleParser',
             '\ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser',
             '\ShvetsGroup\JetPages\Builders\Parsers\NavigationParser',
         ]);

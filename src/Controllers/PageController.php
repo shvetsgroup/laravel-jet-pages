@@ -22,14 +22,12 @@ class PageController extends Controller
      */
     public function show($uri = '/')
     {
-        $uri = $this->processLocale($uri);
+        $this->processLocale($uri);
 
         if (config('jetpages.rebuild_page_on_view', env('APP_DEBUG', false))) {
-            $page = app('builder')->reBuild($uri);
+            app('builder')->build();
         }
-        else {
-            $page = $this->pages->findByUriOrFail($uri);
-        }
+        $page = $this->pages->findByUriOrFail($uri);
 
         $view = array_get($page, 'view', 'page');
         foreach ([$view, "sg/jetpages::$view"] as $v) {
@@ -49,10 +47,8 @@ class PageController extends Controller
     public function processLocale($uri)
     {
         if (app()->bound('laravellocalization') && $localization = app('laravellocalization')) {
-            $locale = $localization->setLocale(null) ?: $localization->getCurrentLocale();
-            $uri = $locale . '/' . ltrim(preg_replace('|^' . preg_quote($locale, '|') . '|', '', $uri), '/');
+            $localization->setLocale(null) ?: $localization->getCurrentLocale();
         }
-        return $uri;
     }
 
     /**

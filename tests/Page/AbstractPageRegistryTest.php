@@ -79,10 +79,10 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
     public function testIndex()
     {
         $page = $this->registry->createAndSave($this->data);
-        $this->assertEquals(['en/test'], $this->registry->index());
+        $this->assertEquals(['en/test' => $page->updated_at], $this->registry->index());
         $page->slug = 'new';
         $this->registry->save($page);
-        $this->assertEquals(['en/new'], $this->registry->index());
+        $this->assertEquals(['en/new' => $page->updated_at], $this->registry->index());
         $this->registry->delete($page);
         $this->assertEquals([], $this->registry->index());
     }

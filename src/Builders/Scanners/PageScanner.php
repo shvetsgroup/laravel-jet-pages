@@ -71,16 +71,18 @@ class PageScanner implements Scanner
      */
     public function processFile(SplFileInfo $file)
     {
-        $slug = $file->getRelativePathname();
-        $extension = pathinfo($slug, PATHINFO_EXTENSION);
-        $slug = preg_replace("/\.[^.]+$/", "", $slug);
+        $path = $file->getRelativePathname();
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        $localeSlug = preg_replace("/\.[^.]+$/", "", $path);
+        list($locale, $slug) = Page::extractLocale($localeSlug, false);
         return $this->pages->new([
+            'locale' => $locale,
             'slug' => $slug,
             'type' => $this->type,
             'extension' => $extension,
             'path' => $file->getRealPath(),
             'content' => $file->getContents(),
-            'updated_at' => $file->getMTime(),
+            'updated_at' => date('Y-m-d H:i:s', $file->getMTime()),
         ]);
     }
 

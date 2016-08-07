@@ -21,6 +21,15 @@ class CachePageRegistry extends AbstractPageRegistry
     }
 
     /**
+     * Get the array of all page slugs.
+     * @return string[]
+     */
+    public function index()
+    {
+        return $this->cache->get("jetpage_index", []);
+    }
+
+    /**
      * Load a page by its locale and slug pair.
      *
      * @param $locale
@@ -38,15 +47,6 @@ class CachePageRegistry extends AbstractPageRegistry
         } else {
             return null;
         }
-    }
-
-    /**
-     * Get the array of all page slugs.
-     * @return string[]
-     */
-    public function index()
-    {
-        return $this->cache->get("jetpage_index", []);
     }
 
     /**
@@ -71,7 +71,7 @@ class CachePageRegistry extends AbstractPageRegistry
     protected function write(Page $page)
     {
         $localeSlug = $page->localeSlug();
-        $this->updateIndex($localeSlug);
+        $this->updateIndex($localeSlug, $page->updated_at);
         $this->cache->forever("jetpage:$localeSlug", $page->toArray());
         $this->cache->forget("jetpage_last_updated");
         return $page;
@@ -83,7 +83,7 @@ class CachePageRegistry extends AbstractPageRegistry
      */
     protected function scratch($localeSlug)
     {
-        $this->updateIndex($localeSlug, true);
+        $this->updateIndex($localeSlug, 0, true);
         $this->cache->forget("jetpage:$localeSlug");
         $this->cache->forget("jetpage_last_updated");
     }
@@ -94,13 +94,13 @@ class CachePageRegistry extends AbstractPageRegistry
      * @param $slug
      * @param bool $delete
      */
-    private function updateIndex($slug, $delete = false) {
+    private function updateIndex($slug, $time = 0, $delete = false) {
         $index = $this->cache->get("jetpage_index", []);
         if ($delete) {
-            $index = array_diff($index, [$slug]);
+            unset($index[$slug]);
         }
         else {
-            $index[] = $slug;
+            $index[$slug] = $time;
         }
         $this->cache->forever("jetpage_index", $index);
     }

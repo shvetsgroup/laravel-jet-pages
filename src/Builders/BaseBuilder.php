@@ -106,18 +106,32 @@ class BaseBuilder
      */
     public function build($reset = false)
     {
+        $persistentRegistry = app('pages');
+        if ($reset) {
+            $persistentRegistry->reset();
+        }
         $tempRegistry = new ArrayPageRegistry();
-
         $pages = $this->scan($tempRegistry);
+        //$pages = $this->filterUpdated($persistentRegistry, $pages);
         $this->do('parse', $tempRegistry, $pages);
         $this->do('render', $tempRegistry, $pages);
         $this->do('postProcess', $tempRegistry, $pages);
+        $persistentRegistry->import($pages);
+    }
 
-        $pages = app('pages');
-        if ($reset) {
-            $pages->reset();
+    /**
+     * @param PageRegistry $registry
+     * @param Page[] $pages
+     * @return Page[]
+     */
+    protected function filterUpdated(PageRegistry $registry, array $pages) {
+        $result = [];
+        foreach ($pages as $page) {
+            if ($registry->needsUpdate($page)) {
+                $result[] = $page;
+            }
         }
-        $pages->import($tempRegistry);
+        return $result;
     }
 
     /**
@@ -159,7 +173,6 @@ class BaseBuilder
      */
     protected function do($method, PageRegistry $registry, $pages = [])
     {
-        $pages = $pages ?: $registry->getAll();
         $lists = [
             'parse' => 'parsers',
             'render' => 'renderers',
@@ -169,60 +182,8 @@ class BaseBuilder
             $obj = app()->make($obj_name);
             foreach ($pages as $page) {
                 call_user_func(array($obj, $method), $page, $registry);
+                $page->setAttribute('build__' . $method . '__' . $obj_name, true);
             }
         }
-    }
-
-    /**
-     * Rebuild a page from source.
-     * @param $uri
-     * @return Page
-     */
-    public function reBuild($uri)
-    {
-        $registry = app('pages');
-        $page = $registry->findByUri($uri);
-
-        if (!$page) {
-            $tempRegistry = new ArrayPageRegistry();
-            $pages = $this->scan($tempRegistry);
-            app('pages')->import($pages);
-            return $registry->findByUriOrFail($uri);
-        } else {
-            $page = $this->reScan($page);
-            abort_unless($page, 404);
-
-            $this->do('parse', $registry);
-            $this->do('render', $registry, [$page]);
-            $this->do('postProcess', $registry, [$page]);
-            app('pages')->save($page);
-
-            return $page;
-        }
-    }
-
-    /**
-     * Scan raw files for basic page information.
-     * @param Page $page
-     * @return Page
-     */
-    protected function reScan(Page $page)
-    {
-        $filename = $page->getAttribute('path');
-        if (!$filename) {
-            return $page;
-        }
-
-        $filepath = dirname($filename);
-        foreach ($this->scanners as $scanner_pair) {
-            foreach ($scanner_pair['paths'] as $path) {
-                if (strpos($filepath, $path) !== false) {
-                    $scanner = $this->makeScanner($scanner_pair);
-                    $page = $scanner->scanFile($filename, $path);
-                    return $page;
-                }
-            }
-        }
-        return null;
     }
 }
