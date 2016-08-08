@@ -30,7 +30,7 @@ class NavigationParserTest extends AbstractTestCase
         }
         $registry = new SimplePageRegistry($pages);
 
-        app('outline')->getFlatOutline([
+        app('jetpages.outline')->getFlatOutline([
             'test0' => ['test-1' => 1],
             'test1' => 1,
             'test2' => ['test3' => 1, 'test4' => 1]
