@@ -75,15 +75,20 @@ class PageScanner implements Scanner
         $extension = pathinfo($path, PATHINFO_EXTENSION);
         $localeSlug = preg_replace("/\.[^.]+$/", "", $path);
         list($locale, $slug) = Page::extractLocale($localeSlug, false);
-        return $this->pages->new([
-            'locale' => $locale,
-            'slug' => $slug,
-            'type' => $this->type,
-            'extension' => $extension,
-            'path' => $file->getRealPath(),
-            'content' => $file->getContents(),
-            'updated_at' => date('Y-m-d H:i:s', $file->getMTime()),
-        ]);
+        try {
+            return $this->pages->new([
+                'locale' => $locale,
+                'slug' => $slug,
+                'type' => $this->type,
+                'extension' => $extension,
+                'path' => $file->getRealPath(),
+                'content' => $file->getContents(),
+                'updated_at' => date('Y-m-d H:i:s', max($file->getMTime(), $file->getCTime())),
+            ]);
+        }
+        catch (\RuntimeException $e) {
+            return null;
+        }
     }
 
     /**

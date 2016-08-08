@@ -50,10 +50,29 @@ interface PageRegistry
     public function import($registry);
 
     /**
+     * Temporarily add a page to repository. You need to call saveAll to persist them.
+     * @param Page $page
+     * @return Page
+     */
+    public function add(Page $page);
+
+    /**
+     * Temporarily add pages to repository. You need to call saveAll to persist them.
+     * @param array $pages
+     * @return $this
+     */
+    public function addAll(array $pages);
+
+    /**
      * @param Page $page
      * @return Page
      */
     public function save(Page $page);
+
+    /**
+     * @return $this
+     */
+    public function saveAll();
 
     /**
      * @param Page $page
@@ -115,12 +134,36 @@ interface PageRegistry
     public function findByUriOrFail($uri);
 
     /**
-     * @return int
+     * Check whether a search index exists.
+     * @param $columns
+     * @return bool
+     */
+    public function hasSearchIndex($columns);
+
+    /**
+     * Create a search index.
+     * @param $columns
+     */
+    public function makeSearchIndex($columns);
+
+    /**
+     * Find page in search index.
+     *
+     * @param $name
+     * @param $key
+     * @return Page|null
+     */
+    public function findInSearchIndex($name, $key);
+
+
+    /**
+     * @return string
      */
     public function lastUpdatedTime();
 
     /**
-     * @return int
+     * @param Page $freshPage
+     * @return bool
      */
     public function needsUpdate(Page $freshPage);
 }

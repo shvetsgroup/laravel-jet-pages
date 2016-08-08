@@ -2,6 +2,7 @@
 
 use Illuminate\Routing\Controller;
 use ShvetsGroup\JetPages\Page\PageRegistry;
+use Cache;
 
 class PageController extends Controller
 {
@@ -24,18 +25,28 @@ class PageController extends Controller
     {
         $this->processLocale($uri);
 
-        if (config('jetpages.rebuild_page_on_view', env('APP_DEBUG', false))) {
-            app('builder')->build();
-        }
-        $page = $this->pages->findByUriOrFail($uri);
+        $page = $this->pages->findByUri($uri);
 
-        $view = array_get($page, 'view', 'page');
+        if (!$page) {
+            if ($destination = Cache::get("redirect:{$uri}")) {
+                return redirect($destination, 301);
+            } else {
+                return abort(404);
+            }
+        }
+
+        if (config('jetpages.rebuild_page_on_view', env('APP_DEBUG', false))) {
+            app('builder')->build(false, $uri);
+            $page = $this->pages->findByUriOrFail($uri);
+        }
+
+        $view = $page->getAttribute('view') ?: 'page';
         foreach ([$view, "sg/jetpages::$view"] as $v) {
             if (view()->exists($v)) {
                 $view = $v;
             }
         }
-        return response()->view($view, $page->toArray());
+        return response()->view($view, $page->renderArray());
     }
 
     /**

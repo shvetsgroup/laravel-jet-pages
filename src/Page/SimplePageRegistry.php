@@ -2,8 +2,37 @@
 
 use Carbon\Carbon;
 
-abstract class AbstractPageRegistry implements PageRegistry
+class SimplePageRegistry implements PageRegistry
 {
+    /**
+     * @var Page[]
+     */
+    protected $pages = [];
+    protected $index = [];
+    protected $searchIndexes = [];
+
+    public function __construct(array $pages = [])
+    {
+        $this->addAll($pages);
+    }
+
+    /**
+     * Reset pages list.
+     */
+    public function reset()
+    {
+        $this->pages = [];
+    }
+
+    /**
+     * Get the array of all page objects.
+     * @return Page[]
+     */
+    public function getAll()
+    {
+        return $this->pages;
+    }
+
     /**
      * Import pages from other registry.
      * @param PageRegistry|array $registry
@@ -26,11 +55,7 @@ abstract class AbstractPageRegistry implements PageRegistry
      */
     public function index()
     {
-        $result = [];
-        foreach ($this->getAll() as $page) {
-            $result[$page->localeSlug()] = $page->updated_at;
-        }
-        return $result;
+        return $this->index;
     }
 
     /**
@@ -73,20 +98,22 @@ abstract class AbstractPageRegistry implements PageRegistry
 
     /**
      * Get (or set) the time of last page update.
-     * @return int
+     * @return string
      */
     public function lastUpdatedTime()
     {
-        $max = 0;
-        foreach ($this->getAll() as $page) {
-            $updated_at = $page->getAttribute('updated_at');
-            $max = $updated_at > $max ? $updated_at : $max;
+        $index = $this->index();
+        if (count($index)) {
+            $array = array_values($index);
+            arsort($array);
+            return $array[0];
         }
-        return $max;
+        return 0;
     }
 
     /**
      * Check if repository has an older version of a page.
+     * @param Page $page
      * @return bool
      */
     public function needsUpdate(Page $page)
@@ -116,17 +143,15 @@ abstract class AbstractPageRegistry implements PageRegistry
     }
 
     /**
-     * Get the array of all page objects.
-     * @return Page[]
+     * Load a page by its locale and slug pair.
+     *
+     * @param $locale
+     * @param $slug
+     * @return Page
      */
-    public function getAll()
+    public function findBySlug($locale, $slug)
     {
-        $index = $this->index();
-        $all = [];
-        foreach ($index as $localeSlug => $updated_at) {
-            $all[$localeSlug] = $this->findBySlug('', $localeSlug);
-        }
-        return $all;
+        return $this->pages[Page::makeLocaleSlug($locale, $slug)] ?? null;
     }
 
     /**
@@ -197,22 +222,66 @@ abstract class AbstractPageRegistry implements PageRegistry
         }
         $pages = $pages ?: $this->getAll();
         foreach ($pages as $localeSlug => $page) {
-            $allTrue = true;
             foreach ($key as $k => $v) {
                 if ($page->getAttribute($k) != $v) {
-                    $allTrue = false;
-                    break;
+                    continue 2;
                 }
             }
-            if ($allTrue) {
-                if ($returnSingle) {
-                    return $page;
-                } else {
-                    $results[$localeSlug] = $page;
-                }
+            if ($returnSingle) {
+                return $page;
+            } else {
+                $results[$localeSlug] = $page;
             }
         }
         return $results;
+    }
+
+    /**
+     * Check whether a search index exists.
+     * @param $columns
+     * @return bool
+     */
+    public function hasSearchIndex($columns) {
+        $name = join('__', $columns);
+        return isset($this->searchIndexes[$name]);
+    }
+
+    /**
+     * Create a search index.
+     * @param $columns
+     */
+    public function makeSearchIndex($columns) {
+        $name = join('__', $columns);
+        foreach ($this->getAll() as $page) {
+            $key = $this->makeSearchIndexKey($columns, $page);
+            $this->searchIndexes[$name][$key] = $page;
+        }
+    }
+
+    /**
+     * Make a search index key.
+     *
+     * @param $columns
+     * @param Page $page
+     * @return string
+     */
+    protected function makeSearchIndexKey($columns, Page $page) {
+        $parts = [];
+        foreach ($columns as $column) {
+            $parts[] = $page->getAttribute($column);
+        }
+        return join('__', $parts);
+    }
+
+    /**
+     * Find page in search index.
+     *
+     * @param $name
+     * @param $key
+     * @return Page|null
+     */
+    public function findInSearchIndex($name, $key) {
+        return $this->searchIndexes[$name][$key] ?? null;
     }
 
     /**
@@ -224,8 +293,19 @@ abstract class AbstractPageRegistry implements PageRegistry
     {
         $this->removeOld($page);
         $this->prepare($page);
-        $this->write($page);
+        $this->add($page);
         return $page;
+    }
+
+    /**
+     * Save all pages back to cache.
+     */
+    public function saveAll()
+    {
+        foreach ($this->pages as $page) {
+            $this->save($page);
+        }
+        return $this;
     }
 
     /**
@@ -259,15 +339,37 @@ abstract class AbstractPageRegistry implements PageRegistry
     }
 
     /**
-     * Write page data to repository.
+     * Temporarily add a page to repository. You need to call saveAll to persist them.
      * @param Page $page
      * @return Page
      */
-    abstract protected function write(Page $page);
+    public function add(Page $page)
+    {
+        $localeSlug = $page->localeSlug();
+        $this->pages[$localeSlug] = $page;
+        $this->index[$localeSlug] = $page->updated_at;
+        return $page;
+    }
+
+    /**
+     * Temporarily add pages to repository. You need to call saveAll to persist them.
+     * @param array $pages
+     * @return $this
+     */
+    public function addAll(array $pages)
+    {
+        foreach ($pages as $page) {
+            $this->add($page);
+        }
+    }
 
     /**
      * Scratch page data to repository.
      * @param string $localeSlug
      */
-    abstract protected function scratch($localeSlug);
+    protected function scratch($localeSlug)
+    {
+        unset($this->pages[$localeSlug]);
+        unset($this->index[$localeSlug]);
+    }
 }

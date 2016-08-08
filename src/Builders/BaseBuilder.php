@@ -2,7 +2,6 @@
 
 use ShvetsGroup\JetPages\Builders\Scanners\Scanner;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
-use ShvetsGroup\JetPages\Page\ArrayPageRegistry;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
@@ -103,20 +102,32 @@ class BaseBuilder
     /**
      * Build and save the page maps.
      * @param bool $reset
+     * @param null $currentUri
      */
-    public function build($reset = false)
+    public function build($reset = false, $currentUri = null)
     {
         $persistentRegistry = app('pages');
+
         if ($reset) {
             $persistentRegistry->reset();
         }
-        $tempRegistry = new ArrayPageRegistry();
-        $pages = $this->scan($tempRegistry);
-        //$pages = $this->filterUpdated($persistentRegistry, $pages);
-        $this->do('parse', $tempRegistry, $pages);
-        $this->do('render', $tempRegistry, $pages);
-        $this->do('postProcess', $tempRegistry, $pages);
-        $persistentRegistry->import($pages);
+
+        $persistentRegistry->getAll();
+        $updatedPages = $this->scan($persistentRegistry, !$reset);
+
+        $currentPage = null;
+        if ($currentUri) {
+            $currentPage = $persistentRegistry->findByUri($currentUri);
+            $currentPage = $this->reScan($currentPage);
+            if ($currentPage) {
+                $updatedPages[$currentPage->localeSlug()] = $currentPage;
+            }
+        }
+
+        $this->do('parse', $persistentRegistry, $updatedPages);
+        $this->do('render', $persistentRegistry, $updatedPages);
+        $this->do('postProcess', $persistentRegistry, $updatedPages);
+        $persistentRegistry->import($updatedPages);
     }
 
     /**
@@ -124,11 +135,12 @@ class BaseBuilder
      * @param Page[] $pages
      * @return Page[]
      */
-    protected function filterUpdated(PageRegistry $registry, array $pages) {
+    protected function filterUpdated(PageRegistry $registry, array $pages)
+    {
         $result = [];
-        foreach ($pages as $page) {
+        foreach ($pages as $localeSlug => $page) {
             if ($registry->needsUpdate($page)) {
-                $result[] = $page;
+                $result[$localeSlug] = $page;
             }
         }
         return $result;
@@ -137,9 +149,10 @@ class BaseBuilder
     /**
      * Scan raw files for basic page information.
      * @param PageRegistry $registry
-     * @return Page[]
+     * @param bool $filterUpdated
+     * @return \ShvetsGroup\JetPages\Page\Page[]
      */
-    protected function scan(PageRegistry $registry)
+    protected function scan(PageRegistry $registry, $filterUpdated = true)
     {
         $pages = [];
         foreach ($this->scanners as $scanner_pair) {
@@ -148,7 +161,10 @@ class BaseBuilder
                 $pages = array_merge($pages, $scanner->scanDirectory($path));
             }
         }
-        $registry->import($pages);
+        if ($filterUpdated) {
+            $pages = $this->filterUpdated($registry, $pages);
+        }
+        $registry->addAll($pages);
         return $pages;
     }
 
@@ -166,6 +182,35 @@ class BaseBuilder
     }
 
     /**
+     * Scan raw files for basic page information.
+     * @param Page $page
+     * @return Page
+     */
+    protected function reScan(Page $page)
+    {
+        if (!$page) {
+            return null;
+        }
+
+        $filename = $page->getAttribute('path');
+        if (!$filename) {
+            return $page;
+        }
+
+        $filepath = dirname($filename);
+        foreach ($this->scanners as $scanner_pair) {
+            foreach ($scanner_pair['paths'] as $path) {
+                if (strpos($filepath, $path) !== false) {
+                    $scanner = $this->makeScanner($scanner_pair);
+                    $page = $scanner->scanFile($filename, $path);
+                    return $page;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Parse and decorate basic page objects.
      * @param string $method
      * @param PageRegistry $registry
@@ -178,11 +223,11 @@ class BaseBuilder
             'render' => 'renderers',
             'postProcess' => 'postProcessors',
         ];
+        $pages = is_array($pages) ? $pages : [$pages];
         foreach ($this->{$lists[$method]} as $obj_name) {
             $obj = app()->make($obj_name);
             foreach ($pages as $page) {
                 call_user_func(array($obj, $method), $page, $registry);
-                $page->setAttribute('build__' . $method . '__' . $obj_name, true);
             }
         }
     }

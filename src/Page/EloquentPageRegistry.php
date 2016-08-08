@@ -1,6 +1,6 @@
 <?php namespace ShvetsGroup\JetPages\Page;
 
-class EloquentPageRegistry extends AbstractPageRegistry
+class EloquentPageRegistry extends SimplePageRegistry
 {
     /**
      * @var \Illuminate\Database\Connection
@@ -9,8 +9,9 @@ class EloquentPageRegistry extends AbstractPageRegistry
     protected $db_fields = ['id', 'locale', 'slug', 'title', 'data', 'created_at', 'updated_at'];
     protected $searchable_fields = ['locale', 'slug', 'title', 'created_at', 'updated_at'];
 
-    public function __construct()
+    public function __construct(array $pages = [])
     {
+        parent::__construct($pages);
         $this->db = app('Illuminate\Database\Connection');
     }
 
@@ -19,6 +20,7 @@ class EloquentPageRegistry extends AbstractPageRegistry
      */
     public function reset()
     {
+        parent::reset();
         $this->db->table('pages')->truncate();
     }
 
@@ -28,12 +30,16 @@ class EloquentPageRegistry extends AbstractPageRegistry
      */
     public function index()
     {
-        $results = [];
+        if ($index = parent::index()) {
+            return $index;
+        }
+
+        $this->index = [];
         foreach ($this->db->table('pages')->get(['locale', 'slug', 'updated_at']) as $record) {
             $localeSlug = Page::makeLocaleSlug($record->locale, $record->slug);
-            $results[$localeSlug] = $record->updated_at;
+            $this->index[$localeSlug] = $record->updated_at;
         }
-        return $results;
+        return $this->index;
     }
 
     /**
@@ -42,8 +48,14 @@ class EloquentPageRegistry extends AbstractPageRegistry
      */
     public function getAll()
     {
+        if ($pages = parent::getAll()) {
+            return $pages;
+        }
+
         $pages = $this->db->table('pages')->get();
-        return $this->listRecordsByKey($pages);
+        $pages = $this->listRecordsByKey($pages);
+        $this->addAll($pages);
+        return $pages;
     }
 
     /**
@@ -55,13 +67,18 @@ class EloquentPageRegistry extends AbstractPageRegistry
      */
     public function findBySlug($locale, $slug)
     {
-        $page = $this->db->table('pages')->where('locale', $locale)->where('slug', $slug)->first();
-        return $page ? $this->fromDbRecord($page) : null;
+        if ($page = parent::findBySlug($locale, $slug)) {
+            return $page;
+        }
+
+        $data = $this->db->table('pages')->where('locale', $locale)->where('slug', $slug)->first();
+        $page = $data ? $this->fromDbRecord($data) : null;
+        return $page;
     }
 
     /**
      * Get the time of last page update.
-     * @return int
+     * @return string
      */
     public function lastUpdatedTime()
     {
@@ -70,68 +87,20 @@ class EloquentPageRegistry extends AbstractPageRegistry
     }
 
     /**
-     * @param string|array $key
-     * @param null $value
-     * @param bool $returnSingle
-     * @param array $pages
-     * @return array|Page
-     */
-    protected function findBy($key, $value = null, $returnSingle = false, $pages = [])
-    {
-        list($database_filters, $regular_filters) = $this->makeFilters($key, $value);
-
-        $database_results = $this->db->table('pages')->where($database_filters)->get();
-
-        if (!$database_results) {
-            return null;
-        }
-
-        $pages = $this->listRecordsByKey($database_results);
-        if ($regular_filters) {
-            return parent::findBy($regular_filters, null, $returnSingle, $pages);
-        } else {
-            return $returnSingle ? reset($pages) : $pages;
-        }
-    }
-
-    /**
-     * @param $key
-     * @param null $value
-     * @return mixed
-     */
-    private function makeFilters($key, $value = null)
-    {
-        if (is_array($key)) {
-            $filters = [];
-            foreach ($key as $k => $v) {
-                $filters[] = [$k, $v];
-            }
-        } else {
-            $filters = [$key, $value];
-        }
-        $database_filters = $regular_filters = [];
-        foreach ($filters as $key => $value) {
-            if (in_array($key, $this->searchable_fields)) {
-                $database_filters[] = [$key, $value];
-            } else {
-                $regular_filters[] = [$key, $value];
-            }
-        }
-        return [$database_filters, $regular_filters];
-    }
-
-    /**
      * Write page data to repository.
      * @param Page $page
      * @return Page
      */
-    protected function write(Page $page)
+    public function save(Page $page)
     {
+        parent::save($page);
+
         $page->localeSlug();
         $this->db->table('pages')->updateOrInsert([
             'locale' => $page->getAttribute('locale'),
             'slug' => $page->getAttribute('slug')
         ], $this->toDbRecord($page));
+        return $page;
     }
 
     /**
@@ -140,6 +109,8 @@ class EloquentPageRegistry extends AbstractPageRegistry
      */
     protected function scratch($localeSlug)
     {
+        parent::scratch($localeSlug);
+
         list($locale, $slug) = explode('/', $localeSlug, 2);
         $this->db->table('pages')->where(['locale' => $locale, 'slug' => $slug])->delete();
     }
@@ -180,10 +151,10 @@ class EloquentPageRegistry extends AbstractPageRegistry
         $attributes = (array)$values;
         unset($attributes['id']);
         if (isset($attributes['created_at'])) {
-            $attributes['created_at'] = (int)$attributes['created_at'];
+            $attributes['created_at'] = $attributes['created_at'];
         }
         if (isset($attributes['updated_at'])) {
-            $attributes['updated_at'] = (int)$attributes['updated_at'];
+            $attributes['updated_at'] = $attributes['updated_at'];
         }
 
         $data = json_decode($attributes['data'], true);

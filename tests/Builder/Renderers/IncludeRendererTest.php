@@ -2,7 +2,7 @@
 
 use ShvetsGroup\JetPages\Builders\Renderers\Renderer;
 use ShvetsGroup\JetPages\Builders\Renderers\IncludeRenderer;
-use ShvetsGroup\JetPages\Page\ArrayPageRegistry;
+use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
@@ -18,7 +18,7 @@ class IncludeDecoratorTest extends AbstractTestCase
     {
         parent::setUp();
         $this->renderer = new IncludeRenderer();
-        $this->pages = new ArrayPageRegistry();
+        $this->pages = new SimplePageRegistry();
     }
 
     public function testDecorate()

@@ -16,6 +16,9 @@ class JetPagesServiceProvider extends RouteServiceProvider
     {
         parent::register();
 
+        // We set this to know the default locale later, since Laravel might change the original value.
+        config()->set('app.default_locale', config('app.locale', ''));
+
         $this->app->bind('page', Page\Page::class);
         $this->app->singleton('pages', function ($app, $parameters) {
             $driver = config('jetpages.driver', 'cache');
@@ -32,7 +35,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
         });
         $this->app->alias('pages', Page\PageRegistry::class);
 
-        $this->app->singleton('outline', function () {
+        $this->app->singleton('jetpages.outline', function () {
             return new Outline();
         });
         $this->app->singleton('builder', function () {
@@ -61,6 +64,9 @@ class JetPagesServiceProvider extends RouteServiceProvider
         parent::boot($router);
 
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'sg/jetpages');
+        view()->composer('*', 'ShvetsGroup\JetPages\ViewComposers\LocaleComposer');
+        view()->composer('*', 'ShvetsGroup\JetPages\ViewComposers\MenuComposer');
+
         $this->publishes([__DIR__ . '/resources/views' => base_path('resources/views/vendor/sg/jetpages')], 'views');
         $this->publishes([__DIR__ . '/resources/migrations/' => database_path('/migrations')], 'migrations');
     }
@@ -96,10 +102,10 @@ class JetPagesServiceProvider extends RouteServiceProvider
      */
     protected function getDefaultParsers()
     {
-        // TODO: update decorators
         return config('jetpages.content_parsers', [
             '\ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser',
             '\ShvetsGroup\JetPages\Builders\Parsers\NavigationParser',
+            '\ShvetsGroup\JetPages\Builders\Parsers\BreadcrumbParser',
         ]);
     }
 
@@ -110,7 +116,6 @@ class JetPagesServiceProvider extends RouteServiceProvider
      */
     protected function getDefaultRenderers()
     {
-        // TODO: update decorators
         return config('jetpages.content_renderers', [
             '\ShvetsGroup\JetPages\Builders\Renderers\IncludeRenderer',
             '\ShvetsGroup\JetPages\Builders\Renderers\MarkdownRenderer',
@@ -125,9 +130,9 @@ class JetPagesServiceProvider extends RouteServiceProvider
      */
     protected function getDefaultPostProcessors()
     {
-        // TODO: update decorators
         return config('jetpages.content_post_processors', [
             '\ShvetsGroup\JetPages\Builders\PostProcessors\MenuPostProcessor',
+            '\ShvetsGroup\JetPages\Builders\PostProcessors\RedirectsPostProcessor',
         ]);
     }
 }

@@ -12,7 +12,7 @@ class Page implements Arrayable
     public function __construct(array $attributes = [])
     {
         if (!isset($attributes['locale'])) {
-            $attributes['locale'] = config('app.locale');
+            $attributes['locale'] = config('app.default_locale', '');
         }
         $this->setAttributes($attributes, true);
     }
@@ -24,6 +24,11 @@ class Page implements Arrayable
      * @throws PageException
      */
     function localeSlug($slugField = 'slug') {
+        // We cache the value during page object life time.
+        if ($slugField == 'slug' && $localeSlug = $this->getAttribute('localeSlug')) {
+            return $localeSlug;
+        }
+
         if (!isset($this->attributes[$slugField])) {
             if ($slugField == 'slug') {
                 throw new PageException("Page requires a slug field.");
@@ -32,9 +37,16 @@ class Page implements Arrayable
                 return null;
             }
         }
+
         $locale = $this->getAttribute('locale');
         $slug = $this->getAttribute($slugField);
-        return $this->makeLocaleSlug($locale, $slug);
+        $localeSlug = $this->makeLocaleSlug($locale, $slug);
+
+        if ($slugField == 'slug') {
+            $this->setAttribute('localeSlug', $localeSlug);
+        }
+
+        return $localeSlug;
     }
 
     /**
@@ -79,6 +91,9 @@ class Page implements Arrayable
             if (!$force) {
                 array_set($this->attributes, 'oldSlug', array_get($this->attributes, 'slug'));
             }
+        }
+        if ($key == 'slug' || $key == 'locale') {
+            unset($this->attributes['localeSlug']);
         }
         array_set($this->attributes, $key, $value);
         return $this;
@@ -137,7 +152,7 @@ class Page implements Arrayable
      * @return array
      */
     static function extractLocale($uri, $localeInUrl = null) {
-        $defaultLocale = config('app.locale', '');
+        $defaultLocale = config('app.default_locale', '');
         $defaultLocaleIsInUrl = $localeInUrl === null ? config('jetpages.default_locale_in_url', true) : $localeInUrl;
         $uri_has_parts = strpos($uri, '/') !== false;
 
@@ -200,7 +215,7 @@ class Page implements Arrayable
     static function makeLocaleUri($locale, $slug) {
         $uri = static::slugToUri($slug);
 
-        $locale_prefix = (!$locale || $locale == config('app.locale')) ? '' : $locale . '/';
+        $locale_prefix = (!$locale || $locale == config('app.default_locale', '')) ? '' : $locale . '/';
 
         if ($locale_prefix && $uri == '/') {
             return $locale;
@@ -253,7 +268,24 @@ class Page implements Arrayable
     public function toArray()
     {
         $result = $this->attributes ?: [];
+        unset($result['localeSlug']);
+        return $result;
+    }
+
+    /**
+     * Convert page to array, suitable for rendering in view.
+     * @return array
+     */
+    public function renderArray()
+    {
+        $result = $this->toArray();
         $result['uri'] = $this->uri();
+
+        $locales = config('laravellocalization.supportedLocales') ?: [config('app.default_locale') => []];
+        $result['locale_uri'] = [];
+        foreach ($locales as $locale => $data) {
+            $result['uris'][$locale] = Page::makeLocaleUri($locale, $this->getAttribute('slug'));
+        }
         return $result;
     }
 

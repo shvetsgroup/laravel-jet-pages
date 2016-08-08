@@ -2,7 +2,7 @@
 
 use ShvetsGroup\JetPages\Builders\Parsers\Parser;
 use ShvetsGroup\JetPages\Builders\Parsers\NavigationParser;
-use ShvetsGroup\JetPages\Page\ArrayPageRegistry;
+use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
@@ -28,7 +28,7 @@ class NavigationParserTest extends AbstractTestCase
             $test_result[$i] = ['uri' => $i, 'title' => $i];
             $pages[$i] = new Page(['slug' => $i, 'title' => $i]);
         }
-        $registry = new ArrayPageRegistry($pages);
+        $registry = new SimplePageRegistry($pages);
 
         app('outline')->getFlatOutline([
             'test0' => ['test-1' => 1],

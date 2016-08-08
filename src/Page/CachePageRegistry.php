@@ -1,15 +1,35 @@
 <?php namespace ShvetsGroup\JetPages\Page;
 
-class CachePageRegistry extends AbstractPageRegistry
+class CachePageRegistry extends SimplePageRegistry
 {
     /**
      * @var \Illuminate\Contracts\Cache\Store
      */
     private $cache;
 
-    public function __construct()
+    public function __construct(array $pages = [])
     {
+        parent::__construct($pages);
         $this->cache = app('cache.store')->tags('jetpages');
+    }
+
+    /**
+     * Get the array of all page objects.
+     * @return Page[]
+     */
+    public function getAll()
+    {
+        if ($pages = parent::getAll()) {
+            return $pages;
+        }
+
+        $index = $this->index();
+        $this->pages = [];
+        foreach ($index as $localeSlug => $updated_at) {
+            $page = $this->findBySlug('', $localeSlug);
+            $this->add($page);
+        }
+        return $this->pages;
     }
 
     /**
@@ -17,6 +37,7 @@ class CachePageRegistry extends AbstractPageRegistry
      */
     public function reset()
     {
+        parent::reset();
         $this->cache->flush();
     }
 
@@ -26,7 +47,12 @@ class CachePageRegistry extends AbstractPageRegistry
      */
     public function index()
     {
-        return $this->cache->get("jetpage_index", []);
+        if ($index = parent::index()) {
+            return $index;
+        }
+
+        $this->index = $this->cache->get("jetpage_index", []);
+        return $this->index;
     }
 
     /**
@@ -38,12 +64,16 @@ class CachePageRegistry extends AbstractPageRegistry
      */
     public function findBySlug($locale, $slug)
     {
+        if ($page = parent::findBySlug($locale, $slug)) {
+            return $page;
+        }
+
         $localeSlug = Page::makeLocaleSlug($locale, $slug);
+        $data = $this->cache->get("jetpage:{$localeSlug}");
 
-        $page = $this->cache->get("jetpage:{$localeSlug}");
-
-        if ($page) {
-            return new Page($page, $this->cache);
+        if ($data) {
+            $page = new Page($data);
+            return $page;
         } else {
             return null;
         }
@@ -51,7 +81,7 @@ class CachePageRegistry extends AbstractPageRegistry
 
     /**
      * Get (or set) the time of last page update.
-     * @return int
+     * @return string
      */
     public function lastUpdatedTime()
     {
@@ -68,8 +98,9 @@ class CachePageRegistry extends AbstractPageRegistry
      * @param Page $page
      * @return Page
      */
-    protected function write(Page $page)
+    public function save(Page $page)
     {
+        parent::save($page);
         $localeSlug = $page->localeSlug();
         $this->updateIndex($localeSlug, $page->updated_at);
         $this->cache->forever("jetpage:$localeSlug", $page->toArray());
@@ -83,6 +114,7 @@ class CachePageRegistry extends AbstractPageRegistry
      */
     protected function scratch($localeSlug)
     {
+        parent::scratch($localeSlug);
         $this->updateIndex($localeSlug, 0, true);
         $this->cache->forget("jetpage:$localeSlug");
         $this->cache->forget("jetpage_last_updated");
@@ -91,17 +123,18 @@ class CachePageRegistry extends AbstractPageRegistry
     /**
      * Add or remove a page from index.
      *
-     * @param $slug
+     * @param $localeSlug
      * @param bool $delete
      */
-    private function updateIndex($slug, $time = 0, $delete = false) {
+    private function updateIndex($localeSlug, $time = 0, $delete = false) {
         $index = $this->cache->get("jetpage_index", []);
         if ($delete) {
-            unset($index[$slug]);
+            unset($index[$localeSlug]);
         }
         else {
-            $index[$slug] = $time;
+            $index[$localeSlug] = $time;
         }
         $this->cache->forever("jetpage_index", $index);
+        $this->index = $index;
     }
 }

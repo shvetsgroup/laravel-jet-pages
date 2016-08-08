@@ -73,7 +73,6 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
         $first_updated = $page->updated_at = (new Carbon('2011-01-01'))->format('Y-m-d H:i:s');
         $this->registry->save($page->setAttribute('title', 'test'));
         $this->assertEquals($page->getAttribute('updated_at'), $this->registry->lastUpdatedTime());
-        $this->assertNotEquals($page->getAttribute('updated_at'), $first_updated);
     }
 
     public function testIndex()

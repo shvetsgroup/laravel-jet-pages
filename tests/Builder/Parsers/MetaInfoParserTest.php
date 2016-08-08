@@ -2,7 +2,7 @@
 
 use ShvetsGroup\JetPages\Builders\Parsers\Parser;
 use ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser;
-use ShvetsGroup\JetPages\Page\ArrayPageRegistry;
+use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
@@ -20,7 +20,7 @@ class MetaInfoParserTest extends AbstractTestCase
         parent::setUp();
         $this->parser = new MetaInfoParser();
         $this->data = ['slug' => 'test', 'content' => "---\r\ntitle: Test\r\nslug: new-slug\n---\r\nContent"];
-        $this->pages = new ArrayPageRegistry();
+        $this->pages = new SimplePageRegistry();
     }
 
     public function testDecorate()

@@ -2,15 +2,14 @@
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use League\CommonMark\Converter;
 
 class MarkdownRenderer extends AbstractRenderer
 {
     protected $converter;
 
-    public function __construct(Converter $converter)
+    public function __construct()
     {
-        $this->converter = $converter;
+        $this->converter = app('\League\CommonMark\Converter');
     }
 
     /**
