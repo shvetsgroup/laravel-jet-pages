@@ -66,11 +66,12 @@ class Page implements Arrayable
      * Helper to get attribute.
      *
      * @param $key
+     * @param null $default
      * @return mixed
      */
-    public function getAttribute($key)
+    public function getAttribute($key, $default = null)
     {
-        return array_get($this->attributes, $key);
+        return array_get($this->attributes, $key, $default);
     }
 
     /**
@@ -253,12 +254,64 @@ class Page implements Arrayable
 
     /**
      * Generate valid uri from locale and slug.
+     * @param bool $absolute
      * @return string
      */
-    function uri() {
+    function uri($absolute = false) {
+        $uri = $this->getAttribute('uri');
+        if (!$uri) {
+            $locale = $this->getAttribute('locale');
+            $slug = $this->getAttribute('slug');
+            $uri = static::makeLocaleUri($locale, $slug);
+        }
+        if ($absolute) {
+            return url($uri);
+        }
+        else {
+            return $uri;
+        }
+    }
+
+    /**
+     * Get the translation uris for a page.
+     * @param bool $absolute
+     * @return array
+     */
+    function translationUris($absolute = false) {
+        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
+        if (!is_array($locales) || count($locales) < 2) {
+            return [];
+        }
+
+        $locale_uris = [];
+        $pages = app('pages');
+        $this_locale = $this->getAttribute('locale');
+        $this_slug = $this->getAttribute('slug');
+        foreach ($locales as $locale => $data) {
+            if ($locale == $this_locale) {
+                continue;
+            }
+            if ($page = $pages->findBySlug($locale, $this_slug)) {
+                $locale_uris[$locale] = $page->uri($absolute);
+            }
+        }
+
+        if (count($locale_uris) < 2) {
+            return [];
+        }
+
+        return $locale_uris;
+    }
+
+    /**
+     * Return all alternative uris of a page.
+     *
+     * @param bool $absolute
+     * @return array
+     */
+    function alternativeUris($absolute = false) {
         $locale = $this->getAttribute('locale');
-        $slug = $this->getAttribute('slug');
-        return static::makeLocaleUri($locale, $slug);
+        return array_merge([$locale => $this->uri($absolute)], $this->translationUris($absolute));
     }
 
     /**
@@ -268,6 +321,7 @@ class Page implements Arrayable
     public function toArray()
     {
         $result = $this->attributes ?: [];
+        $result['uri'] = $this->uri();
         unset($result['localeSlug']);
         return $result;
     }
@@ -280,13 +334,24 @@ class Page implements Arrayable
     {
         $result = $this->toArray();
         $result['uri'] = $this->uri();
-
-        $locales = config('laravellocalization.supportedLocales') ?: [config('app.default_locale') => []];
-        $result['locale_uri'] = [];
-        foreach ($locales as $locale => $data) {
-            $result['uris'][$locale] = Page::makeLocaleUri($locale, $this->getAttribute('slug'));
-        }
+        $result['alternativeUris'] = $this->alternativeUris();
         return $result;
+    }
+
+    /**
+     * Render page to HTML.
+     *
+     * @return string
+     */
+    public function render()
+    {
+        $view = $this->getAttribute('view') ?: 'page';
+        foreach ([$view, "sg/jetpages::$view"] as $v) {
+            if (view()->exists($v)) {
+                $view = $v;
+            }
+        }
+        return view($view, $this->renderArray())->render();
     }
 
     /**

@@ -4,6 +4,7 @@ use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use GrahamCampbell\TestBench\AbstractPackageTestCase;
 use ShvetsGroup\JetPages\JetPagesServiceProvider;
 use ShvetsGroup\JetPages\Page\Page;
+use Watson\Sitemap\SitemapServiceProvider;
 
 /**
  * This is the abstract test case class.
@@ -45,6 +46,18 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
 //            'strict' => false,
 //            'engine' => null,
 //        ]);
+    }
+
+    /**
+     * Get the required service providers.
+     *
+     * @param \Illuminate\Contracts\Foundation\Application $app
+     *
+     * @return string[]
+     */
+    protected function getRequiredServiceProviders($app)
+    {
+        return [SitemapServiceProvider::class];
     }
 
     /**

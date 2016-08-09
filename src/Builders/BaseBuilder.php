@@ -99,6 +99,16 @@ class BaseBuilder
         $this->postProcessors[] = $post_processor;
     }
 
+    public function deleteDir($path)
+    {
+        if (!file_exists($path)) {
+            return false;
+        }
+        return is_file($path) ?
+            @unlink($path) :
+            array_map([$this, 'deleteDir'], glob($path.'/*')) == @rmdir($path);
+    }
+
     /**
      * Build and save the page maps.
      * @param bool $reset
@@ -226,8 +236,13 @@ class BaseBuilder
         $pages = is_array($pages) ? $pages : [$pages];
         foreach ($this->{$lists[$method]} as $obj_name) {
             $obj = app()->make($obj_name);
-            foreach ($pages as $page) {
-                call_user_func(array($obj, $method), $page, $registry);
+            if ($method != 'postProcess') {
+                foreach ($pages as $page) {
+                    call_user_func(array($obj, $method), $page, $registry);
+                }
+            }
+            else {
+                call_user_func(array($obj, $method), $pages, $registry);
             }
         }
     }

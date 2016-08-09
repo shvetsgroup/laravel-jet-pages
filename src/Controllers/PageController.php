@@ -40,13 +40,9 @@ class PageController extends Controller
             $page = $this->pages->findByUriOrFail($uri);
         }
 
-        $view = $page->getAttribute('view') ?: 'page';
-        foreach ([$view, "sg/jetpages::$view"] as $v) {
-            if (view()->exists($v)) {
-                $view = $v;
-            }
-        }
-        return response()->view($view, $page->renderArray());
+        request()->route()->setParameter('cache', $page->getAttribute('cache', true));
+
+        return $page->render();
     }
 
     /**

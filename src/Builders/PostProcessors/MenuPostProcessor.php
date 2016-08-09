@@ -23,10 +23,10 @@ class MenuPostProcessor implements PostProcessor
     }
 
     /**
-     * @param Page $page
+     * @param Page[] $updatedPages
      * @param PageRegistry $registry
      */
-    public function postProcess(Page $page, PageRegistry $registry)
+    public function postProcess(array $updatedPages, PageRegistry $registry)
     {
         $path = content_path('menu.yml');
 

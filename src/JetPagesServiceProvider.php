@@ -4,6 +4,8 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Routing\Router;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
 use ShvetsGroup\JetPages\Builders\Outline;
+use ShvetsGroup\JetPages\Builders\StaticCache;
+use ShvetsGroup\JetPages\Middleware\StaticCache as StaticCacheMiddleware;
 
 class JetPagesServiceProvider extends RouteServiceProvider
 {
@@ -38,6 +40,9 @@ class JetPagesServiceProvider extends RouteServiceProvider
         $this->app->singleton('jetpages.outline', function () {
             return new Outline();
         });
+        $this->app->singleton('jetpages.staticCache', function () {
+            return new StaticCache();
+        });
         $this->app->singleton('builder', function () {
             return new BaseBuilder(
                 $this->getDefaultScanners(),
@@ -69,6 +74,8 @@ class JetPagesServiceProvider extends RouteServiceProvider
 
         $this->publishes([__DIR__ . '/resources/views' => base_path('resources/views/vendor/sg/jetpages')], 'views');
         $this->publishes([__DIR__ . '/resources/migrations/' => database_path('/migrations')], 'migrations');
+
+        $router->middleware('static-cache', StaticCacheMiddleware::class);
     }
 
     /**
@@ -133,6 +140,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
         return config('jetpages.content_post_processors', [
             '\ShvetsGroup\JetPages\Builders\PostProcessors\MenuPostProcessor',
             '\ShvetsGroup\JetPages\Builders\PostProcessors\RedirectsPostProcessor',
+            '\ShvetsGroup\JetPages\Builders\PostProcessors\StaticCachePostProcessor',
         ]);
     }
 }
