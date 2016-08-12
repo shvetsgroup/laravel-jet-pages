@@ -255,9 +255,10 @@ class Page implements Arrayable
     /**
      * Generate valid uri from locale and slug.
      * @param bool $absolute
+     * @param bool $withoutDomain
      * @return string
      */
-    function uri($absolute = false) {
+    function uri($absolute = false, $withoutDomain = false) {
         $uri = $this->getAttribute('uri');
         if (!$uri) {
             $locale = $this->getAttribute('locale');
@@ -265,7 +266,12 @@ class Page implements Arrayable
             $uri = static::makeLocaleUri($locale, $slug);
         }
         if ($absolute) {
-            return url($uri);
+            $url = url($uri);
+            if ($withoutDomain) {
+                $parsed = parse_url($url);
+                $url = isset($parsed['path']) ? $parsed['path'] : '/';
+            }
+            return $url;
         }
         else {
             return $uri;
@@ -335,6 +341,7 @@ class Page implements Arrayable
         $result = $this->toArray();
         $result['uri'] = $this->uri();
         $result['alternativeUris'] = $this->alternativeUris();
+        $result['href'] = $this->uri(true, true);
         return $result;
     }
 

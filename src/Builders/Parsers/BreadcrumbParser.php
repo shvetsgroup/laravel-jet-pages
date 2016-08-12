@@ -22,7 +22,7 @@ class BreadcrumbParser implements Parser
         foreach ($breadcrumbPaths as $slug) {
             $p = $registry->findBySlug($locale, Page::uriToSlug($slug));
             $breadcrumb[] = [
-                'uri' => $p->uri(),
+                'href' => $p->uri(true, true),
                 'title' => $p->getAttribute('title'),
             ];
         }

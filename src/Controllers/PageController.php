@@ -66,6 +66,6 @@ class PageController extends Controller
     {
         return response()->json([
             'timestamp' => $this->pages->lastUpdatedTime()
-        ]);
+        ], 200, [], JSON_NUMERIC_CHECK);
     }
 }

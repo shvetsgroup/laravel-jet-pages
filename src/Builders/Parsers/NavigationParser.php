@@ -25,7 +25,7 @@ class NavigationParser implements Parser
         $getNavData = function ($locale, $slug) use ($registry) {
             $page = $registry->findBySlug($locale, $slug);
             return [
-                'uri' => $page->uri(),
+                'href' => $page->uri(true, true),
                 'title'  => $page->getAttribute('title'),
             ];
         };

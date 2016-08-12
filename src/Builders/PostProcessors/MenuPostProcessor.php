@@ -58,7 +58,7 @@ class MenuPostProcessor implements PostProcessor
         $result = [];
         $page = $registry->findBySlug($locale, Page::uriToSlug($uri));
         $result['title'] = $page->getAttribute('title_' . $locale);
-        $result['uri'] = $page->uri();
+        $result['href'] = $page->uri(true, true);
 
         if (is_array($menu_item)) {
             if (isset($menu_item['_title'])) {

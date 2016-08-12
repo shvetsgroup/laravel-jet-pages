@@ -21,11 +21,11 @@ class MenuComposer
         if (!$view->offsetExists('locale')) {
             return;
         }
-        if (!$view->offsetExists('uri')) {
+        if (!$view->offsetExists('href')) {
             $uri = '/';
         }
         else {
-            $uri = $view->offsetGet('uri');
+            $uri = $view->offsetGet('href');
         }
 
         $locale = $view->offsetGet('locale');
@@ -39,7 +39,7 @@ class MenuComposer
     {
         if (isset($menu['children'])) {
             foreach ($menu['children'] as $key => &$child) {
-                if ($child['uri'] == $permalink) {
+                if ($child['href'] == $permalink) {
                     $child['class'] = $child['class'] ?? '';
                     $child['class'] .= ' trail active';
                     return true;

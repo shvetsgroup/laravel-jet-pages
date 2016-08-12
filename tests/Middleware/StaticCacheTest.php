@@ -56,8 +56,8 @@ class StaticCacheTest extends AbstractTestCase
     public function testCacheJSON()
     {
         $this->pages->createAndSave(['slug' => 'index']);
-        $this->visit('/ajax/jetpages/timestamp')->seeStatusCode(200);
-        $path = public_path('cache/ajax/jetpages/timestamp');
+        $this->visit('/ajax/jetpages/timestamp.json')->seeStatusCode(200);
+        $path = public_path('cache/ajax/jetpages/timestamp.json');
         $this->assertFileExists($path);
         $this->assertStringStartsNotWith('<!-- Cached on ', file_get_contents($path));
     }

@@ -99,6 +99,7 @@ class BaseBuilder
         $this->postProcessors[] = $post_processor;
     }
 
+    // TODO replace with File::cleanDirectory($directory)
     public function deleteDir($path)
     {
         if (!file_exists($path)) {

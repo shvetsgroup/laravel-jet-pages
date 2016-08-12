@@ -2,7 +2,7 @@
 
 Route::group(['middleware' => ['static-cache']], function () {
     Route::get('sitemap.xml', 'SiteMapController@sitemap');
-    Route::get('ajax/jetpages/timestamp', 'PageController@getContentTimestamp');
+    Route::get('ajax/jetpages/timestamp.json', 'PageController@getContentTimestamp');
 
     // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
     Route::get('/', 'PageController@show');
