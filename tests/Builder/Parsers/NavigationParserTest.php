@@ -25,7 +25,7 @@ class NavigationParserTest extends AbstractTestCase
         $test_result = [];
         $pages = [];
         foreach ($index as $i) {
-            $test_result[$i] = ['uri' => $i, 'title' => $i];
+            $test_result[$i] = ['href' => '/' . $i, 'title' => $i];
             $pages[$i] = new Page(['slug' => $i, 'title' => $i]);
         }
         $registry = new SimplePageRegistry($pages);
