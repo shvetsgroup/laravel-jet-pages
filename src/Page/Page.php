@@ -356,6 +356,7 @@ class Page implements Arrayable
         foreach ([$view, "sg/jetpages::$view"] as $v) {
             if (view()->exists($v)) {
                 $view = $v;
+                break;
             }
         }
         return view($view, $this->renderArray())->render();
