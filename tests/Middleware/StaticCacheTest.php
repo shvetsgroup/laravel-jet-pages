@@ -41,7 +41,7 @@ class StaticCacheTest extends AbstractTestCase
         $this->visit('/test/test')->seeStatusCode(200);
         $path = public_path('cache/test/test/index.html');
         $this->assertFileExists($path);
-        $this->assertStringStartsWith('<!-- Cached on ', file_get_contents($path));
+        $this->assertContains('<!-- Cached on ', file_get_contents($path));
     }
 
     public function testCacheSitemap()
@@ -50,7 +50,7 @@ class StaticCacheTest extends AbstractTestCase
         $this->visit('/sitemap.xml')->seeStatusCode(200);
         $path = public_path('cache/sitemap.xml');
         $this->assertFileExists($path);
-        $this->assertStringStartsNotWith('<!-- Cached on ', file_get_contents($path));
+        $this->assertNotContains('<!-- Cached on ', file_get_contents($path));
     }
 
     public function testCacheJSON()
@@ -59,7 +59,7 @@ class StaticCacheTest extends AbstractTestCase
         $this->visit('/ajax/jetpages/timestamp.json')->seeStatusCode(200);
         $path = public_path('cache/ajax/jetpages/timestamp.json');
         $this->assertFileExists($path);
-        $this->assertStringStartsNotWith('<!-- Cached on ', file_get_contents($path));
+        $this->assertNotContains('<!-- Cached on ', file_get_contents($path));
     }
 
     public function testNoCache()
