@@ -74,6 +74,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
 
         $this->publishes([__DIR__ . '/resources/views' => base_path('resources/views/vendor/sg/jetpages')], 'views');
         $this->publishes([__DIR__ . '/resources/migrations/' => database_path('/migrations')], 'migrations');
+        $this->publishes([__DIR__ . '/resources/config/jetpages.php' => config_path('jetpages.php')], 'config');
 
         $router->middleware('static-cache', StaticCacheMiddleware::class);
     }

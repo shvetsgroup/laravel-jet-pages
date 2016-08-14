@@ -154,7 +154,7 @@ class Page implements Arrayable
      */
     static function extractLocale($uri, $localeInUrl = null) {
         $defaultLocale = config('app.default_locale', '');
-        $defaultLocaleIsInUrl = $localeInUrl === null ? config('jetpages.default_locale_in_url', true) : $localeInUrl;
+        $defaultLocaleIsInUrl = $localeInUrl === null ? config('jetpages.default_locale_in_url', false) : $localeInUrl;
         $uri_has_parts = strpos($uri, '/') !== false;
 
         if ($uri_has_parts) {
@@ -353,7 +353,9 @@ class Page implements Arrayable
     public function render()
     {
         $view = $this->getAttribute('view') ?: 'page';
-        foreach ([$view, "sg/jetpages::$view"] as $v) {
+        $view_providers = array_merge([''], config('jetpages.extra_view_providers', []), ["sg/jetpages"]);
+        foreach ($view_providers as $view_provider) {
+            $v = $view_provider ? $view_provider . '::' . $view : $view;
             if (view()->exists($v)) {
                 $view = $v;
                 break;
