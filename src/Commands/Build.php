@@ -10,7 +10,7 @@ class Build extends Command
      *
      * @var string
      */
-    protected $signature = 'jp:build
+    protected $signature = 'jetpages
                             {--c|clear : Clear all generated data and re-import from scratch.}';
 
     /**
