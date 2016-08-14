@@ -61,7 +61,7 @@ class PageScanner implements Scanner
         $map = [];
         foreach ($files as $file) {
             $page = $this->processFile($file);
-            $map[$page->getAttribute('slug')] = $page;
+            $map[$page->localeSlug()] = $page;
         }
         return $map;
     }
