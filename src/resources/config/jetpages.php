@@ -29,6 +29,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Cache directory
+    |--------------------------------------------------------------------------
+    |
+    | Directory within a public dir where the static cache will be generated.
+    | You will want to configure your webserver to take static pages from there.
+    |
+    */
+    'cache_directory' => 'cache',
+
+    /*
+    |--------------------------------------------------------------------------
     | Content scanners
     |--------------------------------------------------------------------------
     |

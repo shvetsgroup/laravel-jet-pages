@@ -52,7 +52,8 @@ class StaticCache
      * @param bool $is_html
      */
     public function write($path, $content, $is_html = true) {
-        $cache_path = public_path('cache/' . $path);
+        $cache_dir = config('jetpages.cache_dir', 'cache');
+        $cache_path = public_path($cache_dir . '/' . $path);
 
         // Do not create file cache for very long filenames.
         foreach (explode('/', $cache_path) as $part) {

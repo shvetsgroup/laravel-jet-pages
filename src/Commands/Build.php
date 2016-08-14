@@ -11,6 +11,7 @@ class Build extends Command
      * @var string
      */
     protected $signature = 'jetpages
+                            {--d|cache_dir= : Override standard cache directory.}
                             {--c|clear : Clear all generated data and re-import from scratch.}';
 
     /**
@@ -27,6 +28,9 @@ class Build extends Command
     public function handle(BaseBuilder $builder)
     {
         $clear = $this->option('clear');
+        if ($cache_dir = $this->option('cache_dir')) {
+            config(['jetpages.cache_dir' => $cache_dir]);
+        }
         $builder->build($clear);
     }
 }
