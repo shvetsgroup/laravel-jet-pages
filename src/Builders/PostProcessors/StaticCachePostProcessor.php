@@ -11,9 +11,17 @@ class StaticCachePostProcessor implements PostProcessor
      */
     private $staticCache;
 
+    private $localization;
+
     public function __construct()
     {
         $this->staticCache = app('jetpages.staticCache');
+        if (app()->bound('laravellocalization')) {
+            $this->localization = app('laravellocalization');
+        }
+        else {
+            $this->localization = app();
+        }
     }
 
     /**
@@ -22,8 +30,11 @@ class StaticCachePostProcessor implements PostProcessor
      */
     public function postProcess(array $updatedPages, PageRegistry $registry)
     {
+        $current_locale = config('app.locale');
         foreach ($updatedPages as $page) {
+            $this->localization->setLocale($page->getAttribute('locale'));
             $this->staticCache->cachePage($page);
         }
+        $this->localization->setLocale($current_locale);
     }
 }
