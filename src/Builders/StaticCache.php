@@ -25,10 +25,14 @@ class StaticCache
         if (env('APP_DEBUG', false)) return;
         if (!auth()->guest()) return;
         if (!$request->route()->getParameter('cache', true)) return;
+        if ($request->method() != 'GET') return;
+        if ($request->query()) return;
         if ($response->getStatusCode() != 200) return;
 
+        $path = $request->path();
+        $content = $response->getContent();
         $content_type = $response->headers->get('Content-Type');
-        $this->write($request->path(), $response->getContent(), starts_with($content_type, 'text/html'));
+        $this->write($path, $content, starts_with($content_type, 'text/html'));
     }
 
     /**
