@@ -5,6 +5,7 @@ use GrahamCampbell\TestBench\AbstractPackageTestCase;
 use ShvetsGroup\JetPages\JetPagesServiceProvider;
 use ShvetsGroup\JetPages\Page\Page;
 use Watson\Sitemap\SitemapServiceProvider;
+use EllisTheDev\Robots\RobotsServiceProvider;
 
 /**
  * This is the abstract test case class.
@@ -57,7 +58,10 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
      */
     protected function getRequiredServiceProviders($app)
     {
-        return [SitemapServiceProvider::class];
+        return [
+            SitemapServiceProvider::class,
+            RobotsServiceProvider::class
+        ];
     }
 
     /**
@@ -82,7 +86,8 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
                 '--realpath' => realpath(__DIR__ . '/../src/resources/migrations'),
             ]);
         }
-        @link(__DIR__.'/fixture/resources/content', $this->getBasePath() . '/resources/content');
+        @unlink($this->getBasePath() . '/resources/content');
+        symlink(__DIR__.'/fixture/resources/content', $this->getBasePath() . '/resources/content');
     }
 
     /**

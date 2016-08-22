@@ -1,6 +1,7 @@
 <?php
 
 Route::group(['middleware' => ['static-cache']], function () {
+    Route::get('robots.txt', 'RobotsTxtController@robots');
     Route::get('sitemap.xml', 'SiteMapController@sitemap');
     Route::get('ajax/jetpages/timestamp.json', 'PageController@getContentTimestamp');
 
