@@ -27,7 +27,7 @@ class RobotsTxtController extends Controller
             $this->robots->addSitemap('sitemap.xml');
         } else {
             // If you're on any other server, tell everyone to go away.
-            $this->robots->addDisallow('*');
+            $this->robots->addDisallow('/');
         }
 
         return response($this->robots->generate(), 200, ['Content-Type' => 'text/plain']);
