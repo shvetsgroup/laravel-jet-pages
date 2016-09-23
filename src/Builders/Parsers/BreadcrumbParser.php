@@ -23,7 +23,7 @@ class BreadcrumbParser implements Parser
             $p = $registry->findBySlug($locale, Page::uriToSlug($slug));
             $breadcrumb[] = [
                 'href' => $p->uri(true, true),
-                'title' => $p->getAttribute('title'),
+                'title' => $p->getAttribute('title_short') ?: $p->getAttribute('title'),
             ];
         }
         $page->setAttribute('breadcrumb', $breadcrumb);

@@ -61,7 +61,7 @@ class MenuPostProcessor implements PostProcessor
         $page = $registry->findBySlug($locale, Page::uriToSlug($uri));
 
         if ($page) {
-            $result['title'] = $page->getAttribute('title');
+            $result['title'] = $page->getAttribute('title_short') ?: $page->getAttribute('title');
             $result['href'] = $page->uri(true, true);
         }
 

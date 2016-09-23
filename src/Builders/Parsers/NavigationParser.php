@@ -25,11 +25,13 @@ class NavigationParser implements Parser
         $getNavData = function ($locale, $slug) use ($registry) {
             $page = $registry->findBySlug($locale, $slug);
             if (!$page) {
+                // TODO: fix before production.
+                return;
                 throw new \RuntimeException("Can not find page with id '$locale/$slug'.");
             }
             return [
                 'href' => $page->uri(true, true),
-                'title'  => $page->getAttribute('title'),
+                'title'  => $page->getAttribute('title_short') ?: $page->getAttribute('title'),
             ];
         };
 
