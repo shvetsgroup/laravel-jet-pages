@@ -134,7 +134,7 @@ class BaseBuilder
                 $updatedPages[$currentPage->localeSlug()] = $currentPage;
             }
         }
-
+        $persistentRegistry->addAll($updatedPages);
         $this->do('parse', $persistentRegistry, $updatedPages);
         $this->do('render', $persistentRegistry, $updatedPages);
         $this->do('postProcess', $persistentRegistry, $updatedPages);
