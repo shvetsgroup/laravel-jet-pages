@@ -22,6 +22,8 @@ class LocaleComposer
         $locale_prefix = Page::makeLocaleUri($locale, '');
         $view->with('locale', $locale);
         $view->with('locale_prefix', $locale_prefix);
+        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
+        $view->with('locales', $locales);
 
         $script_variables = $view->offsetExists('script_variables') ? $view->offsetGet('script_variables') : [];
         $script_variables['locale'] = $locale;
