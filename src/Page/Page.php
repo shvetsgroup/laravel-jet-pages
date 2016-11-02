@@ -317,7 +317,17 @@ class Page implements Arrayable
      */
     function alternativeUris($absolute = false) {
         $locale = $this->getAttribute('locale');
-        return array_merge([$locale => $this->uri($absolute)], $this->translationUris($absolute));
+        $result = array_merge([$locale => $this->uri($absolute)], $this->translationUris($absolute));
+        ksort($result);
+
+        // Default language first, and rest sorted by alphabet.
+        $default_locale = config('app.default_locale', '');
+        if ($default_locale && isset($result[$default_locale])) {
+            $d = $result[$default_locale];
+            unset($result[$default_locale]);
+            $result = array_merge([$default_locale => $d], $result);
+        }
+        return $result;
     }
 
     /**
