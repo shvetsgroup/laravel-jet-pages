@@ -29,19 +29,25 @@ class MenuPostProcessor implements PostProcessor
     public function postProcess(array $updatedPages, PageRegistry $registry)
     {
         $path = content_path('menu.yml');
-
         if (!$this->files->exists($path)) {
             return;
         }
 
-        $outline = app('jetpages.outline')->getRawOutline($path);
-
-        if (!$outline) {
+        $default_outline = app('jetpages.outline')->getRawOutline($path);
+        if (!$default_outline) {
             return;
         }
 
         $locales = config('laravellocalization.supportedLocales') ?: [config('app.default_locale') => []];
         foreach ($locales as $locale => $data) {
+            $outline = [];
+            $path = content_path("menu-$locale.yml");
+            if ($this->files->exists($path)) {
+                $outline = app('jetpages.outline')->getRawOutline($path);
+            }
+            if (!$outline) {
+                $outline = $default_outline;
+            }
             $menu = [
                 'class' => 'menu-list',
                 'children' => []
