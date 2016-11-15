@@ -11,7 +11,7 @@ class NavigationParser implements Parser
      */
     public function parse(Page $page, PageRegistry $registry)
     {
-        $depths = app('jetpages.outline')->getFlatOutline();
+        $depths = app('jetpages.outline')->getFlatOutline(null, $page->getAttribute('locale'));
         $locale = $page->getAttribute('locale');
         $slug = $page->getAttribute('slug');
         if (!isset($depths[$slug])) {

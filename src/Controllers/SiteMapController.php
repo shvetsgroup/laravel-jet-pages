@@ -37,9 +37,10 @@ class SiteMapController extends Controller
     public function sitemap()
     {
         $pages = $this->pages->getAll();
-        $outline = $this->outline->getFlatOutline();
 
         foreach ($pages as $page) {
+            $outline = $this->outline->getFlatOutline(null, $page->getAttribute('locale'));
+
             $uri = $page->uri();
             if ($uri == '/') {
                 $priority = 1;

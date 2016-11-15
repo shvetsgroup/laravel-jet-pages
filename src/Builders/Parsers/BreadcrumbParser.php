@@ -13,7 +13,7 @@ class BreadcrumbParser implements Parser
     {
         $locale = $page->getAttribute('locale');
 
-        $breadcrumbPaths = $this->getBreadcrumbPaths($page->getAttribute('slug'));
+        $breadcrumbPaths = $this->getBreadcrumbPaths($page->getAttribute('slug'), $locale);
         if (count($breadcrumbPaths) == 1) {
             return;
         }
@@ -21,6 +21,9 @@ class BreadcrumbParser implements Parser
         $breadcrumb = [];
         foreach ($breadcrumbPaths as $slug) {
             $p = $registry->findBySlug($locale, Page::uriToSlug($slug));
+            if (!$p) {
+                throw new \Exception("Can not find page with locale \"$locale\" and slug \"$slug\".");
+            }
             $breadcrumb[] = [
                 'href' => $p->uri(true, true),
                 'title' => $p->getAttribute('title_short') ?: $p->getAttribute('title'),
@@ -29,9 +32,9 @@ class BreadcrumbParser implements Parser
         $page->setAttribute('breadcrumb', $breadcrumb);
     }
 
-    protected function getBreadcrumbPaths($permalink)
+    protected function getBreadcrumbPaths($permalink, $locale)
     {
-        $outline = app('jetpages.outline')->getFlatOutline();
+        $outline = app('jetpages.outline')->getFlatOutline(null, $locale);
 
         $breadcrumb = ['/'];
         if (!isset($outline[$permalink])) {

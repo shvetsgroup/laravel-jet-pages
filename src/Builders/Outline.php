@@ -7,30 +7,32 @@ class Outline
 {
     private $flat_outline = [];
 
-    public function getRawOutline($path = null)
+    public function getRawOutline($path = null, $locale = '')
     {
         $files = app('Illuminate\Filesystem\Filesystem');
-        $path = $path ?: content_path('outline.yml');
-        if ($files->exists($path)) {
-            return Yaml::parse($files->get($path));
+        $candidates = [$path, content_path("outline-$locale.yml"), content_path('outline.yml')];
+        foreach ($candidates as $possible_path) {
+            if ($files->exists($possible_path)) {
+                return Yaml::parse($files->get($possible_path));
+            }
         }
         return null;
     }
 
-    public function getFlatOutline($outline_raw = null)
+    public function getFlatOutline($outline_raw = null, $locale = '')
     {
-        if ($this->flat_outline) {
-            return $this->flat_outline;
+        if (isset($this->flat_outline[$locale])) {
+            return $this->flat_outline[$locale];
         }
 
-        $outline_raw = $outline_raw ?: $this->getRawOutline();
-        if (!$outline_raw) {
-            return $this->flat_outline;
+        $raw = $outline_raw ?: $this->getRawOutline(null, $locale);
+        if (!$raw && $this->flat_outline[$locale]) {
+            return $this->flat_outline[$locale];
         }
 
-        $this->flat_outline = $this->walkOutlineRecursive($outline_raw);
+        $this->flat_outline[$locale] = $this->walkOutlineRecursive($raw);
 
-        return $this->flat_outline;
+        return $this->flat_outline[$locale];
     }
 
     private function walkOutlineRecursive($a, $depth = 1)
