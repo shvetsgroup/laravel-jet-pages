@@ -31,7 +31,13 @@ class MenuComposer
         $locale = $view->offsetGet('locale');
         $menu = Cache::get('menu:' . $locale);
 
-        $this->set_active_trail($menu, $uri);
+        if (!$this->set_active_trail($menu, $uri) && $view->offsetExists('breadcrumb')) {
+            $breadcrumb = $view->offsetGet('breadcrumb');
+            if (is_array($breadcrumb)) {
+                $uri = end($breadcrumb)['href'];
+                $this->set_active_trail($menu, $uri);
+            }
+        }
         $view->offsetSet('menu', $menu);
     }
 

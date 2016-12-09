@@ -13,9 +13,12 @@ class BreadcrumbParser implements Parser
     {
         $locale = $page->getAttribute('locale');
 
-        $breadcrumbPaths = $this->getBreadcrumbPaths($page->getAttribute('slug'), $locale);
-        if (count($breadcrumbPaths) == 1) {
-            return;
+        $breadcrumbPaths = $page->getAttribute('breadcrumb');
+        if (empty($breadcrumbPaths)) {
+            $breadcrumbPaths = $this->getBreadcrumbPaths($page->getAttribute('slug'), $locale);
+            if (count($breadcrumbPaths) == 1) {
+                return;
+            }
         }
 
         $breadcrumb = [];
