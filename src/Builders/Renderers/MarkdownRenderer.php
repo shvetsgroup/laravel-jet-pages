@@ -29,7 +29,7 @@ class MarkdownRenderer extends AbstractRenderer
         // This speeds up references rendering for about 800%.
         static $referencesAdded = false;
         if (!$referencesAdded) {
-            $this->docParser->addReferences($this->getAllReferences($content, $page, $registry));
+            $this->docParser->addReferences($this->getAllReferences($page, $registry));
             $referencesAdded = true;
         }
 
