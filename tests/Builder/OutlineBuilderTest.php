@@ -24,7 +24,8 @@ class OutlineBuilderTest extends AbstractTestCase
 
     public function testGetRawOutlineMissing()
     {
-        $this->assertNull($this->outline->getRawOutline('non-existent-path'));
+        $raw_outline = $this->outline->getRawOutline('non-existent-path');
+        $this->assertEquals(['index' => 1, 'test' => ['test/test' => 1]], $raw_outline);
     }
 
     public function testGetFlatOutline()

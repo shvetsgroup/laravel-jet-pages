@@ -27,10 +27,12 @@ class Build extends Command
      */
     public function handle(BaseBuilder $builder)
     {
+        $start_time = microtime(true);
         $clear = $this->option('clear');
         if ($cache_dir = $this->option('cache_dir')) {
             config(['jetpages.cache_dir' => $cache_dir]);
         }
         $builder->build($clear);
+        print('Content has been successfully re-built in ' . round(microtime(true) - $start_time, 4) . 's');
     }
 }

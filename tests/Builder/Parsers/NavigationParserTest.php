@@ -34,7 +34,12 @@ class NavigationParserTest extends AbstractTestCase
             'test0' => ['test-1' => 1],
             'test1' => 1,
             'test2' => ['test3' => 1, 'test4' => 1]
-        ]);
+        ], 'en');
+
+        $nav = new NavigationParser();
+        foreach ($pages as $p) {
+            $nav->parse($p, $registry);
+        }
 
         $this->parser->parse($pages['test0'], $registry);
         $this->assertEquals(null, $pages['test0']->prev);
