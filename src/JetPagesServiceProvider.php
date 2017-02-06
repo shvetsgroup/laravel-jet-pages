@@ -155,6 +155,6 @@ if (!function_exists('content_path')) {
      */
     function content_path($path = '')
     {
-        return config('jetpages.content_root', resource_path('content')) . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return base_path(config('jetpages.content_root', 'resources/content') . ($path ? DIRECTORY_SEPARATOR . $path : $path));
     }
 }

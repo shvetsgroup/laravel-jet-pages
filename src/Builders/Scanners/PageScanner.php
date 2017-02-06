@@ -60,36 +60,42 @@ class PageScanner implements Scanner
     {
         $map = [];
         foreach ($files as $file) {
-            $page = $this->processFile($file);
-            $map[$page->localeSlug()] = $page;
+            $pages = $this->processFile($file);
+            if (!is_array($pages)) {
+                $pages = [$pages];
+            }
+            foreach ($pages as $page) {
+                $map[$page->localeSlug()] = $page;
+            }
         }
         return $map;
     }
 
     /**
      * @param SplFileInfo $file
-     * @return Page
+     * @return array|Page
      */
     public function processFile(SplFileInfo $file)
+    {
+        return $this->pages->new($this->parseBasicFileInfo($file));
+    }
+
+    public function parseBasicFileInfo(SplFileInfo $file)
     {
         $path = $file->getRelativePathname();
         $extension = pathinfo($path, PATHINFO_EXTENSION);
         $localeSlug = preg_replace("/\.[^.]+$/", "", $path);
         list($locale, $slug) = Page::extractLocale($localeSlug, false);
-        try {
-            return $this->pages->new([
-                'locale' => $locale,
-                'slug' => $slug,
-                'type' => $this->type,
-                'extension' => $extension,
-                'path' => $file->getRealPath(),
-                'content' => $file->getContents(),
-                'updated_at' => date('Y-m-d H:i:s', max($file->getMTime(), $file->getCTime())),
-            ]);
-        }
-        catch (\RuntimeException $e) {
-            return null;
-        }
+        return [
+            'locale' => $locale,
+            'slug' => $slug,
+            'type' => $this->type,
+            'extension' => $extension,
+            'path' => $file->getRealPath(),
+            'relative_path' => preg_replace('|^' . preg_quote(\ShvetsGroup\JetPages\content_path(), '|') . '[\/]*|', '', $file->getRealPath()),
+            'content' => $file->getContents(),
+            'updated_at' => date('Y-m-d H:i:s', max($file->getMTime(), $file->getCTime())),
+        ];
     }
 
     /**
@@ -104,11 +110,12 @@ class PageScanner implements Scanner
         return $this->processFile($file);
     }
 
-    public function getRelativePath($base, $path) {
+    public function getRelativePath($base, $path)
+    {
         // Detect directory separator
         $separator = substr($base, 0, 1);
-        $base = array_slice(explode($separator, rtrim($base,$separator)),1);
-        $path = array_slice(explode($separator, rtrim($path,$separator)),1);
+        $base = array_slice(explode($separator, rtrim($base, $separator)), 1);
+        $path = array_slice(explode($separator, rtrim($path, $separator)), 1);
 
         return implode($separator, array_slice($path, count($base)));
     }

@@ -8,7 +8,6 @@ interface Parser
     /**
      * @param Page $page
      * @param PageRegistry $registry
-     * @return
      */
     public function parse(Page $page, PageRegistry $registry);
 }

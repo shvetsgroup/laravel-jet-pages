@@ -8,6 +8,7 @@ class BreadcrumbParser implements Parser
     /**
      * @param Page $page
      * @param PageRegistry $registry
+     * @throws \RuntimeException
      */
     public function parse(Page $page, PageRegistry $registry)
     {
@@ -25,7 +26,7 @@ class BreadcrumbParser implements Parser
         foreach ($breadcrumbPaths as $slug) {
             $p = $registry->findBySlug($locale, Page::uriToSlug($slug));
             if (!$p) {
-                throw new \Exception("Can not find page with locale \"$locale\" and slug \"$slug\".");
+                throw new \RuntimeException("Can not find page with id '$locale/$slug'.");
             }
             $breadcrumb[] = [
                 'href' => $p->uri(true, true),
