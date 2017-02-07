@@ -131,7 +131,12 @@ class BaseBuilder
             $currentPage = $persistentRegistry->findByUri($currentUri);
             $currentPage = $this->reScan($currentPage);
             if ($currentPage) {
-                $updatedPages[$currentPage->localeSlug()] = $currentPage;
+                if (!is_array($currentPage)) {
+                    $currentPage = [$currentPage];
+                }
+                foreach ($currentPage as $page) {
+                    $updatedPages[$page->localeSlug()] = $page;
+                }
             }
         }
         $persistentRegistry->addAll($updatedPages);
@@ -195,7 +200,7 @@ class BaseBuilder
     /**
      * Scan raw files for basic page information.
      * @param Page $page
-     * @return Page
+     * @return array|Page
      */
     protected function reScan(Page $page)
     {
@@ -211,14 +216,13 @@ class BaseBuilder
         $filepath = dirname($filename);
         foreach ($this->scanners as $scanner_pair) {
             foreach ($scanner_pair['paths'] as $path) {
-                if (strpos($filepath, $path) !== false) {
+                if (strpos($filepath, rtrim($path, '/') . '/') !== false) {
                     $scanner = $this->makeScanner($scanner_pair);
-                    $page = $scanner->scanFile($filename, $path);
-                    return $page;
+                    return $scanner->scanFile($filename, $path);
                 }
             }
         }
-        return null;
+        return [];
     }
 
     /**

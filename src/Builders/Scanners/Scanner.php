@@ -13,7 +13,7 @@ interface Scanner
     /**
      * @param string $filepath
      * @param string $directory
-     * @return Page
+     * @return array|Page
      */
     public function scanFile($filepath, $directory);
 
