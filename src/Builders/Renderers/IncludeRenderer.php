@@ -18,7 +18,14 @@ class IncludeRenderer extends AbstractRenderer
         $regexp = '|!INCLUDE\s+"([^"]*)"|';
         $content = preg_replace_callback($regexp, function($matches) use ($files) {
             $include_path = $matches[1];
-            $contents = $files->get(content_path($include_path));
+
+            $full_path = content_path($include_path);
+            $contents = $files->get($full_path);
+
+            if (preg_match('/\.(png|gif|jpeg)$/', $include_path)) {
+                $contents = '<img src="data:' . mime_content_type($full_path) . ';base64,' . base64_encode($contents) . '">';
+            }
+
             return $contents;
         }, $content);
 
