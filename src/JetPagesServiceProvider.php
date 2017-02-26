@@ -22,14 +22,14 @@ class JetPagesServiceProvider extends RouteServiceProvider
         config()->set('app.default_locale', config('app.locale', ''));
 
         $this->app->bind('page', Page\Page::class);
-        $this->app->singleton('pages', function ($app, $parameters) {
+        $this->app->singleton('pages', function ($app) {
             $driver = config('jetpages.driver', 'cache');
             switch ($driver) {
                 case "cache":
-                    return $this->app->make(Page\CachePageRegistry::class, $parameters);
+                    return $this->app->make(Page\CachePageRegistry::class);
                     break;
                 case "database":
-                    return $this->app->make(Page\EloquentPageRegistry::class, $parameters);
+                    return $this->app->make(Page\EloquentPageRegistry::class);
                     break;
                 default:
                     throw new \Exception("Unknown pages driver '{$driver}'.");
@@ -61,12 +61,10 @@ class JetPagesServiceProvider extends RouteServiceProvider
 
     /**
      * Bootstrap the application services.
-     *
-     * @param Router $router
      */
-    public function boot(Router $router)
+    public function boot()
     {
-        parent::boot($router);
+        parent::boot();
 
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'sg/jetpages');
         view()->composer('*', 'ShvetsGroup\JetPages\ViewComposers\LocaleComposer');
@@ -76,7 +74,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
         $this->publishes([__DIR__ . '/resources/migrations/' => database_path('/migrations')], 'migrations');
         $this->publishes([__DIR__ . '/resources/config/jetpages.php' => config_path('jetpages.php')], 'config');
 
-        $router->middleware('static-cache', StaticCacheMiddleware::class);
+        $this->app['router']->aliasMiddleware('static-cache', StaticCacheMiddleware::class);
     }
 
     /**
