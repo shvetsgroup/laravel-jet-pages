@@ -155,11 +155,20 @@ interface PageRegistry
      */
     public function findInSearchIndex($name, $key);
 
-
     /**
      * @return string
      */
     public function lastUpdatedTime();
+
+    /**
+     * @return string
+     */
+    public function lastBuildTime();
+
+    /**
+     * @return string
+     */
+    public function updateBuildTime();
 
     /**
      * @param Page $freshPage

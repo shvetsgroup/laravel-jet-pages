@@ -10,7 +10,7 @@ class CachePageRegistry extends SimplePageRegistry
     public function __construct(array $pages = [])
     {
         parent::__construct($pages);
-        $this->cache = app('cache.store')->tags('jetpages');
+        $this->cache = app('cache.store');
     }
 
     /**

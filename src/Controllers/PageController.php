@@ -64,8 +64,11 @@ class PageController extends Controller
      */
     public function getContentTimestamp()
     {
+        $lastBuild = $this->pages->lastBuildTime();
+        $lastUpdated = $this->pages->lastUpdatedTime();
+
         return response()->json([
-            'timestamp' => $this->pages->lastUpdatedTime()
+            'timestamp' => $lastBuild ?: $lastUpdated
         ], 200, [], JSON_NUMERIC_CHECK);
     }
 }

@@ -108,7 +108,7 @@ class SimplePageRegistry implements PageRegistry
             arsort($array);
             return $array[0];
         }
-        return 0;
+        return '0';
     }
 
     /**
@@ -371,5 +371,25 @@ class SimplePageRegistry implements PageRegistry
     {
         unset($this->pages[$localeSlug]);
         unset($this->index[$localeSlug]);
+    }
+
+    /**
+     * Get (or set) the time of last page update.
+     * @return string
+     */
+    public function lastBuildTime()
+    {
+        return app('cache.store')->get("jetpages_last_built", '0');
+    }
+
+    /**
+     * Get (or set) the time of last page update.
+     * @return string
+     */
+    public function updateBuildTime()
+    {
+        $time = date('Y-m-d H:i:s');
+        app('cache.store')->forever("jetpages_last_built", $time);
+        return $time;
     }
 }

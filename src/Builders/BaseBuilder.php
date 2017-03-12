@@ -144,6 +144,7 @@ class BaseBuilder
         $this->do('render', $persistentRegistry, $updatedPages);
         $this->do('postProcess', $persistentRegistry, $updatedPages);
         $persistentRegistry->import($updatedPages);
+        $persistentRegistry->updateBuildTime();
     }
 
     /**
