@@ -32,7 +32,7 @@ class PageControllerTest extends AbstractTestCase
             'slug' => 'index',
             'title' => 'Test Index'
         ]);
-        $this->visit('/')->seeStatusCode(200)->seeText('Test Index');
+        $this->get('/')->assertStatus(200)->assertSee('Test Index');
     }
 
     /**
@@ -45,17 +45,16 @@ class PageControllerTest extends AbstractTestCase
             'title' => 'Test title',
             'content' => 'Test content'
         ]);
-        $this->visit('a-page')->seeStatusCode(200)->seeText('Test title')->seeText('Test content');
+        $this->get('a-page')->assertStatus(200)->assertSee('Test title')->assertSee('Test content');
     }
 
     /**
      * Show 404 error when page is not defined.
-     * @expectedException \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
     public function test404()
     {
-        $this->visit('/')->seeStatusCode(404);
-        $this->visit('non-existing-page')->seeStatusCode(404);
+        $this->get('/')->assertStatus(404);
+        $this->get('non-existing-page')->assertStatus(404);
     }
 
     /**
@@ -64,6 +63,6 @@ class PageControllerTest extends AbstractTestCase
     public function testTimestamp()
     {
         $page = $this->pages->createAndSave(['slug' => 'a-page']);
-        $this->visit('ajax/jetpages/timestamp.json')->seeStatusCode(200)->seeJson(['timestamp' => $page->updated_at]);
+        $this->get('ajax/jetpages/timestamp')->assertStatus(200)->assertJson(['timestamp' => $page->updated_at]);
     }
 }

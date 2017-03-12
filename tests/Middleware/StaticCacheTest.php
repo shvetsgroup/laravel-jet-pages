@@ -30,15 +30,15 @@ class StaticCacheTest extends AbstractTestCase
     public function testCacheHTML()
     {
         $this->pages->createAndSave(['slug' => 'index']);
-        $this->visit('/')->seeStatusCode(200);
+        $this->get('/')->assertStatus(200);
         $this->assertFileExists(public_path('cache/index.html'));
 
         $this->pages->createAndSave(['slug' => 'test']);
-        $this->visit('/test')->seeStatusCode(200);
+        $this->get('/test')->assertStatus(200);
         $this->assertFileExists(public_path('cache/test/index.html'));
 
         $this->pages->createAndSave(['slug' => 'test/test']);
-        $this->visit('/test/test')->seeStatusCode(200);
+        $this->get('/test/test')->assertStatus(200);
         $path = public_path('cache/test/test/index.html');
         $this->assertFileExists($path);
         $this->assertContains('<!-- Cached on ', file_get_contents($path));
@@ -47,7 +47,7 @@ class StaticCacheTest extends AbstractTestCase
     public function testCacheSitemap()
     {
         $this->pages->createAndSave(['slug' => 'index']);
-        $this->visit('/sitemap.xml')->seeStatusCode(200);
+        $this->get('/sitemap.xml')->assertStatus(200);
         $path = public_path('cache/sitemap.xml');
         $this->assertFileExists($path);
         $this->assertNotContains('<!-- Cached on ', file_get_contents($path));
@@ -56,8 +56,8 @@ class StaticCacheTest extends AbstractTestCase
     public function testCacheJSON()
     {
         $this->pages->createAndSave(['slug' => 'index']);
-        $this->visit('/ajax/jetpages/timestamp.json')->seeStatusCode(200);
-        $path = public_path('cache/ajax/jetpages/timestamp.json');
+        $this->get('/ajax/jetpages/timestamp')->assertStatus(200);
+        $path = public_path('cache/ajax/jetpages/timestamp');
         $this->assertFileExists($path);
         $this->assertNotContains('<!-- Cached on ', file_get_contents($path));
     }
@@ -65,7 +65,7 @@ class StaticCacheTest extends AbstractTestCase
     public function testNoCache()
     {
         $this->pages->createAndSave(['slug' => 'index', 'cache' => false]);
-        $this->visit('/')->seeStatusCode(200);
+        $this->get('/')->assertStatus(200);
         $this->assertFileNotExists(public_path('cache/index.html'));
     }
 }

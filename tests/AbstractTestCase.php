@@ -34,19 +34,19 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
         parent::getEnvironmentSetUp($app);
         $app->config->set('jetpages.driver', 'cache');
 //        $app->config->set('database.default', 'mysql');
-//        $app->config->set('database.connections.sqlite', [
-//            'driver'   => 'mysql',
-//            'host' => '127.0.0.1',
-//            'port' => '3306',
-//            'database' => 'refactoring',
-//            'username'   => 'root',
-//            'password'   => 'root',
-//            'charset' => 'utf8',
-//            'collation' => 'utf8_unicode_ci',
-//            'prefix' => '',
-//            'strict' => false,
-//            'engine' => null,
-//        ]);
+        $app->config->set('database.connections.sqlite', [
+            'driver'   => 'mysql',
+            'host' => '127.0.0.1',
+            'port' => '3306',
+            'database' => 'refactoring',
+            'username'   => 'root',
+            'password'   => 'root',
+            'charset' => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix' => '',
+            'strict' => false,
+            'engine' => null,
+        ]);
     }
 
     /**
@@ -83,7 +83,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
         if ($this->migrate) {
             $this->artisan('migrate', [
                 '--database' => 'sqlite',
-                '--realpath' => realpath(__DIR__ . '/../src/resources/migrations'),
+                '--path' => realpath(__DIR__ . '/../src/resources/migrations'),
             ]);
         }
         @unlink($this->getBasePath() . '/resources/content');
