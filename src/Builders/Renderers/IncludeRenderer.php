@@ -25,6 +25,9 @@ class IncludeRenderer extends AbstractRenderer
             if (preg_match('/\.(png|gif|jpeg)$/', $include_path)) {
                 $contents = '<img src="data:' . mime_content_type($full_path) . ';base64,' . base64_encode($contents) . '">';
             }
+            else {
+                $contents = rtrim($contents, "\n");
+            }
 
             return $contents;
         }, $content);

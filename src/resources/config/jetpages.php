@@ -74,8 +74,8 @@ return [
     */
     'content_renderers' => [
         '\ShvetsGroup\JetPages\Builders\Renderers\IncludeRenderer',
-        '\ShvetsGroup\JetPages\Builders\Renderers\MarkdownRenderer',
         '\ShvetsGroup\JetPages\Builders\Renderers\EscapePreTagRenderer',
+        '\ShvetsGroup\JetPages\Builders\Renderers\MarkdownRenderer'
     ],
 
     /*

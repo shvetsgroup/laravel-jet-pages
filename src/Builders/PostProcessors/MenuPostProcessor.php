@@ -73,7 +73,7 @@ class MenuPostProcessor implements PostProcessor
 
         if (is_array($menu_item)) {
             if (isset($menu_item['_title'])) {
-                $result['title'] = trans($menu_item['_title'], [], "message", $locale);
+                $result['title'] = trans($menu_item['_title'], [], $locale);
             }
             if (isset($menu_item['_icon'])) {
                 $result['icon'] = $menu_item['_icon'];
