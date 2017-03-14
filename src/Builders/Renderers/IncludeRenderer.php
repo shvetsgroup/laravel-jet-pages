@@ -20,13 +20,18 @@ class IncludeRenderer extends AbstractRenderer
             $include_path = $matches[1];
 
             $full_path = content_path($include_path);
-            $contents = $files->get($full_path);
 
-            if (preg_match('/\.(png|gif|jpeg)$/', $include_path)) {
-                $contents = '<img src="data:' . mime_content_type($full_path) . ';base64,' . base64_encode($contents) . '">';
+            if (preg_match('/\.(png|gif|jpe?g)$/', $include_path)) {
+                if (preg_match('/img:/', $include_path)) {
+                    $full_path = preg_replace('/.*?img:/', '', $full_path);
+                    $contents = '<img src="' . $full_path . '">';
+                }
+                else {
+                    $contents = '<img src="data:' . mime_content_type($full_path) . ';base64,' . base64_encode($files->get($full_path)) . '">';
+                }
             }
             else {
-                $contents = rtrim($contents, "\n");
+                $contents = rtrim($files->get($full_path), "\n");
             }
 
             return $contents;
