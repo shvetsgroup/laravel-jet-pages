@@ -10,7 +10,8 @@
         "laravel/framework": "~5.4",
         "graham-campbell/markdown": "^7.0",
         "watson/sitemap": "~2.0",
-        "ellisthedev/laravel-5-robots": "~0.1.0"
+        "ellisthedev/laravel-5-robots": "~0.1.0",
+        "symfony/yaml": "~3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~5.7",
