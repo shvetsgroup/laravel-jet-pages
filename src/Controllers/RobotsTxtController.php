@@ -27,6 +27,7 @@ class RobotsTxtController extends Controller
             $this->robots->addSitemap(url('sitemap.xml'));
         } else {
             // If you're on any other server, tell everyone to go away.
+            $this->robots->addUserAgent('*');
             $this->robots->addDisallow('/');
         }
 
