@@ -9,4 +9,6 @@ Route::group(['middleware' => ['static-cache']], function () {
     Route::get('{all}', 'PageController@show')->where(['all' => '.*']);
 });
 
-Route::get('ajax/jetpages/timestamp', 'PageController@getContentTimestamp');
+Route::group(['middleware' => ['web']], function () {
+    Route::get('ajax/jetpages/timestamp', 'PageController@getContentTimestamp');
+});
