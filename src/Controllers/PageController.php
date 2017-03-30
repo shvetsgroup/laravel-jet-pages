@@ -68,7 +68,7 @@ class PageController extends Controller
         $lastUpdated = $this->pages->lastUpdatedTime();
 
         return response()->json([
-            'timestamp' => $lastBuild ?: $lastUpdated
+            'timestamp' => strtotime($lastBuild ?: $lastUpdated)
         ], 200, [], JSON_NUMERIC_CHECK)
             ->header('Cache-Control', 'no-cache, private')
             ->header('Content-Type', 'application/json');
