@@ -70,6 +70,7 @@ class PageController extends Controller
         return response()->json([
             'timestamp' => $lastBuild ?: $lastUpdated
         ], 200, [], JSON_NUMERIC_CHECK)
-            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
+            ->header('Cache-Control', 'no-cache, private')
+            ->header('Content-Type', 'application/json');
     }
 }
