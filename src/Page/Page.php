@@ -302,10 +302,6 @@ class Page implements Arrayable
             }
         }
 
-        if (count($locale_uris) < 2) {
-            return [];
-        }
-
         return $locale_uris;
     }
 
