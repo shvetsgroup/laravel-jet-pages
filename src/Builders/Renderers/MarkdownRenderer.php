@@ -41,13 +41,25 @@ class MarkdownRenderer extends AbstractRenderer
 
     private function getAllReferences(Page $page, PageRegistry $registry) {
         $patterns = $registry->getAll();
-        $index = [];
+        $default_locale = config('app.default_locale', '');
+        $page_locale = $page->locale;
+        $index = [$page_locale => [], $default_locale => []];
         foreach ($patterns as $pattern) {
+            if (!in_array($pattern->locale, [$page_locale, $default_locale])) {
+                continue;
+            }
             $title = $pattern->title_en ?: $pattern->title;
             if ($title) {
-                $index[$title] = url(Page::makeLocaleUri($page->locale, $pattern->slug));
+                if (!isset($index[$pattern->locale])) {
+                    $index[$pattern->locale] = [];
+                }
+                $index[$pattern->locale][$title] = url(Page::makeLocaleUri($page->locale, $pattern->slug));
             }
         }
-        return $index;
+        $result = [];
+        foreach ($index as $locale => $pages) {
+            $result = array_merge($result, $pages);
+        }
+        return $result;
     }
 }
