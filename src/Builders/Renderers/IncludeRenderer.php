@@ -19,7 +19,7 @@ class IncludeRenderer extends AbstractRenderer
         $content = preg_replace_callback($regexp, function($matches) use ($files) {
             $include_path = $matches[1];
 
-            $full_path = content_path($include_path);
+            $full_path = base_path($include_path);
 
             if (preg_match('/\.(png|gif|jpe?g)$/', $include_path)) {
                 if (preg_match('/^img:/', $include_path)) {
