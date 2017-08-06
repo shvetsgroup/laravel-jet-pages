@@ -35,7 +35,7 @@ class PageController extends Controller
             }
         }
 
-        if (config('jetpages.rebuild_page_on_view', env('APP_DEBUG', false))) {
+        if (config('jetpages.rebuild_page_on_view', config('app.debug', false))) {
             app('builder')->build(false, $uri);
             $page = $this->pages->findByUriOrFail($uri);
         }

@@ -22,7 +22,7 @@ class StaticCache
      */
     public function handleRequest(Request $request, Response $response)
     {
-        if (env('APP_DEBUG', false)) return;
+        if (config('app.debug', false)) return;
         if (!auth()->guest()) return;
         if (!$request->route()->parameter('cache', true)) return;
         if ($request->method() != 'GET') return;
@@ -40,7 +40,7 @@ class StaticCache
      * @param Page $page
      */
     public function cachePage(Page $page) {
-        if (env('APP_DEBUG', false)) return;
+        if (config('app.debug', false)) return;
         if (!auth()->guest()) return;
         if (!$page->getAttribute('cache', true)) return;
 
