@@ -46,14 +46,16 @@ class MenuComposer
         if (isset($menu['children'])) {
             foreach ($menu['children'] as $key => &$child) {
                 if ($child['href'] == $permalink) {
+                    $child['trail'] = true;
                     $child['class'] = $child['class'] ?? '';
-                    $child['class'] .= ' trail active';
+                    $child['class'] = trim($child['class'] . ' trail active');
                     return true;
                 }
                 if (isset($child['sub_menu'])) {
                     if ($this->set_active_trail($child['sub_menu'], $permalink)) {
+                        $child['trail'] = true;
                         $child['class'] = $child['class'] ?? '';
-                        $child['class'] .= ' trail';
+                        $child['class'] = trim($child['class'] . ' trail');
                         return true;
                     }
                 }
