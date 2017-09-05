@@ -27,10 +27,10 @@ class MarkdownRenderer extends AbstractRenderer
     public function renderContent($content, Page $page, PageRegistry $registry)
     {
         // This speeds up references rendering for about 800%.
-        static $referencesAdded = false;
-        if (!$referencesAdded) {
+        static $referencesAdded = null;
+        if (!$referencesAdded || $referencesAdded != $page->locale) {
             $this->docParser->addReferences($this->getAllReferences($page, $registry));
-            $referencesAdded = true;
+            $referencesAdded = $page->locale;
         }
 
         if ($page->getAttribute('extension') == 'md') {
@@ -40,10 +40,20 @@ class MarkdownRenderer extends AbstractRenderer
     }
 
     private function getAllReferences(Page $page, PageRegistry $registry) {
+        $page_locale = $page->locale;
+
+        static $references = [];
+        if (isset($references[$page_locale])) {
+            return $references[$page_locale];
+        }
+
         $allPages = $registry->getAll();
         $default_locale = config('app.default_locale', '');
-        $page_locale = $page->locale;
-        $index = [$page_locale => [], $default_locale => []];
+
+        $index = [];
+        $index[$page_locale] = [];
+        $index[$default_locale] = [];
+
         foreach ($allPages as $aPage) {
             if (!in_array($aPage->locale, [$page_locale, $default_locale])) {
                 continue;
@@ -63,6 +73,8 @@ class MarkdownRenderer extends AbstractRenderer
         foreach ($index as $locale => $allPages) {
             $result = array_merge($result, $allPages);
         }
-        return $result;
+
+        $references[$page_locale] = $result;
+        return $references[$page_locale];
     }
 }
