@@ -154,7 +154,7 @@ return [
     |
     */
     'sitemap_priority' => [
-        'page' => 'daily',
+        'page' => 'default',
     ],
 
 ];
