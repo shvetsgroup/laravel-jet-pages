@@ -38,6 +38,14 @@ class SiteMapController extends Controller
     {
         $pages = $this->pages->getAll();
 
+        $sitemapChangeFrequency = config('jetpages.sitemap_change_frequency',[
+            'page' => 'daily'
+        ]);
+
+        $sitemapPriorities = config('jetpages.sitemap_priority',[
+            'page' => 'default'
+        ]);
+
         foreach ($pages as $page) {
             $outline = $this->outline->getFlatOutline(null, $page->getAttribute('locale'));
 
@@ -45,7 +53,12 @@ class SiteMapController extends Controller
             if ($uri == '/') {
                 $priority = 1;
             } else {
-                $priority = round(((isset($outline[$uri]) ? (0.5 / max(1, $outline[$uri])) : 0) + 0.5) * 100) / 100;
+                if (isset($sitemapPriorities[$page->type]) && $sitemapPriorities[$page->type] != 'default') {
+                    $priority = $sitemapPriorities[$page->type];
+                }
+                else {
+                    $priority = round(((isset($outline[$uri]) ? (0.5 / max(1, $outline[$uri])) : 0) + 0.5) * 100) / 100;
+                }
             }
 
             $alternativeUris = $page->alternativeUris(true);
@@ -58,7 +71,7 @@ class SiteMapController extends Controller
                 $this->sitemap->addTag(new MultilingualTag(
                     url($uri),
                     $page->updated_at,
-                    'daily',
+                    $sitemapChangeFrequency[$page->type] ?? 'daily',
                     $priority,
                     $alternativeUris
                 ));

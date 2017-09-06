@@ -132,4 +132,29 @@ return [
     |
     */
     'extra_view_providers' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sitemap change frequency
+    |--------------------------------------------------------------------------
+    |
+    | Define sitemap change frequency for various content types.
+    |
+    */
+    'sitemap_change_frequency' => [
+        'page' => 'daily',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sitemap priority
+    |--------------------------------------------------------------------------
+    |
+    | Define sitemap priority for various content types.
+    |
+    */
+    'sitemap_priority' => [
+        'page' => 'daily',
+    ],
+
 ];
