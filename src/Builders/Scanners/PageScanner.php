@@ -61,9 +61,15 @@ class PageScanner implements Scanner
         $map = [];
         foreach ($files as $file) {
             $pages = $this->processFile($file);
+
+            if (!$pages) {
+                continue;
+            }
+
             if (!is_array($pages)) {
                 $pages = [$pages];
             }
+
             foreach ($pages as $page) {
                 $map[$page->localeSlug()] = $page;
             }
