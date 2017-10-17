@@ -352,12 +352,11 @@ class Page implements Arrayable
     }
 
     /**
-     * Render page to HTML.
+     * Fetch a view for rendering.
      *
      * @return string
      */
-    public function render()
-    {
+    public function getRenderableView() {
         $view = $this->getAttribute('view') ?: 'page';
         $view_providers = array_merge([''], config('jetpages.extra_view_providers', []), ["sg/jetpages"]);
         foreach ($view_providers as $view_provider) {
@@ -367,7 +366,17 @@ class Page implements Arrayable
                 break;
             }
         }
-        return view($view, $this->renderArray())->render();
+        return $view;
+    }
+
+    /**
+     * Render page to HTML.
+     *
+     * @return string
+     */
+    public function render()
+    {
+        return view($this->getRenderableView(), $this->renderArray())->render();
     }
 
     /**
