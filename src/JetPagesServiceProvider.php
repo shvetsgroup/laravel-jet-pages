@@ -44,12 +44,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
             return new StaticCache();
         });
         $this->app->singleton('builder', function () {
-            return new BaseBuilder(
-                $this->getDefaultScanners(),
-                $this->getDefaultParsers(),
-                $this->getDefaultRenderers(),
-                $this->getDefaultPostProcessors()
-            );
+            return new BaseBuilder();
         });
         $this->app->alias('builder', BaseBuilder::class);
 
@@ -89,58 +84,6 @@ class JetPagesServiceProvider extends RouteServiceProvider
         $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => 'web'], function () {
             require __DIR__ . '/routes.php';
         });
-    }
-
-    /**
-     * Get default scanner config.
-     *
-     * @return mixed
-     */
-    protected function getDefaultScanners()
-    {
-        return config('jetpages.content_scanners', ['pages']);
-    }
-
-    /**
-     * Get default decorator config.
-     *
-     * @return mixed
-     */
-    protected function getDefaultParsers()
-    {
-        return config('jetpages.content_parsers', [
-            '\ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser',
-            '\ShvetsGroup\JetPages\Builders\Parsers\NavigationParser',
-            '\ShvetsGroup\JetPages\Builders\Parsers\BreadcrumbParser',
-        ]);
-    }
-
-    /**
-     * Get default decorator config.
-     *
-     * @return mixed
-     */
-    protected function getDefaultRenderers()
-    {
-        return config('jetpages.content_renderers', [
-            '\ShvetsGroup\JetPages\Builders\Renderers\IncludeRenderer',
-            '\ShvetsGroup\JetPages\Builders\Renderers\MarkdownRenderer',
-            '\ShvetsGroup\JetPages\Builders\Renderers\EscapePreTagRenderer',
-        ]);
-    }
-
-    /**
-     * Get default decorator config.
-     *
-     * @return mixed
-     */
-    protected function getDefaultPostProcessors()
-    {
-        return config('jetpages.content_post_processors', [
-            '\ShvetsGroup\JetPages\Builders\PostProcessors\MenuPostProcessor',
-            '\ShvetsGroup\JetPages\Builders\PostProcessors\RedirectsPostProcessor',
-            '\ShvetsGroup\JetPages\Builders\PostProcessors\StaticCachePostProcessor',
-        ]);
     }
 }
 

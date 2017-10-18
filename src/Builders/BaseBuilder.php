@@ -7,38 +7,63 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 
 class BaseBuilder
 {
+    protected $pageRegistry;
     protected $scanners = [];
     protected $parsers = [];
     protected $renderers = [];
     protected $postProcessors = [];
 
-    public function __construct($defaultScanners = [], $defaultParsers = [], $defaultRenderers = [], $defaultPostProcessors = [])
+    public function __construct($pageRegistry = null, $scanners = [], $parsers = [], $renderers = [], $postProcessors = [])
     {
-        $scanners = [];
-        foreach ($defaultScanners as $scanner => $paths) {
+        $this->pageRegistry = $pageRegistry ?: app('pages');
+
+        $scanners = $scanners ?: config('jetpages.content_scanners', ['pages']);
+        $scanners = is_array($scanners) ? $scanners : [$scanners];
+        $processedScanners = [];
+        foreach ($scanners as $scanner => $paths) {
             if (!is_array($paths)) {
                 $paths = [$paths];
             }
             if (is_numeric($scanner)) {
                 $scanner = PageScanner::class;
             }
-            if (isset($scanners[$scanner])) {
-                $scanners[$scanner] = array_merge($scanners[$scanner], $paths);
+            if (isset($processedScanners[$scanner])) {
+                $processedScanners[$scanner] = array_merge($processedScanners[$scanner], $paths);
             } else {
-                $scanners[$scanner] = $paths;
+                $processedScanners[$scanner] = $paths;
             }
         }
-
-        foreach ($scanners as $scanner => $paths) {
+        foreach ($processedScanners as $scanner => $paths) {
             $this->registerScanner($scanner, $paths);
         }
-        foreach ($defaultParsers as $parser) {
+
+        $parsers = $parsers ?: config('jetpages.content_parsers', [
+            '\ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser',
+            '\ShvetsGroup\JetPages\Builders\Parsers\NavigationParser',
+            '\ShvetsGroup\JetPages\Builders\Parsers\BreadcrumbParser',
+        ]);
+        $parsers = is_array($parsers) ? $parsers : [$parsers];
+        foreach ($parsers as $parser) {
             $this->registerParser($parser);
         }
-        foreach ($defaultRenderers as $renderer) {
+
+        $renderers = $renderers ?: config('jetpages.content_renderers', [
+            '\ShvetsGroup\JetPages\Builders\Renderers\IncludeRenderer',
+            '\ShvetsGroup\JetPages\Builders\Renderers\MarkdownRenderer',
+            '\ShvetsGroup\JetPages\Builders\Renderers\EscapePreTagRenderer',
+        ]);
+        $renderers = is_array($renderers) ? $renderers : [$renderers];
+        foreach ($renderers as $renderer) {
             $this->registerRenderer($renderer);
         }
-        foreach ($defaultPostProcessors as $postProcessor) {
+
+        $postProcessors = $postProcessors ?: config('jetpages.content_post_processors', [
+            '\ShvetsGroup\JetPages\Builders\PostProcessors\MenuPostProcessor',
+            '\ShvetsGroup\JetPages\Builders\PostProcessors\RedirectsPostProcessor',
+            '\ShvetsGroup\JetPages\Builders\PostProcessors\StaticCachePostProcessor',
+        ]);
+        $postProcessors = is_array($postProcessors) ? $postProcessors : [$postProcessors];
+        foreach ($postProcessors as $postProcessor) {
             $this->registerPostProcessor($postProcessor);
         }
     }
@@ -57,7 +82,10 @@ class BaseBuilder
         }
         $paths = is_array($paths) ? $paths : [$paths];
         foreach ($paths as &$path) {
-            $path = \ShvetsGroup\JetPages\content_path($path);
+            // Relative paths point to content directory.
+            if (!$path || $path[0] !== '/') {
+                $path = \ShvetsGroup\JetPages\content_path($path);
+            }
             if (!is_dir($path)) {
                 throw new BuilderException("Scanner path should be a directory, '$path' given.");
             }
@@ -117,18 +145,16 @@ class BaseBuilder
      */
     public function build($reset = false, $currentUri = null)
     {
-        $persistentRegistry = app('pages');
-
         if ($reset) {
-            $persistentRegistry->reset();
+            $this->pageRegistry->reset();
         }
 
-        $persistentRegistry->getAll();
-        $updatedPages = $this->scan($persistentRegistry, !$reset);
+        $this->pageRegistry->getAll();
+        $updatedPages = $this->scan($this->pageRegistry, !$reset);
 
         $currentPage = null;
         if ($currentUri) {
-            $currentPage = $persistentRegistry->findByUri($currentUri);
+            $currentPage = $this->pageRegistry->findByUri($currentUri);
             $currentPage = $this->reScan($currentPage);
             if ($currentPage) {
                 if (!is_array($currentPage)) {
@@ -139,12 +165,12 @@ class BaseBuilder
                 }
             }
         }
-        $persistentRegistry->addAll($updatedPages);
-        $this->do('parse', $persistentRegistry, $updatedPages);
-        $this->do('render', $persistentRegistry, $updatedPages);
-        $this->do('postProcess', $persistentRegistry, $updatedPages);
-        $persistentRegistry->import($updatedPages);
-        $persistentRegistry->updateBuildTime();
+        $this->pageRegistry->addAll($updatedPages);
+        $this->do('parse', $this->pageRegistry, $updatedPages);
+        $this->do('render', $this->pageRegistry, $updatedPages);
+        $this->do('postProcess', $this->pageRegistry, $updatedPages);
+        $this->pageRegistry->import($updatedPages);
+        $this->pageRegistry->updateBuildTime();
     }
 
     /**
