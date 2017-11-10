@@ -19,8 +19,8 @@ class CreatePagesTable extends Migration
             $table->string('slug')->index();
             $table->string('title', 500)->nullable()->index();
             $table->text('data')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
             $table->unique(['locale', 'slug'], 'locale-slug');
             $table->index(['locale', 'title'], 'locale-title');
         });
