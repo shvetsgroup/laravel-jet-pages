@@ -23,7 +23,8 @@ class Page implements Arrayable
      * @return string
      * @throws PageException
      */
-    function localeSlug($slugField = 'slug') {
+    function localeSlug($slugField = 'slug')
+    {
         // We cache the value during page object life time.
         if ($slugField == 'slug' && $localeSlug = $this->getAttribute('localeSlug')) {
             return $localeSlug;
@@ -32,8 +33,7 @@ class Page implements Arrayable
         if (!isset($this->attributes[$slugField])) {
             if ($slugField == 'slug') {
                 throw new PageException("Page requires a slug field.");
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -132,7 +132,8 @@ class Page implements Arrayable
      * @param $uri
      * @return string
      */
-    static function uriToSlug($uri) {
+    static function uriToSlug($uri)
+    {
         return in_array($uri, ['', '/']) ? 'index' : $uri;
     }
 
@@ -141,7 +142,8 @@ class Page implements Arrayable
      * @param $slug
      * @return string
      */
-    static function slugToUri($slug) {
+    static function slugToUri($slug)
+    {
         return $slug == 'index' ? '/' : $slug;
     }
 
@@ -152,7 +154,8 @@ class Page implements Arrayable
      * @param null $localeInUrl
      * @return array
      */
-    static function extractLocale($uri, $localeInUrl = null) {
+    static function extractLocale($uri, $localeInUrl = null)
+    {
         $defaultLocale = config('app.default_locale', '');
         $defaultLocaleIsInUrl = $localeInUrl === null ? config('jetpages.default_locale_in_url', false) : $localeInUrl;
         $uri_has_parts = strpos($uri, '/') !== false;
@@ -162,25 +165,20 @@ class Page implements Arrayable
             if (static::isValidLocale($locale)) {
                 if ($locale == $defaultLocale && $defaultLocaleIsInUrl) {
                     return [$defaultLocale, $uri];
-                }
-                else {
+                } else {
                     return [$locale, $path];
                 }
-            }
-            else {
+            } else {
                 return [$defaultLocale, $uri];
             }
-        }
-        else {
+        } else {
             if (static::isValidLocale($uri)) {
                 if ($uri == $defaultLocale && $defaultLocaleIsInUrl) {
                     return [$defaultLocale, $uri];
-                }
-                else {
+                } else {
                     return [$uri, ''];
                 }
-            }
-            else {
+            } else {
                 return [$defaultLocale, $uri];
             }
         }
@@ -192,8 +190,18 @@ class Page implements Arrayable
      * @param $string
      * @return bool
      */
-    static function isValidLocale($string) {
-        return strlen($string) == 2;
+    static function isValidLocale($string)
+    {
+        if (strlen($string) != 2) {
+            return false;
+        }
+
+        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
+        if (!isset($locales[$string])) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -203,7 +211,8 @@ class Page implements Arrayable
      * @param $slug
      * @return string
      */
-    static function makeLocaleSlug($locale, $slug) {
+    static function makeLocaleSlug($locale, $slug)
+    {
         return ($locale ? $locale . '/' : '') . $slug;
     }
 
@@ -213,15 +222,15 @@ class Page implements Arrayable
      * @param $slug
      * @return string
      */
-    static function makeLocaleUri($locale, $slug) {
+    static function makeLocaleUri($locale, $slug)
+    {
         $uri = static::slugToUri($slug);
 
         $locale_prefix = (!$locale || $locale == config('app.default_locale', '')) ? '' : $locale . '/';
 
         if ($locale_prefix && $uri == '/') {
             return $locale;
-        }
-        else {
+        } else {
             return $locale_prefix . $uri;
         }
     }
@@ -258,7 +267,8 @@ class Page implements Arrayable
      * @param bool $withoutDomain
      * @return string
      */
-    function uri($absolute = false, $withoutDomain = false) {
+    function uri($absolute = false, $withoutDomain = false)
+    {
         $uri = $this->getAttribute('uri');
         if (!$uri) {
             $locale = $this->getAttribute('locale');
@@ -272,8 +282,7 @@ class Page implements Arrayable
                 $url = isset($parsed['path']) ? $parsed['path'] : '/';
             }
             return $url;
-        }
-        else {
+        } else {
             return $uri;
         }
     }
@@ -283,7 +292,8 @@ class Page implements Arrayable
      * @param bool $absolute
      * @return array
      */
-    function translationUris($absolute = false) {
+    function translationUris($absolute = false)
+    {
         $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
         if (!is_array($locales) || count($locales) < 2) {
             return [];
@@ -311,7 +321,8 @@ class Page implements Arrayable
      * @param bool $absolute
      * @return array
      */
-    function alternativeUris($absolute = false) {
+    function alternativeUris($absolute = false)
+    {
         $locale = $this->getAttribute('locale');
         $result = array_merge([$locale => $this->uri($absolute)], $this->translationUris($absolute));
         ksort($result);
@@ -356,7 +367,8 @@ class Page implements Arrayable
      *
      * @return string
      */
-    public function getRenderableView() {
+    public function getRenderableView()
+    {
         $view = $this->getAttribute('view') ?: 'page';
         $view_providers = array_merge([''], config('jetpages.extra_view_providers', []), ["sg/jetpages"]);
         foreach ($view_providers as $view_provider) {
