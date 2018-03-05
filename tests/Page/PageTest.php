@@ -51,14 +51,38 @@ class PageTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider dataNotIncludeDefaultLocaleInUrl
+     * @dataProvider dataDontIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured
      */
-    public function testNotIncludeDefaultLocaleInUrl($uri, $result)
+    public function testDontIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured($uri, $result)
     {
         app('config')->set(['jetpages.default_locale_in_url' => false]);
         $this->assertEquals($result, Page::uriToLocaleSlugArray($uri));
     }
-    public function dataNotIncludeDefaultLocaleInUrl()
+    public function dataDontIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured()
+    {
+        return [
+            ['/', ['en', 'index']],
+            ['en', ['en', 'index']],
+            ['en/test', ['en', 'test']],
+            ['ru', ['en', 'ru']],
+            ['ru/test', ['en', 'ru/test']],
+        ];
+    }
+
+    /**
+     * @dataProvider dataDontIncludeDefaultLocaleInUrl_WithLanguageSupportConfigured
+     */
+    public function testDontIncludeDefaultLocaleInUrl_WitLanguageSupportConfigured($uri, $result)
+    {
+        app('config')->set(['jetpages.default_locale_in_url' => false]);
+        app('config')->set(['app.default_locale' => 'en']);
+        app('config')->set(['jetpages.supportedLocales' => [
+            'en' => [],
+            'ru' => [],
+        ]]);
+        $this->assertEquals($result, Page::uriToLocaleSlugArray($uri));
+    }
+    public function dataDontIncludeDefaultLocaleInUrl_WithLanguageSupportConfigured()
     {
         return [
             ['/', ['en', 'index']],
@@ -70,14 +94,38 @@ class PageTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider dataIncludeDefaultLocaleInUrl
+     * @dataProvider dataIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured
      */
-    public function testIncludeDefaultLocaleInUrl($uri, $result)
+    public function testIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured($uri, $result)
     {
         app('config')->set(['jetpages.default_locale_in_url' => true]);
         $this->assertEquals($result, Page::uriToLocaleSlugArray($uri));
     }
-    public function dataIncludeDefaultLocaleInUrl()
+    public function dataIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured()
+    {
+        return [
+            ['/', ['en', 'index']],
+            ['en', ['en', 'en']],
+            ['en/test', ['en', 'en/test']],
+            ['ru', ['en', 'ru']],
+            ['ru/test', ['en', 'ru/test']],
+        ];
+    }
+
+    /**
+     * @dataProvider dataIncludeDefaultLocaleInUrl_WithLanguageSupportConfigured
+     */
+    public function testIncludeDefaultLocaleInUrl_WithLanguageSupportConfigured($uri, $result)
+    {
+        app('config')->set(['jetpages.default_locale_in_url' => true]);
+        app('config')->set(['app.default_locale' => 'en']);
+        app('config')->set(['jetpages.supportedLocales' => [
+            'en' => [],
+            'ru' => [],
+        ]]);
+        $this->assertEquals($result, Page::uriToLocaleSlugArray($uri));
+    }
+    public function dataIncludeDefaultLocaleInUrl_WithLanguageSupportConfigured()
     {
         return [
             ['/', ['en', 'index']],

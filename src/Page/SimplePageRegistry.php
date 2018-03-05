@@ -382,7 +382,7 @@ class SimplePageRegistry implements PageRegistry
      */
     public function lastBuildTime()
     {
-        return app('cache.store')->get("jetpages_last_built", '0');
+        return app('cache.store')->get("jetpages_last_built", 0);
     }
 
     /**

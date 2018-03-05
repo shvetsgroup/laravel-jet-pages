@@ -196,7 +196,7 @@ class Page implements Arrayable
             return false;
         }
 
-        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
+        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', [config('app.default_locale') => []]);
         if (!isset($locales[$string])) {
             return false;
         }

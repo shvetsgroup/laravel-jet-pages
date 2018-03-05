@@ -18,7 +18,8 @@ class JetPagesServiceProvider extends RouteServiceProvider
     {
         parent::register();
 
-        // We set this to know the default locale later, since Laravel might change the original value.
+        // We set this to know the default locale later, since Laravel might
+        //change the original value.
         config()->set('app.default_locale', config('app.locale', ''));
 
         $this->app->bind('page', Page\Page::class);

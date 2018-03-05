@@ -63,6 +63,6 @@ class PageControllerTest extends AbstractTestCase
     public function testTimestamp()
     {
         $page = $this->pages->createAndSave(['slug' => 'a-page']);
-        $this->get('ajax/jetpages/timestamp')->assertStatus(200)->assertJson(['timestamp' => $page->updated_at]);
+        $this->get('ajax/jetpages/timestamp')->assertStatus(200)->assertJson(['timestamp' => strtotime($page->updated_at)]);
     }
 }
