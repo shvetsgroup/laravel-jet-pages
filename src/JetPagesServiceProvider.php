@@ -65,10 +65,12 @@ class JetPagesServiceProvider extends RouteServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/resources/migrations');
 
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'sg/jetpages');
-        view()->composer('*', 'ShvetsGroup\JetPages\ViewComposers\LocaleComposer');
-        view()->composer('*', 'ShvetsGroup\JetPages\ViewComposers\MenuComposer');
+        $this->app['view']->composer('*', 'ShvetsGroup\JetPages\ViewComposers\LocaleComposer');
+        $this->app['view']->composer('*', 'ShvetsGroup\JetPages\ViewComposers\MenuComposer');
 
         $this->publishes([__DIR__ . '/resources/views' => base_path('resources/views/vendor/sg/jetpages')], 'views');
+
+        $this->mergeConfigFrom(__DIR__ . '/resources/config/jetpages.php', 'jetpages');
         $this->publishes([__DIR__ . '/resources/config/jetpages.php' => config_path('jetpages.php')], 'config');
 
         $this->app['router']->aliasMiddleware('static-cache', StaticCacheMiddleware::class);
@@ -83,8 +85,24 @@ class JetPagesServiceProvider extends RouteServiceProvider
      */
     public function map(Router $router)
     {
-        $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => 'web'], function () {
-            require __DIR__ . '/routes.php';
+        $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => 'web'], function () use ($router) {
+            $router->get('ajax/jetpages/timestamp', 'PageController@getContentTimestamp');
+
+            $router->group(['middleware' => ['static-cache']], function () use ($router) {
+                $router->get('robots.txt', 'RobotsTxtController@robots');
+                $router->get('sitemap.xml', 'SiteMapController@sitemap');
+            });
+        });
+
+        // Add these routes after bootstrap is done in order to make them last in
+        // the route list. Otherwise, catch-all route will break some other
+        // routes registered after it.
+        $this->app->booted(function () use ($router) {
+            $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => ['web', 'static-cache']], function () use ($router) {
+                // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
+                $router->get('/', 'PageController@show');
+                $router->get('{all}', 'PageController@show')->where(['all' => '.*']);
+            });
         });
     }
 }

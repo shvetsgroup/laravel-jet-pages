@@ -25,7 +25,7 @@ return [
     | this folder.
     |
     */
-    'content_root' => resource_path('content'),
+    'content_root' => 'resources/content',
 
     /*
     |--------------------------------------------------------------------------
