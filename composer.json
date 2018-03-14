@@ -28,5 +28,12 @@
             "ShvetsGroup\\Tests\\JetPages\\": "tests"
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ShvetsGroup\\JetPages\\JetPagesServiceProvider"
+            ]
+        }
+    },
     "prefer-stable": true
 }
