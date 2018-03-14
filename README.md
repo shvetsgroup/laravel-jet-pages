@@ -1,5 +1,4 @@
-Laravel JetPages is a package for Laravel 5.2 for serving pages. It combines speed of staticly generated website with
-flexibility of CMS. It does a lot of stuff out of the box for you:
+Laravel JetPages is a package for Laravel 5.6 that can serve static pages. It combines speed of staticly generated website with the flexibility of CMS. It does a lot of stuff out of the box for you:
 
 1. Generates proper pages from source files.
 2. Stores them in cache or database.
