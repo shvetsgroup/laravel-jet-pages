@@ -4,7 +4,6 @@
     "keywords": ["pages", "content", "laravel", "php"],
     "homepage": "https://github.com/ShvetsGroup/laravel-jet-pages",
     "license": "MIT",
-    "version": "2.0",
     "require": {
         "php": ">=7.1.3",
         "laravel/framework": "5.6.*",
