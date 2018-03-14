@@ -1,6 +1,8 @@
 <?php namespace ShvetsGroup\JetPages\Builders\Renderers;
 
+use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Converter;
+use League\CommonMark\Environment;
 use League\CommonMark\HtmlRenderer;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
@@ -8,11 +10,18 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 class MarkdownRenderer extends AbstractRenderer
 {
     protected $converter;
+
     protected $docParser;
+
+    protected $references = [];
+    protected $referenceLocale = null;
 
     public function __construct()
     {
-        $env = app('markdown.environment');
+        $env = Environment::createCommonMarkEnvironment();
+        $env->mergeConfig([
+            'html_input' => 'allow',
+        ]);
         $renderer = new HtmlRenderer($env);
         $this->docParser = new MarkdownOverrides\CustomDocParser($env);
         $this->converter = new Converter($this->docParser, $renderer);
@@ -26,55 +35,61 @@ class MarkdownRenderer extends AbstractRenderer
      */
     public function renderContent($content, Page $page, PageRegistry $registry)
     {
-        // This speeds up references rendering for about 800%.
-        static $referencesAdded = null;
-        if (!$referencesAdded || $referencesAdded != $page->locale) {
-            $this->docParser->addReferences($this->getAllReferences($page, $registry));
-            $referencesAdded = $page->locale;
-        }
-
         if ($page->getAttribute('extension') == 'md') {
+
+            // This speeds up references rendering for about 800%.
+            if (! isset($this->references[$page->locale])) {
+                $this->references[$page->locale] = $this->getAllReferences($page->locale, $registry);
+            }
+            if ($this->referenceLocale != $page->locale) {
+                $this->docParser->setReferences($this->references[$page->locale]);
+                $this->referenceLocale = $page->locale;
+            }
+
             $content = $this->converter->convertToHtml($content);
         }
+
         return $content;
     }
 
-    private function getAllReferences(Page $page, PageRegistry $registry) {
-        $page_locale = $page->locale;
-
-        static $references = [];
-        if (isset($references[$page_locale])) {
-            return $references[$page_locale];
-        }
-
+    private function getAllReferences($page_locale, PageRegistry $registry)
+    {
         $allPages = $registry->getAll();
+
         $default_locale = config('app.default_locale', '');
 
-        $index = [];
-        $index[$page_locale] = [];
-        $index[$default_locale] = [];
+        $index = [
+            $default_locale => [],
+            $page_locale => [],
+        ];
 
         foreach ($allPages as $aPage) {
-            if (!in_array($aPage->locale, [$page_locale, $default_locale])) {
-                continue;
-            }
-            $title = $aPage->title_en ?: $aPage->title;
-            if ($title) {
-                if (!isset($index[$aPage->locale])) {
-                    $index[$aPage->locale] = [];
+            if ($aPage->locale == $default_locale || $aPage->locale == $page_locale) {
+                $locale = $aPage->getAttribute('locale');
+                $title = $aPage->getAttribute('title');
+
+                $localizedPage = $aPage;
+                if ($page_locale != $default_locale && $aPage->locale == $default_locale) {
+                    $localizedPage = $registry->findBySlug($page_locale, $aPage->slug) ?: $localizedPage;
                 }
-                $url = url(Page::makeLocaleUri($page->locale, $aPage->slug));
-                $parsed = parse_url($url);
-                $url = isset($parsed['path']) ? $parsed['path'] : '/';
-                $index[$aPage->locale][$title] = $url;
+
+                $localizedURL = $localizedPage->uri(true, true);
+                $localizedTitle = $localizedPage->getAttribute('title');
+
+                $index[$locale][$title] = [
+                    'url' => $localizedURL,
+                    'title' => $localizedTitle
+                ];
             }
         }
+
         $result = [];
         foreach ($index as $locale => $allPages) {
             $result = array_merge($result, $allPages);
         }
 
         $references[$page_locale] = $result;
+
         return $references[$page_locale];
     }
 }

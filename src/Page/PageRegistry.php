@@ -85,6 +85,16 @@ interface PageRegistry
      *
      * @param $locale
      * @param $slug
+     * @param $field
+     * @return mixed
+     */
+    public function getPageField($locale, $slug, $field);
+
+    /**
+     * Load a set of fields values from a page by its slug.
+     *
+     * @param $locale
+     * @param $slug
      * @param array $fields
      * @return mixed
      */

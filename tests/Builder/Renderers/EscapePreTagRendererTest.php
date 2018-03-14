@@ -24,7 +24,7 @@ class EscapePreTagRendererTest extends AbstractTestCase
     /**
      * @dataProvider noMetaData
      */
-    public function testDecorate($src, $expected)
+    public function testRender($src, $expected)
     {
         $data = ['slug' => 'test', 'content' => $src];
         $page = new Page($data);

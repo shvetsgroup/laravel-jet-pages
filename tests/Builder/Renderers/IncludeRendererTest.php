@@ -6,7 +6,7 @@ use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
-class IncludeDecoratorTest extends AbstractTestCase
+class IncludeRendererTest extends AbstractTestCase
 {
     /**
      * @var Renderer
@@ -21,7 +21,7 @@ class IncludeDecoratorTest extends AbstractTestCase
         $this->pages = new SimplePageRegistry();
     }
 
-    public function testDecorate()
+    public function testRender()
     {
         $data = ['slug' => 'test', 'content' => "test\n!INCLUDE  \"includes/test.txt\"\ntest"];
         $page = new Page($data);

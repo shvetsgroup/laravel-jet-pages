@@ -2,8 +2,7 @@
 
 use League\CommonMark\Block\Element\AbstractBlock;
 use League\CommonMark\Block\Element\Document;
-use League\CommonMark\Block\Element\InlineContainer;
-use League\CommonMark\Block\Element\ListBlock;
+use League\CommonMark\Block\Element\InlineContainerInterface;
 use League\CommonMark\Block\Element\Paragraph;
 use League\CommonMark\Context;
 use League\CommonMark\ContextInterface;
@@ -28,7 +27,7 @@ class CustomDocParser extends DocParser
     /**
      * @param array $references
      */
-    public function addReferences($references) {
+    public function setReferences($references) {
         $this->references = $references;
     }
     //-------------------------
@@ -96,8 +95,8 @@ class CustomDocParser extends DocParser
         $context = new Context(new Document(), $this->getEnvironment());
 
         //-------------------------
-        foreach ($this->references as $title => $url) {
-            $context->getDocument()->getReferenceMap()->addReference(new Reference($title, $url, $title));
+        foreach ($this->references as $title => $pair) {
+            $context->getDocument()->getReferenceMap()->addReference(new Reference($title, $pair['url'], $pair['title']));
         }
         //-------------------------
 
