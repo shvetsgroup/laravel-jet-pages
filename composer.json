@@ -1,5 +1,5 @@
 {
-    "name": "Laravel jet pages",
+    "name": "laravel-jet-pages",
     "description": "Pages package for Laravel. Fast as a jet plane. Provides markdown support, localization and static cache.",
     "keywords": ["pages", "content", "laravel", "php"],
     "homepage": "https://github.com/ShvetsGroup/laravel-jet-pages",
