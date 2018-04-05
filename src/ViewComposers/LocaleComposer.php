@@ -19,11 +19,15 @@ class LocaleComposer
         }
 
         $locale = $view->offsetExists('locale') ? $view->offsetGet('locale') : app()->getLocale();
-        $locale_prefix = Page::makeLocaleUri($locale, '');
         $view->with('locale', $locale);
+
+        $locale_prefix = Page::makeLocaleUri($locale, '');
         $view->with('locale_prefix', $locale_prefix);
-        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
-        $view->with('locales', $locales);
+
+        if (!$view->offsetExists('locales')) {
+            $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
+            $view->with('locales', $locales);
+        }
 
         $script_variables = $view->offsetExists('script_variables') ? $view->offsetGet('script_variables') : [];
         $script_variables['locale'] = $locale;
