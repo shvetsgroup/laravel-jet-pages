@@ -85,7 +85,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
      */
     public function map(Router $router)
     {
-        $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => 'web'], function () use ($router) {
+        $router->group(['namespace' => __NAMESPACE__ . '\Controllers'], function () use ($router) {
             $router->get('ajax/jetpages/timestamp', 'PageController@getContentTimestamp');
 
             $router->group(['middleware' => ['static-cache']], function () use ($router) {
@@ -98,7 +98,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
         // the route list. Otherwise, catch-all route will break some other
         // routes registered after it.
         $this->app->booted(function () use ($router) {
-            $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => ['web', 'static-cache']], function () use ($router) {
+            $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => ['static-cache']], function () use ($router) {
                 // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
                 $router->get('/', 'PageController@show');
                 $router->get('{all}', 'PageController@show')->where(['all' => '.*']);
