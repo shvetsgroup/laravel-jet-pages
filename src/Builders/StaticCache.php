@@ -22,17 +22,19 @@ class StaticCache
      */
     public function handleRequest(Request $request, Response $response)
     {
-        if (config('app.debug', false)) return;
-        if (!auth()->guest()) return;
-        if (!$request->route()->parameter('cache', true)) return;
-        if ($request->method() != 'GET') return;
-        if ($request->query()) return;
-        if ($response->getStatusCode() != 200) return;
+        if (config('app.debug', false)) return false;
+        if (!auth()->guest()) return false;
+        if (!$request->route()->parameter('cache', true)) return false;
+        if ($request->method() != 'GET') return false;
+        if ($request->query()) return false;
+        if ($response->getStatusCode() != 200) return false;
 
         $path = $request->path();
         $content = $response->getContent();
         $content_type = $response->headers->get('Content-Type');
         $this->write($path, $content, starts_with($content_type, 'text/html'));
+
+        return true;
     }
 
     /**
