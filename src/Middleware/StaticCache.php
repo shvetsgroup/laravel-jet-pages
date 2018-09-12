@@ -24,13 +24,6 @@ class StaticCache
         $staticCache = app('jetpages.staticCache');
         $result = $staticCache->handleRequest($request, $response);
 
-        if ($result && $response->isCacheable()) {
-            if ($response->getMaxAge() === null) {
-                $response->setExpires(new \DateTime("+1 hour"));
-            }
-            $response->setPublic();
-        }
-
         return $response;
     }
 

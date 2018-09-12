@@ -40,9 +40,17 @@ class PageController extends Controller
             $page = $this->pages->findByUriOrFail($uri);
         }
 
-        request()->route()->setParameter('cache', $page->getAttribute('cache', true));
 
-        return $page->render();
+        $response = response()->make($page->render());
+
+        $cache = $page->getAttribute('cache', true);
+        request()->route()->setParameter('cache', $cache);
+
+        if ($cache) {
+            $response->setPublic()->setMaxAge(60 * 5)->setSharedMaxAge(3600 * 24 * 365);
+        }
+
+        return $response;
     }
 
     /**
