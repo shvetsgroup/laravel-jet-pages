@@ -265,10 +265,10 @@ class SimplePageRegistry implements PageRegistry
      * @param $columns
      * @param $caseSensitive
      */
-    public function makeSearchIndex($columns, $caseSensitive = true) {
+    public function makeSearchIndex($columns) {
         $name = join('__', $columns);
         foreach ($this->getAll() as $page) {
-            $key = $this->makeSearchIndexKey($columns, $page, $caseSensitive);
+            $key = $this->makeSearchIndexKey($columns, $page);
             $this->searchIndexes[$name][$key] = $page;
         }
     }
@@ -281,11 +281,11 @@ class SimplePageRegistry implements PageRegistry
      * @param $caseSensitive
      * @return string
      */
-    protected function makeSearchIndexKey($columns, Page $page, $caseSensitive = true) {
+    protected function makeSearchIndexKey($columns, Page $page) {
         $parts = [];
         foreach ($columns as $column) {
             $part = $page->getAttribute($column);
-            $parts[] = $caseSensitive ? $part : strtolower($part);
+            $parts[] = mb_strtolower(trim($part));
         }
         return join('__', $parts);
     }
@@ -297,8 +297,9 @@ class SimplePageRegistry implements PageRegistry
      * @param $key
      * @return Page|null
      */
-    public function findInSearchIndex($name, $key) {
-        return $this->searchIndexes[$name][$key] ?? $this->searchIndexes[$name][strtolower($key)] ?? null;
+    public function findInSearchIndex($name, $key, $caseSensitive = false) {
+        $key = mb_strtolower(trim($key));
+        return $this->searchIndexes[$name][$key] ?? null;
     }
 
     /**

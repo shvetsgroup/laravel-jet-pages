@@ -243,7 +243,7 @@ class BaseBuilder
         $filepath = dirname($filename);
         foreach ($this->scanners as $scanner_pair) {
             foreach ($scanner_pair['paths'] as $path) {
-                if (strpos($filepath, rtrim($path, '/') . '/') !== false) {
+                if (mb_strpos($filepath, rtrim($path, '/') . '/') !== false) {
                     $scanner = $this->makeScanner($scanner_pair);
                     return $scanner->scanFile($filename, $path);
                 }

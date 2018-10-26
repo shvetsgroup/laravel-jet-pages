@@ -158,7 +158,7 @@ class Page implements Arrayable
     {
         $defaultLocale = config('app.default_locale', '');
         $defaultLocaleIsInUrl = $localeInUrl === null ? config('jetpages.default_locale_in_url', false) : $localeInUrl;
-        $uri_has_parts = strpos($uri, '/') !== false;
+        $uri_has_parts = mb_strpos($uri, '/') !== false;
 
         if ($uri_has_parts) {
             list($locale, $path) = explode('/', $uri, 2);
@@ -192,7 +192,7 @@ class Page implements Arrayable
      */
     static function isValidLocale($string)
     {
-        if (strlen($string) != 2) {
+        if (mb_strlen($string) != 2) {
             return false;
         }
 

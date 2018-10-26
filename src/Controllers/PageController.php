@@ -79,7 +79,7 @@ class PageController extends Controller
         return response()->json([
             'timestamp' => $date ? strtotime($date) : 0
         ], 200, [], JSON_NUMERIC_CHECK)
-            ->header('Cache-Control', 'no-cache, private')
+            ->header('Cache-Control', 'no-cache')
             ->header('Content-Type', 'application/json');
     }
 }

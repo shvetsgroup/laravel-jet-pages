@@ -155,7 +155,7 @@ interface PageRegistry
      * @param $columns
      * @param $caseSensitive
      */
-    public function makeSearchIndex($columns, $caseSensitive = true);
+    public function makeSearchIndex($columns);
 
     /**
      * Find page in search index.

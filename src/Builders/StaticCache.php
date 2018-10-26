@@ -63,7 +63,7 @@ class StaticCache
 
         // Do not create file cache for very long filenames.
         foreach (explode('/', $cache_path) as $part) {
-            if (strlen($part) >= 255) {
+            if (mb_strlen($part) >= 255) {
                 return;
             }
         }
