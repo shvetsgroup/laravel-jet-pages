@@ -27,19 +27,18 @@ class PageController extends Controller
 
         $page = $this->pages->findByUri($uri);
 
-        if (!$page) {
+        if (config('jetpages.rebuild_page_on_view', config('app.debug', false))) {
+            app('builder')->build(false, $page ? $page->localeSlug() : []);
+            $page = $this->pages->findByUri($uri);
+        }
+
+        if (!$page || $page->isPrivate()) {
             if ($destination = Cache::get("redirect:{$uri}")) {
                 return redirect($destination, 301);
             } else {
                 return abort(404);
             }
         }
-
-        if (config('jetpages.rebuild_page_on_view', config('app.debug', false))) {
-            app('builder')->build(false, $uri);
-            $page = $this->pages->findByUriOrFail($uri);
-        }
-
 
         $response = response()->make($page->render());
 

@@ -14,7 +14,26 @@ class Page implements Arrayable
         if (!isset($attributes['locale'])) {
             $attributes['locale'] = config('app.default_locale', '');
         }
+        if (!isset($attributes['private'])) {
+            $attributes['private'] = false;
+        }
         $this->setAttributes($attributes, true);
+    }
+
+    /**
+     * Whether a page is accessible via web.
+     * @return bool
+     */
+    function isPrivate():bool {
+        return $this->getAttribute('private', false);
+    }
+
+    /**
+     * Whether a page is not accessible via web.
+     * @return bool
+     */
+    function isPublic():bool {
+        return !$this->isPrivate();
     }
 
     /**

@@ -93,6 +93,7 @@ class PageScanner implements Scanner
         $localeSlug = preg_replace("/\.[^.]+$/", "", $path);
         list($locale, $slug) = Page::extractLocale($localeSlug, false);
         return [
+            'scanner' => get_class($this),
             'locale' => $locale,
             'slug' => $slug,
             'type' => $this->type,

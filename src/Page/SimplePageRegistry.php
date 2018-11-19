@@ -34,6 +34,15 @@ class SimplePageRegistry implements PageRegistry
     }
 
     /**
+     * Get the array of public page objects.
+     * @return Page[]
+     */
+    public function getPublic()
+    {
+        return $this->findAllBy('private', false);
+    }
+
+    /**
      * Import pages from other registry.
      * @param PageRegistry|array $registry
      */
@@ -64,7 +73,7 @@ class SimplePageRegistry implements PageRegistry
      * @param array $attributes
      * @return Page
      */
-    public function new(array $attributes = [])
+    public function new(array $attributes = []): Page
     {
         return new Page($attributes);
     }

@@ -36,7 +36,7 @@ class SiteMapController extends Controller
      */
     public function sitemap()
     {
-        $pages = $this->pages->getAll();
+        $pages = $this->pages->getPublic();
 
         $sitemapChangeFrequency = config('jetpages.sitemap_change_frequency',[
             'page' => 'daily'

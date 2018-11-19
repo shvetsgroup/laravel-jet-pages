@@ -141,31 +141,25 @@ class BaseBuilder
     /**
      * Build and save the page maps.
      * @param bool $reset
-     * @param null $currentUri
+     * @param $pagesToReload
+     * @throws \ShvetsGroup\JetPages\Page\PageException
      */
-    public function build($reset = false, $currentUri = null)
+    public function build($reset = false, $localeSlugsToReload)
     {
         if ($reset) {
             $this->pageRegistry->reset();
         }
-
         $this->pageRegistry->getAll();
-        $updatedPages = $this->scan($this->pageRegistry, !$reset);
 
-        $currentPage = null;
-        if ($currentUri) {
-            $currentPage = $this->pageRegistry->findByUri($currentUri);
-            $currentPage = $this->reScan($currentPage);
-            if ($currentPage) {
-                if (!is_array($currentPage)) {
-                    $currentPage = [$currentPage];
-                }
-                foreach ($currentPage as $page) {
-                    $updatedPages[$page->localeSlug()] = $page;
-                }
-            }
+        if (!$localeSlugsToReload) {
+            $localeSlugsToReload = [];
         }
-        $this->pageRegistry->addAll($updatedPages);
+        else if (!is_array($localeSlugsToReload)) {
+            $localeSlugsToReload = [$localeSlugsToReload];
+        }
+
+        $updatedPages = $this->scan($this->pageRegistry, $localeSlugsToReload);
+
         $this->do('parse', $this->pageRegistry, $updatedPages);
         $this->do('render', $this->pageRegistry, $updatedPages);
         $this->do('postProcess', $this->pageRegistry, $updatedPages);
@@ -178,8 +172,12 @@ class BaseBuilder
      * @param Page[] $pages
      * @return Page[]
      */
-    protected function filterUpdated(PageRegistry $registry, array $pages)
+    protected function getUpdatedPages(PageRegistry $registry, array $pages)
     {
+        if (count($registry->getAll()) == 0) {
+            return $pages;
+        }
+
         $result = [];
         foreach ($pages as $localeSlug => $page) {
             if ($registry->needsUpdate($page)) {
@@ -192,23 +190,42 @@ class BaseBuilder
     /**
      * Scan raw files for basic page information.
      * @param PageRegistry $registry
-     * @param bool $filterUpdated
+     * @param array $localeSlugsToReload
      * @return \ShvetsGroup\JetPages\Page\Page[]
      */
-    protected function scan(PageRegistry $registry, $filterUpdated = true)
+    protected function scan(PageRegistry $registry, $localeSlugsToReload = [])
     {
-        $pages = [];
+        $result = [];
+
         foreach ($this->scanners as $scanner_pair) {
             $scanner = $this->makeScanner($scanner_pair);
+
+            $scannedPages = [];
             foreach ($scanner_pair['paths'] as $path) {
-                $pages = array_merge($pages, $scanner->scanDirectory($path));
+                $scannedPages = $scanner->scanDirectory($path);
             }
+
+            $existingByThisScanner = $registry->findAllBy('scanner', get_class($scanner));
+
+            $absent = array_diff_key($existingByThisScanner, $scannedPages);
+            foreach ($absent as $page) {
+                $registry->delete($page);
+            }
+
+            $updatedPages = $this->getUpdatedPages($registry, $scannedPages);
+
+            foreach ($localeSlugsToReload as $localeSlugToReload) {
+                if (isset($scannedPages[$localeSlugToReload])) {
+                    $updatedPages[$localeSlugToReload] = $scannedPages[$localeSlugToReload];
+                }
+            }
+
+            $result = array_merge($result, $updatedPages);
         }
-        if ($filterUpdated) {
-            $pages = $this->filterUpdated($registry, $pages);
-        }
-        $registry->addAll($pages);
-        return $pages;
+
+        $registry->addAll($result);
+
+        return $result;
     }
 
     /**
@@ -229,7 +246,7 @@ class BaseBuilder
      * @param Page $page
      * @return array|Page
      */
-    protected function reScan(Page $page)
+    protected function reScan($page)
     {
         if (!$page) {
             return null;
@@ -260,12 +277,17 @@ class BaseBuilder
      */
     protected function do($method, PageRegistry $registry, $pages = [])
     {
+        $pages = is_array($pages) ? $pages : [$pages];
         $lists = [
             'parse' => 'parsers',
             'render' => 'renderers',
             'postProcess' => 'postProcessors',
         ];
-        $pages = is_array($pages) ? $pages : [$pages];
+
+        if (empty($pages) && $method != 'postProcess') {
+            return;
+        }
+        
         foreach ($this->{$lists[$method]} as $obj_name) {
             $obj = app()->make($obj_name);
             if ($method != 'postProcess') {

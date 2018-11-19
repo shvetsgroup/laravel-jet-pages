@@ -23,6 +23,12 @@ interface PageRegistry
     public function getAll();
 
     /**
+     * Get the array of public page objects.
+     * @return Page[]
+     */
+    public function getPublic();
+
+    /**
      * Create a new page object.
      * @param array $attributes
      * @return Page
