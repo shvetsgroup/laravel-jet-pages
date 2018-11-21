@@ -144,7 +144,7 @@ class BaseBuilder
      * @param $pagesToReload
      * @throws \ShvetsGroup\JetPages\Page\PageException
      */
-    public function build($reset = false, $localeSlugsToReload)
+    public function build($reset = false, $localeSlugsToReload = [])
     {
         if ($reset) {
             $this->pageRegistry->reset();
