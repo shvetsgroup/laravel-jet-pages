@@ -141,8 +141,7 @@ class BaseBuilder
     /**
      * Build and save the page maps.
      * @param bool $reset
-     * @param $pagesToReload
-     * @throws \ShvetsGroup\JetPages\Page\PageException
+     * @param array $localeSlugsToReload
      */
     public function build($reset = false, $localeSlugsToReload = [])
     {
