@@ -35,7 +35,12 @@ class IncludeRenderer extends AbstractRenderer
                 }
             }
             else {
-                $contents = rtrim($files->get($full_path), "\n");
+                $contents = $files->get($full_path);
+                // Remove BOM, if any.
+                $contents = preg_replace('/^\x{FEFF}/u', '', $contents);
+                // Normalize line-endings.
+                $contents = preg_replace("%(\r\n|\r|\n)%", "\n", $contents);
+                $contents = rtrim($contents, "\n");
             }
 
             return $contents;
