@@ -297,6 +297,7 @@ class BaseBuilder
             else {
                 call_user_func(array($obj, $method), $pages, $registry);
             }
+            $registry->updateIndexes();
         }
     }
 }

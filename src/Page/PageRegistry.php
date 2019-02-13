@@ -81,6 +81,11 @@ interface PageRegistry
     public function saveAll();
 
     /**
+     * @return mixed
+     */
+    public function updateIndexes();
+
+    /**
      * @param Page $page
      * @return $this
      */

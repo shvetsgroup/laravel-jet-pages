@@ -366,6 +366,21 @@ class SimplePageRegistry implements PageRegistry
     }
 
     /**
+     * Update all indexes from existing pages.
+     *
+     * @return mixed|void
+     * @throws PageException
+     */
+    function updateIndexes() {
+        foreach ($this->pages as $localeSlug => $page) {
+            if ($localeSlug !== $page->localeSlug()) {
+                $this->add($page);
+                $this->scratch($localeSlug);
+            }
+        }
+    }
+
+    /**
      * Temporarily add a page to repository. You need to call saveAll to persist them.
      * @param Page $page
      * @return Page
