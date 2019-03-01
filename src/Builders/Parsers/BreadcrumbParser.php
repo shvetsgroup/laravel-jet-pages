@@ -1,5 +1,6 @@
 <?php namespace ShvetsGroup\JetPages\Builders\Parsers;
 
+use Illuminate\Support\Arr;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
@@ -23,14 +24,22 @@ class BreadcrumbParser implements Parser
         }
 
         $breadcrumb = [];
-        foreach ($breadcrumbPaths as $slug) {
+        foreach ($breadcrumbPaths as $path) {
+            if (is_array($path)) {
+                $title = Arr::get($path, 'title');
+                $slug = Arr::get($path, 'slug');
+            }
+            else {
+                $slug = $path;
+            }
+
             $p = $registry->findBySlug($locale, Page::uriToSlug($slug));
             if (!$p) {
                 throw new \RuntimeException("Can not find page with id '$locale/$slug'.");
             }
             $breadcrumb[] = [
                 'href' => $p->uri(true, true),
-                'title' => $p->getAttribute('title_short') ?: $p->getAttribute('title'),
+                'title' => $title ?? ($p->getAttribute('title_short') ?: $p->getAttribute('title')),
             ];
         }
         $page->setAttribute('breadcrumb', $breadcrumb);

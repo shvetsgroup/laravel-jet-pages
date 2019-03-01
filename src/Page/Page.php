@@ -1,5 +1,6 @@
 <?php namespace ShvetsGroup\JetPages\Page;
 
+use Illuminate\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 
 class Page implements Arrayable
@@ -90,7 +91,7 @@ class Page implements Arrayable
      */
     public function getAttribute($key, $default = null)
     {
-        return array_get($this->attributes, $key, $default);
+        return Arr::get($this->attributes, $key, $default);
     }
 
     /**
@@ -109,7 +110,7 @@ class Page implements Arrayable
         if ($key == 'slug') {
             $value = static::uriToSlug($value);
             if (!$force) {
-                array_set($this->attributes, 'oldSlug', array_get($this->attributes, 'slug'));
+                Arr::set($this->attributes, 'oldSlug', array_get($this->attributes, 'slug'));
             }
         }
         if ($key == 'slug' || $key == 'locale') {
