@@ -1,5 +1,7 @@
 <?php namespace ShvetsGroup\JetPages\Page;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 
@@ -406,9 +408,31 @@ class Page implements Arrayable
      *
      * @return string
      */
-    public function render()
+    public function render($reset = false)
     {
-        return view($this->getRenderableView(), $this->renderArray())->render();
+        $cache = $this->getAttribute('cache', true);
+
+        if ($cache && !$reset) {
+            $cacheId = 'jetpage:rendered:' . $this->localeSlug();
+            $cachedOutput = Cache::get($cacheId);
+
+            if ($cachedOutput) {
+                list($date, $output) = explode('#', $cachedOutput, 2);
+                $date = Carbon::parse($date);
+            }
+
+            if ($cachedOutput && $output && $date->gte($this->updated_at)) {
+                return $output;
+            }
+        }
+
+        $output = view($this->getRenderableView(), $this->renderArray())->render();
+
+        if ($cache) {
+            Cache::forever($cacheId, Carbon::now() . '#' . $output);
+        }
+
+        return $output;
     }
 
     /**
