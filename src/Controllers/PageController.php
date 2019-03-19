@@ -27,7 +27,9 @@ class PageController extends Controller
 
         $page = $this->pages->findByUri($uri);
 
-        if (config('jetpages.rebuild_page_on_view', config('app.debug', false))) {
+        $debug = config('jetpages.rebuild_page_on_view', config('app.debug', false));
+
+        if ($debug) {
             app('builder')->build(false, $page ? $page->localeSlug() : []);
             $page = $this->pages->findByUri($uri);
         }
@@ -40,7 +42,7 @@ class PageController extends Controller
             }
         }
 
-        $response = response()->make($page->render());
+        $response = response()->make($page->render($debug));
 
         $cache = $page->getAttribute('cache', true);
         request()->route()->setParameter('cache', $cache);

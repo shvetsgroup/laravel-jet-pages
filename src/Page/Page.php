@@ -413,8 +413,7 @@ class Page implements Arrayable
         $cache = $this->getAttribute('cache', true);
 
         if ($cache && !$reset) {
-            $cacheId = 'jetpage:rendered:' . $this->localeSlug();
-            $cachedOutput = Cache::get($cacheId);
+            $cachedOutput = Cache::get('jetpage:rendered:' . $this->localeSlug());
 
             if ($cachedOutput) {
                 list($date, $output) = explode('#', $cachedOutput, 2);
@@ -429,7 +428,7 @@ class Page implements Arrayable
         $output = view($this->getRenderableView(), $this->renderArray())->render();
 
         if ($cache) {
-            Cache::forever($cacheId, Carbon::now() . '#' . $output);
+            Cache::forever('jetpage:rendered:' . $this->localeSlug(), Carbon::now() . '#' . $output);
         }
 
         return $output;
