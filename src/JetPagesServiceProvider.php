@@ -101,7 +101,19 @@ class JetPagesServiceProvider extends RouteServiceProvider
             $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => ['static-cache']], function () use ($router) {
                 // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
                 $router->get('/', 'PageController@show');
-                $router->get('{all}', 'PageController@show')->where(['all' => '.*']);
+
+                $exceptions = [];
+
+                if ($nova = config('nova.path', '')) {
+                    $nova = trim($nova, '/');
+                    $exceptions[] = $nova . '$';
+                    $exceptions[] = $nova . '/';
+                    $exceptions[] = 'nova-api/';
+                }
+
+                $exceptions = $exceptions ? '(?!' . implode('|', $exceptions). ')' : '';
+
+                $router->get('{all}', 'PageController@show')->where(['all' => '^' . $exceptions . '.*$']);
             });
         });
     }
