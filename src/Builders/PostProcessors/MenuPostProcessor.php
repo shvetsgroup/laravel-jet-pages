@@ -61,14 +61,19 @@ class MenuPostProcessor implements PostProcessor
 
     protected function build_toc_recursive(PageRegistry $registry, $menu_item, $locale, $uri)
     {
-        $result = [
-            'href' => Page::makeLocaleUri($locale, Page::uriToSlug($uri))
-        ];
-        $page = $registry->findBySlug($locale, Page::uriToSlug($uri));
+        if (strlen($uri) > 0 && ($uri[0] == '/' || preg_match('#^https?://#', $uri))) {
+            $result = ['href' => $uri];
+        }
+        else {
+            $result = [
+                'href' => Page::makeLocaleUri($locale, Page::uriToSlug($uri))
+            ];
+            $page = $registry->findBySlug($locale, Page::uriToSlug($uri));
 
-        if ($page) {
-            $result['title'] = $page->getAttribute('title_short') ?: $page->getAttribute('title');
-            $result['href'] = $page->uri(true, true);
+            if ($page) {
+                $result['title'] = $page->getAttribute('title_short') ?: $page->getAttribute('title');
+                $result['href'] = $page->uri(true, true);
+            }
         }
 
         if (is_array($menu_item)) {
