@@ -21,7 +21,7 @@ class LocaleComposer
         $locale = $view->offsetExists('locale') ? $view->offsetGet('locale') : app()->getLocale();
         $view->with('locale', $locale);
 
-        $locale_prefix = Page::makeLocaleUri($locale, '');
+        $locale_prefix = Page::getLocalePrefix($locale);
         $view->with('locale_prefix', $locale_prefix);
 
         if (!$view->offsetExists('locales')) {

@@ -246,15 +246,46 @@ class Page implements Arrayable
      */
     static function makeLocaleUri($locale, $slug)
     {
+        $prefix = static::getLocalePrefix($locale);
         $uri = static::slugToUri($slug);
 
-        $locale_prefix = (!$locale || $locale == config('app.default_locale', '')) ? '' : $locale . '/';
-
-        if ($locale_prefix && $uri == '/') {
+        if ($prefix && $uri == '/') {
             return $locale;
-        } else {
-            return $locale_prefix . $uri;
         }
+
+        return $prefix . $uri;
+    }
+
+    static function getLocalePrefix($locale)
+    {
+        if (!$locale) {
+            return '';
+        }
+
+        $hideDefaultLocaleInUrl = config('laravellocalization.hideDefaultLocaleInURL');
+        if (!$hideDefaultLocaleInUrl) {
+            return $locale . '/';
+        }
+
+        $localeDomains = config('laravellocalization.localeDomains');
+        if (!$localeDomains) {
+            return ($locale == config('app.default_locale', '')) ? '' : $locale . '/';
+        }
+
+        $domain = request()->getHost();
+        foreach ($localeDomains as $d => $localesInDomain) {
+            $localesInDomain = array_wrap($localesInDomain);
+            if (in_array($locale, $localesInDomain)) {
+                $domain = $d;
+            }
+        }
+        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain));
+
+        if ($locale == reset($localesOnThisDomain)) {
+            return '';
+        }
+
+        return $locale . '/';
     }
 
     /**
@@ -292,21 +323,37 @@ class Page implements Arrayable
     function uri($absolute = false, $withoutDomain = false)
     {
         $uri = $this->getAttribute('uri');
+
         if (!$uri) {
             $locale = $this->getAttribute('locale');
             $slug = $this->getAttribute('slug');
             $uri = static::makeLocaleUri($locale, $slug);
         }
-        if ($absolute) {
-            $url = url($uri);
-            if ($withoutDomain) {
-                $parsed = parse_url($url);
-                $url = isset($parsed['path']) ? $parsed['path'] : '/';
-            }
-            return $url;
-        } else {
+
+        if (!$absolute) {
             return $uri;
         }
+
+        $localeDomains = config('laravellocalization.localeDomains');
+        $domain = request()->getHost();
+        foreach ($localeDomains as $d => $localesInDomain) {
+            $localesInDomain = array_wrap($localesInDomain);
+            if (in_array($this->locale, $localesInDomain)) {
+                $domain = $d;
+            }
+        }
+
+        $url = url($uri);
+        if ($localeDomains && isset($localeDomains[$domain])) {
+            $url = preg_replace('#(?<=://)([^/]+?)(?=(/|\?|$))#', $domain, $url);
+        }
+
+        if ($withoutDomain) {
+            $parsed = parse_url($url);
+            $url = isset($parsed['path']) ? $parsed['path'] : '/';
+        }
+
+        return $url;
     }
 
     /**

@@ -1,7 +1,9 @@
 <?php namespace ShvetsGroup\JetPages\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use ShvetsGroup\JetPages\Page\PageRegistry;
+use ShvetsGroup\JetPages\Page\Page;
 use Cache;
 
 class PageController extends Controller
@@ -19,19 +21,21 @@ class PageController extends Controller
     /**
      * Display the specified resource.
      * @param string $uri
+     * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function show($uri = '/')
+    public function show($uri = '/', Request $request)
     {
-        $this->processLocale($uri);
+        list($locale, $slug) = $this->extractLocaleSlug($request->url());
 
-        $page = $this->pages->findByUri($uri);
+        $this->setLocale($locale);
 
-        $debug = config('jetpages.rebuild_page_on_view', config('app.debug', false));
+        $page = $this->pages->findBySlug($locale, $slug);
 
-        if ($debug) {
+        $rebuildOnEachView = config('jetpages.rebuild_page_on_view', config('app.debug', false));
+        if ($rebuildOnEachView) {
             app('builder')->build(false, $page ? $page->localeSlug() : []);
-            $page = $this->pages->findByUri($uri);
+            $page = $this->pages->findBySlug($locale, $slug);
         }
 
         if (!$page || $page->isPrivate()) {
@@ -42,7 +46,8 @@ class PageController extends Controller
             }
         }
 
-        $response = response()->make($page->render($debug));
+        $html = $page->render($rebuildOnEachView);
+        $response = response()->make($html);
 
         $cache = $page->getAttribute('cache', true);
         request()->route()->setParameter('cache', $cache);
@@ -57,13 +62,93 @@ class PageController extends Controller
     /**
      * If LaravelLocalization package installed, then make sure that uri contains the locale.
      *
-     * @param $uri
-     * @return string
+     * @param $url
+     * @return array [$locale, $slug]
      */
-    public function processLocale($uri)
+    public function extractLocaleSlug($url)
     {
-        if (app()->bound('laravellocalization') && $localization = app('laravellocalization')) {
-            $localization->setLocale(null) ?: $localization->getCurrentLocale();
+        $hasLocalization = app()->bound('laravellocalization') && $localization = app('laravellocalization');
+
+        if (!$hasLocalization) {
+            $locale = app()->getLocale();
+            $slug = Page::uriToSlug(ltrim(parse_url($url)['path'], '/'));
+            return [$locale, $slug];
+        }
+
+        $hasLocaleDomainsConfigured = config('laravellocalization.localeDomains');
+
+        if (!$hasLocaleDomainsConfigured) {
+            $locale = app()->getLocale();
+            $slug = Page::uriToSlug(ltrim(parse_url($url)['path'], '/'));
+            return [$locale, $slug];
+        }
+
+
+        $localeDomains = config('laravellocalization.localeDomains');
+        $hideDefaultLocaleInUrl = config('laravellocalization.hideDefaultLocaleInURL');
+
+        $parts = parse_url($url);
+        $domain = $parts['host'];
+
+        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain));
+        if (!$localesOnThisDomain) {
+            throw new \Exception("Can not determine locale configuration on this domain.");
+        }
+
+        $segments = explode('/', ltrim($parts['path'] ?? '', '/'));
+
+        if (in_array($segments[0], $localesOnThisDomain)) {
+            $locale = $localesOnThisDomain;
+            array_shift($segments);
+            $slug = Page::uriToSlug(implode('/', $segments));
+            return [$locale, $slug];
+        }
+        else if ($hideDefaultLocaleInUrl) {
+            $locale = reset($localesOnThisDomain);
+            $slug = Page::uriToSlug(implode('/', $segments));
+            return [$locale, $slug];
+        }
+        else {
+            throw new \Exception("Locale should be present in the url, but it's not.");
+        }
+    }
+
+    public function setLocale($locale) {
+        $localization = app('laravellocalization');
+
+        $localeDomains = config('laravellocalization.localeDomains');
+
+        if (!$localeDomains) {
+            return $localization->setLocale($locale);
+        }
+
+        $domain = request()->getHost();
+        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain));
+        if (!$localesOnThisDomain) {
+            throw new \Exception("Can not determine locale configuration on this domain.");
+        }
+
+        $defaultLocale = reset($localesOnThisDomain);
+        $r = new \ReflectionObject($localization);
+        $p = $r->getProperty('defaultLocale');
+        $p->setAccessible(true);
+        $p->setValue($localization, $defaultLocale);
+
+        $supportedLocales = config('laravellocalization.supportedLocales');
+        if (empty($supportedLocales) || !is_array($supportedLocales)) {
+            $supportedLocales[$defaultLocale] = ['name' => 'English', 'native' => 'English'];
+        }
+        foreach ($supportedLocales as $locale => $data) {
+            if (!in_array($locale, $localesOnThisDomain)) {
+                unset($supportedLocales[$locale]);
+            }
+        }
+
+        $originalSupportedLocales = $localization->getSupportedLocales();
+        $localization->setSupportedLocales($supportedLocales);
+        $localization->setLocale($locale);
+        if ($originalSupportedLocales) {
+            $localization->setSupportedLocales($originalSupportedLocales);
         }
     }
 
