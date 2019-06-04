@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Page;
+<?php
+
+namespace ShvetsGroup\JetPages\Page;
 
 use Carbon\Carbon;
 
@@ -174,7 +176,7 @@ class SimplePageRegistry implements PageRegistry
      */
     public function findBySlug($locale, $slug)
     {
-        return $this->pages[Page::makeLocaleSlug($locale, $slug)] ?? null;
+        return $this->pages[PageUtils::makeLocaleSlug($locale, $slug)] ?? null;
     }
 
     /**
@@ -185,7 +187,7 @@ class SimplePageRegistry implements PageRegistry
      */
     public function findByUri($uri)
     {
-        list($locale, $slug) = Page::uriToLocaleSlugArray($uri);
+        list($locale, $slug) = PageUtils::uriToLocaleSlugArray($uri);
         return $this->findBySlug($locale, $slug);
     }
 

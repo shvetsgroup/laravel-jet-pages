@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Builders;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages\Builders;
 
 use ShvetsGroup\JetPages\Builders\Outline;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;

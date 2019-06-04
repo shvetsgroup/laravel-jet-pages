@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Middleware;
+<?php
+
+namespace ShvetsGroup\JetPages\Middleware;
 
 use Closure;
 use File;

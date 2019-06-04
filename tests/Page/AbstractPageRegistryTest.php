@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Page;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages\Page;
 
 use Carbon\Carbon;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
@@ -20,7 +22,8 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
             'locale' => 'en',
             'slug' => 'test',
             'title' => 'title',
-            'content' => 'content'
+            'content' => 'content',
+            'private' => false,
         ];
     }
 
@@ -57,12 +60,12 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
         $data = ['slug' => 'index', 'payload' => '1'];
         $this->registry->createAndSave($data);
         $page = $this->registry->findByUri('/');
-        $this->assertPageEquals($data + ['locale' => 'en'], $page);
+        $this->assertPageEquals($data + ['locale' => 'en', 'private' => false], $page);
 
         $data = ['slug' => '/', 'payload' => '2'];
         $this->registry->createAndSave($data);
         $page = $this->registry->findByUri('/');
-        $this->assertPageEquals(['slug' => 'index', 'payload' => '2', 'locale' => 'en'], $page);
+        $this->assertPageEquals(['slug' => 'index', 'payload' => '2', 'locale' => 'en', 'private' => false], $page);
     }
 
     public function testLastUpdated()

@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Builders;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders;
 
 use ShvetsGroup\JetPages\Builders\Scanners\Scanner;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;

@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Page;
+<?php
+
+namespace ShvetsGroup\JetPages\Page;
 
 /**
  * Defines page registry operations.

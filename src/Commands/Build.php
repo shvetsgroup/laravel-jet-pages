@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Commands;
+<?php
+
+namespace ShvetsGroup\JetPages\Commands;
 
 use Illuminate\Console\Command;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;

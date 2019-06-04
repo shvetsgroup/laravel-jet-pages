@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Builders\PostProcessors;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;

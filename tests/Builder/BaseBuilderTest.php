@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Builders;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages\Builders;
 
 use Mockery;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;

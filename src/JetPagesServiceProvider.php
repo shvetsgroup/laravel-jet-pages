@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages;
+<?php
+
+namespace ShvetsGroup\JetPages;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Routing\Router;
@@ -22,7 +24,7 @@ class JetPagesServiceProvider extends RouteServiceProvider
         //change the original value.
         config()->set('app.default_locale', config('app.locale', ''));
 
-        $this->app->bind('page', Page\Page::class);
+        $this->app->bind('page', Page\PageUtils::class);
         $this->app->singleton('pages', function ($app) {
             $driver = config('jetpages.driver', 'cache');
             switch ($driver) {

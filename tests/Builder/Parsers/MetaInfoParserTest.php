@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Builders\Scanners;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages\Builders\Scanners;
 
 use ShvetsGroup\JetPages\Builders\Parsers\Parser;
 use ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser;

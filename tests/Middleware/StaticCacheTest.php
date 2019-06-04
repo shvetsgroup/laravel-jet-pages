@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Middleware;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages\Middleware;
 
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;

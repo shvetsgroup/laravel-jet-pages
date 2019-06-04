@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\ViewComposers;
+<?php
+
+namespace ShvetsGroup\JetPages\ViewComposers;
 
 use Illuminate\View\View;
 use Cache;

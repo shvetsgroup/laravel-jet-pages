@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Controllers;
+<?php
+
+namespace ShvetsGroup\JetPages\Controllers;
 
 use Illuminate\Routing\Controller;
 use EllisTheDev\Robots\Robots;

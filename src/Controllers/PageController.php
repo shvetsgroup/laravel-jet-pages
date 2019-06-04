@@ -1,10 +1,11 @@
-<?php namespace ShvetsGroup\JetPages\Controllers;
+<?php
+
+namespace ShvetsGroup\JetPages\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Page\Page;
-use Cache;
+use ShvetsGroup\JetPages\Page\PageUtils;
 
 class PageController extends Controller
 {
@@ -20,13 +21,17 @@ class PageController extends Controller
 
     /**
      * Display the specified resource.
+     *
      * @param string $uri
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function show($uri = '/', Request $request)
+    public function show($uri = '/')
     {
-        list($locale, $slug) = $this->extractLocaleSlug($request->url());
+        $fullUrl = PageUtils::getBaseUrl() . ltrim($uri, '/');
+
+        list($locale, $uri) = PageUtils::extractLocaleFromURL($fullUrl);
+        $slug = PageUtils::uriToSlug($uri);
 
         $this->setLocale($locale);
 
@@ -39,7 +44,7 @@ class PageController extends Controller
         }
 
         if (!$page || $page->isPrivate()) {
-            if ($destination = Cache::get("redirect:{$uri}")) {
+            if ($destination = cache("redirect:{$uri}")) {
                 return redirect($destination, 301);
             } else {
                 return abort(404);
@@ -60,60 +65,17 @@ class PageController extends Controller
     }
 
     /**
-     * If LaravelLocalization package installed, then make sure that uri contains the locale.
+     * Set app locale.
      *
-     * @param $url
-     * @return array [$locale, $slug]
+     * @param $locale
+     * @throws \ReflectionException
      */
-    public function extractLocaleSlug($url)
-    {
-        $hasLocalization = app()->bound('laravellocalization') && $localization = app('laravellocalization');
-
-        if (!$hasLocalization) {
-            $locale = app()->getLocale();
-            $slug = Page::uriToSlug(ltrim(parse_url($url)['path'], '/'));
-            return [$locale, $slug];
-        }
-
-        $hasLocaleDomainsConfigured = config('laravellocalization.localeDomains');
-
-        if (!$hasLocaleDomainsConfigured) {
-            $locale = app()->getLocale();
-            $slug = Page::uriToSlug(ltrim(parse_url($url)['path'], '/'));
-            return [$locale, $slug];
-        }
-
-
-        $localeDomains = config('laravellocalization.localeDomains');
-        $hideDefaultLocaleInUrl = config('laravellocalization.hideDefaultLocaleInURL');
-
-        $parts = parse_url($url);
-        $domain = $parts['host'];
-
-        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain));
-        if (!$localesOnThisDomain) {
-            throw new \Exception("Can not determine locale configuration on this domain.");
-        }
-
-        $segments = explode('/', ltrim($parts['path'] ?? '', '/'));
-
-        if (in_array($segments[0], $localesOnThisDomain)) {
-            $locale = $localesOnThisDomain;
-            array_shift($segments);
-            $slug = Page::uriToSlug(implode('/', $segments));
-            return [$locale, $slug];
-        }
-        else if ($hideDefaultLocaleInUrl) {
-            $locale = reset($localesOnThisDomain);
-            $slug = Page::uriToSlug(implode('/', $segments));
-            return [$locale, $slug];
-        }
-        else {
-            throw new \Exception("Locale should be present in the url, but it's not.");
-        }
-    }
-
     public function setLocale($locale) {
+        if (!app()->bound('laravellocalization')) {
+            app()->setLocale($locale);
+            return;
+        }
+
         $localization = app('laravellocalization');
 
         $localeDomains = config('laravellocalization.localeDomains');
@@ -122,8 +84,8 @@ class PageController extends Controller
             return $localization->setLocale($locale);
         }
 
-        $domain = request()->getHost();
-        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain));
+        $domain = PageUtils::getHost();
+        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
         if (!$localesOnThisDomain) {
             throw new \Exception("Can not determine locale configuration on this domain.");
         }
@@ -154,6 +116,7 @@ class PageController extends Controller
 
     /**
      * This timestamp can be used to invalidate local client content cache.
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getContentTimestamp()

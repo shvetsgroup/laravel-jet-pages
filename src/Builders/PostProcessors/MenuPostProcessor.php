@@ -1,7 +1,10 @@
-<?php namespace ShvetsGroup\JetPages\Builders\PostProcessors;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
+use ShvetsGroup\JetPages\Page\PageUtils;
 use function \ShvetsGroup\JetPages\content_path;
 
 class MenuPostProcessor implements PostProcessor
@@ -66,9 +69,9 @@ class MenuPostProcessor implements PostProcessor
         }
         else {
             $result = [
-                'href' => Page::makeLocaleUri($locale, Page::uriToSlug($uri))
+                'href' => PageUtils::makeUri($locale, PageUtils::uriToSlug($uri))
             ];
-            $page = $registry->findBySlug($locale, Page::uriToSlug($uri));
+            $page = $registry->findBySlug($locale, PageUtils::uriToSlug($uri));
 
             if ($page) {
                 $result['title'] = $page->getAttribute('title_short') ?: $page->getAttribute('title');

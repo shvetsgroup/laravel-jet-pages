@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages;
 
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use GrahamCampbell\TestBench\AbstractPackageTestCase;

@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Renderers;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders\Renderers;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;

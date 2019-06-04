@@ -1,7 +1,10 @@
-<?php namespace ShvetsGroup\JetPages\ViewComposers;
+<?php
+
+namespace ShvetsGroup\JetPages\ViewComposers;
 
 use Illuminate\View\View;
 use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\PageUtils;
 
 class LocaleComposer
 {
@@ -21,7 +24,7 @@ class LocaleComposer
         $locale = $view->offsetExists('locale') ? $view->offsetGet('locale') : app()->getLocale();
         $view->with('locale', $locale);
 
-        $locale_prefix = Page::getLocalePrefix($locale);
+        $locale_prefix = PageUtils::getLocalePrefix($locale);
         $view->with('locale_prefix', $locale_prefix);
 
         if (!$view->offsetExists('locales')) {

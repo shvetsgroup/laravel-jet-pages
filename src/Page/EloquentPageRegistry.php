@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Page;
+<?php
+
+namespace ShvetsGroup\JetPages\Page;
 
 class EloquentPageRegistry extends SimplePageRegistry
 {
@@ -36,7 +38,7 @@ class EloquentPageRegistry extends SimplePageRegistry
 
         $this->index = [];
         foreach ($this->db->table('pages')->get(['locale', 'slug', 'updated_at']) as $record) {
-            $localeSlug = Page::makeLocaleSlug($record->locale, $record->slug);
+            $localeSlug = PageUtils::makeLocaleSlug($record->locale, $record->slug);
             $this->index[$localeSlug] = $record->updated_at;
         }
         return $this->index;

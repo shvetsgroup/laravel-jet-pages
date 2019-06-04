@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Page;
+<?php
+
+namespace ShvetsGroup\JetPages\Page;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -27,7 +29,8 @@ class Page implements Arrayable
      * Whether a page is accessible via web.
      * @return bool
      */
-    function isPrivate():bool {
+    function isPrivate(): bool
+    {
         return $this->getAttribute('private', false);
     }
 
@@ -35,7 +38,8 @@ class Page implements Arrayable
      * Whether a page is not accessible via web.
      * @return bool
      */
-    function isPublic():bool {
+    function isPublic(): bool
+    {
         return !$this->isPrivate();
     }
 
@@ -62,7 +66,7 @@ class Page implements Arrayable
 
         $locale = $this->getAttribute('locale');
         $slug = $this->getAttribute($slugField);
-        $localeSlug = $this->makeLocaleSlug($locale, $slug);
+        $localeSlug = PageUtils::makeLocaleSlug($locale, $slug);
 
         if ($slugField == 'slug') {
             $this->setAttribute('localeSlug', $localeSlug);
@@ -110,7 +114,7 @@ class Page implements Arrayable
             $value = $value->timestamp;
         }
         if ($key == 'slug') {
-            $value = static::uriToSlug($value);
+            $value = PageUtils::uriToSlug($value);
             if (!$force) {
                 Arr::set($this->attributes, 'oldSlug', array_get($this->attributes, 'slug'));
             }
@@ -149,170 +153,6 @@ class Page implements Arrayable
         return $this;
     }
 
-    /**
-     * Sanitize uri for usage as slug.
-     * @param $uri
-     * @return string
-     */
-    static function uriToSlug($uri)
-    {
-        return in_array($uri, ['', '/']) ? 'index' : $uri;
-    }
-
-    /**
-     * Sanitize uri for usage as slug.
-     * @param $slug
-     * @return string
-     */
-    static function slugToUri($slug)
-    {
-        return $slug == 'index' ? '/' : $slug;
-    }
-
-    /**
-     * Extract locale from uri.
-     *
-     * @param $uri
-     * @param null $localeInUrl
-     * @return array
-     */
-    static function extractLocale($uri, $localeInUrl = null)
-    {
-        $defaultLocale = config('app.default_locale', '');
-        $defaultLocaleIsInUrl = $localeInUrl === null ? config('jetpages.default_locale_in_url', false) : $localeInUrl;
-        $uri_has_parts = mb_strpos($uri, '/') !== false;
-
-        if ($uri_has_parts) {
-            list($locale, $path) = explode('/', $uri, 2);
-            if (static::isValidLocale($locale)) {
-                if ($locale == $defaultLocale && $defaultLocaleIsInUrl) {
-                    return [$defaultLocale, $uri];
-                } else {
-                    return [$locale, $path];
-                }
-            } else {
-                return [$defaultLocale, $uri];
-            }
-        } else {
-            if (static::isValidLocale($uri)) {
-                if ($uri == $defaultLocale && $defaultLocaleIsInUrl) {
-                    return [$defaultLocale, $uri];
-                } else {
-                    return [$uri, ''];
-                }
-            } else {
-                return [$defaultLocale, $uri];
-            }
-        }
-    }
-
-    /**
-     * Check if the passed value is valid locale.
-     *
-     * @param $string
-     * @return bool
-     */
-    static function isValidLocale($string)
-    {
-        if (mb_strlen($string) != 2) {
-            return false;
-        }
-
-        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', [config('app.default_locale') => []]);
-        if (!isset($locales[$string])) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Make a locale/slug combination string.
-     * This should be the same for [locale => 'en', 'slug' => 'test'] and [locale => '', 'slug' => 'en/test']
-     * @param $locale
-     * @param $slug
-     * @return string
-     */
-    static function makeLocaleSlug($locale, $slug)
-    {
-        return ($locale ? $locale . '/' : '') . $slug;
-    }
-
-    /**
-     * Generate valid uri from locale and slug.
-     * @param $locale
-     * @param $slug
-     * @return string
-     */
-    static function makeLocaleUri($locale, $slug)
-    {
-        $prefix = static::getLocalePrefix($locale);
-        $uri = static::slugToUri($slug);
-
-        if ($prefix && $uri == '/') {
-            return $locale;
-        }
-
-        return $prefix . $uri;
-    }
-
-    static function getLocalePrefix($locale)
-    {
-        if (!$locale) {
-            return '';
-        }
-
-        $hideDefaultLocaleInUrl = config('laravellocalization.hideDefaultLocaleInURL');
-        if (!$hideDefaultLocaleInUrl) {
-            return $locale . '/';
-        }
-
-        $localeDomains = config('laravellocalization.localeDomains');
-        if (!$localeDomains) {
-            return ($locale == config('app.default_locale', '')) ? '' : $locale . '/';
-        }
-
-        $domain = request()->getHost();
-        foreach ($localeDomains as $d => $localesInDomain) {
-            $localesInDomain = array_wrap($localesInDomain);
-            if (in_array($locale, $localesInDomain)) {
-                $domain = $d;
-            }
-        }
-        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain));
-
-        if ($locale == reset($localesOnThisDomain)) {
-            return '';
-        }
-
-        return $locale . '/';
-    }
-
-    /**
-     * Sanitize uri for usage as slug.
-     *
-     * @param $uri
-     * @return string
-     */
-    static function uriToLocaleSlug($uri)
-    {
-        list($locale, $uri) = static::extractLocale($uri);
-        $slug = static::uriToSlug($uri);
-        return static::makeLocaleSlug($locale, $slug);
-    }
-
-    /**
-     * Sanitize uri for usage as slug.
-     *
-     * @param $uri
-     * @return array
-     */
-    static function uriToLocaleSlugArray($uri)
-    {
-        list($locale, $uri) = static::extractLocale($uri);
-        $slug = static::uriToSlug($uri);
-        return [$locale, $slug];
-    }
 
     /**
      * Generate valid uri from locale and slug.
@@ -327,26 +167,14 @@ class Page implements Arrayable
         if (!$uri) {
             $locale = $this->getAttribute('locale');
             $slug = $this->getAttribute('slug');
-            $uri = static::makeLocaleUri($locale, $slug);
+            $uri = PageUtils::makeUri($locale, $slug);
         }
 
         if (!$absolute) {
             return $uri;
         }
 
-        $localeDomains = config('laravellocalization.localeDomains');
-        $domain = request()->getHost();
-        foreach ($localeDomains as $d => $localesInDomain) {
-            $localesInDomain = array_wrap($localesInDomain);
-            if (in_array($this->locale, $localesInDomain)) {
-                $domain = $d;
-            }
-        }
-
-        $url = url($uri);
-        if ($localeDomains && isset($localeDomains[$domain])) {
-            $url = preg_replace('#(?<=://)([^/]+?)(?=(/|\?|$))#', $domain, $url);
-        }
+        $url = PageUtils::absoluteUrl($uri, $this->locale);
 
         if ($withoutDomain) {
             $parsed = parse_url($url);
@@ -484,7 +312,7 @@ class Page implements Arrayable
     /**
      * Dynamically retrieve attributes on the page.
      *
-     * @param  string $key
+     * @param string $key
      * @return mixed
      */
     public function __get($key)
@@ -495,8 +323,8 @@ class Page implements Arrayable
     /**
      * Dynamically set attributes on the page.
      *
-     * @param  string $key
-     * @param  mixed $value
+     * @param string $key
+     * @param mixed $value
      * @return void
      */
     public function __set($key, $value)
@@ -507,7 +335,7 @@ class Page implements Arrayable
     /**
      * Determine if an attribute or relation exists on the page.
      *
-     * @param  string $key
+     * @param string $key
      * @return bool
      */
     public function __isset($key)
@@ -518,7 +346,7 @@ class Page implements Arrayable
     /**
      * Unset an attribute on the page.
      *
-     * @param  string $key
+     * @param string $key
      * @return void
      */
     public function __unset($key)

@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Builders;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders;
 
 use Illuminate\Http\Request;
 use ShvetsGroup\JetPages\Page\Page;

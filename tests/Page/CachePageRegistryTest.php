@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Page;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages\Page;
 
 use ShvetsGroup\JetPages\Page\CachePageRegistry;
 

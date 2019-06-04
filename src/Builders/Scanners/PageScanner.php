@@ -1,7 +1,10 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Scanners;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders\Scanners;
 
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
+use ShvetsGroup\JetPages\Page\PageUtils;
 use Symfony\Component\Finder\SplFileInfo;
 
 class PageScanner implements Scanner
@@ -91,7 +94,7 @@ class PageScanner implements Scanner
         $path = $file->getRelativePathname();
         $extension = pathinfo($path, PATHINFO_EXTENSION);
         $localeSlug = preg_replace("/\.[^.]+$/", "", $path);
-        list($locale, $slug) = Page::extractLocale($localeSlug, false);
+        list($locale, $slug) = PageUtils::extractLocaleFromLocaleSlug($localeSlug, true);
         return [
             'scanner' => get_class($this),
             'locale' => $locale,

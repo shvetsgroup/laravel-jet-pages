@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Page;
+<?php
+
+namespace ShvetsGroup\JetPages\Page;
 
 class CachePageRegistry extends SimplePageRegistry
 {
@@ -68,7 +70,7 @@ class CachePageRegistry extends SimplePageRegistry
             return $page;
         }
 
-        $localeSlug = Page::makeLocaleSlug($locale, $slug);
+        $localeSlug = PageUtils::makeLocaleSlug($locale, $slug);
         $data = $this->cache->get("jetpage:{$localeSlug}");
 
         if ($data) {

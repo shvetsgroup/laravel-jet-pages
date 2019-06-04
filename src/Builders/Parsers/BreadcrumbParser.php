@@ -1,8 +1,11 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Parsers;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders\Parsers;
 
 use Illuminate\Support\Arr;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
+use ShvetsGroup\JetPages\Page\PageUtils;
 
 class BreadcrumbParser implements Parser
 {
@@ -33,7 +36,7 @@ class BreadcrumbParser implements Parser
                 $slug = $path;
             }
 
-            $p = $registry->findBySlug($locale, Page::uriToSlug($slug));
+            $p = $registry->findBySlug($locale, PageUtils::uriToSlug($slug));
             if (!$p) {
                 throw new \RuntimeException("Can not find page with id '$locale/$slug'.");
             }

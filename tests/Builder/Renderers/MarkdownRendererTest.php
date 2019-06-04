@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Builders\Renderers;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages\Builders\Renderers;
 
 use ShvetsGroup\JetPages\Builders\Renderers\MarkdownRenderer;
 use ShvetsGroup\JetPages\Builders\Renderers\Renderer;

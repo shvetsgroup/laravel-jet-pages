@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\Tests\JetPages\Builders\Parsers;
+<?php
+
+namespace ShvetsGroup\Tests\JetPages\Builders\Parsers;
 
 use ShvetsGroup\JetPages\Builders\Parsers\Parser;
 use ShvetsGroup\JetPages\Builders\Parsers\NavigationParser;

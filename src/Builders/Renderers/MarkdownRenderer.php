@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Renderers;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders\Renderers;
 
 use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Converter;

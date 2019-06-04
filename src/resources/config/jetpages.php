@@ -103,22 +103,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Is default locale present in URL
-    |--------------------------------------------------------------------------
-    |
-    | Whether or not the default locale is added to URLs. By default, we assume
-    | that default locale is not in the url and only other locales are prefixed
-    | to page addresses.
-    |
-    | For example (assuming en is default locale):
-    | - http://example.com/some-page (is address for en/some-page.md)
-    | - http://example.com/ru/some-page (is address for ru/some-page.md)
-    |
-    */
-    'default_locale_in_url' => false,
-
-    /*
-    |--------------------------------------------------------------------------
     | Additional view providers
     |--------------------------------------------------------------------------
     |

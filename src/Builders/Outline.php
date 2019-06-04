@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Builders;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders;
 
 use Symfony\Component\Yaml\Yaml;
 use function ShvetsGroup\JetPages\content_path;

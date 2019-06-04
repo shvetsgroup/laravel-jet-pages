@@ -1,4 +1,6 @@
-<?php namespace ShvetsGroup\JetPages\Builders\Renderers\MarkdownOverrides;
+<?php
+
+namespace ShvetsGroup\JetPages\Builders\Renderers\MarkdownOverrides;
 
 use League\CommonMark\Block\Element\AbstractBlock;
 use League\CommonMark\Block\Element\Document;
