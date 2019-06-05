@@ -48,18 +48,37 @@ class SiteMapController extends Controller
             'page' => 'default'
         ]);
 
-        foreach ($pages as $page) {
-            $outline = $this->outline->getFlatOutline(null, $page->getAttribute('locale'));
 
-            $uri = $page->uri();
-            if ($uri == '/') {
+        $parts = parse_url(url()->current());
+        $localeDomains = config('laravellocalization.localeDomains');
+        if ($localeDomains) {
+            $domain = $parts['host'];
+            $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
+        }
+
+        foreach ($pages as $page) {
+            $pageLocale = $page->getAttribute('locale');
+
+            if ($localesOnThisDomain && !in_array($pageLocale, $localesOnThisDomain)) {
+                continue;
+            }
+
+            if ($page->canonical) {
+                continue;
+            }
+
+            $outline = $this->outline->getFlatOutline(null, $pageLocale);
+
+            $slug = $page->slug;
+            $absoluteUrl = $page->uri(true);
+            if ($slug === 'index') {
                 $priority = 1;
             } else {
                 if (isset($sitemapPriorities[$page->type]) && $sitemapPriorities[$page->type] != 'default') {
                     $priority = $sitemapPriorities[$page->type];
                 }
                 else {
-                    $priority = round(((isset($outline[$uri]) ? (0.5 / max(1, $outline[$uri])) : 0) + 0.5) * 100) / 100;
+                    $priority = round(((isset($outline[$slug]) ? (0.5 / max(1, $outline[$slug])) : 0) + 0.5) * 100) / 100;
                 }
             }
 
@@ -71,14 +90,14 @@ class SiteMapController extends Controller
                     unset($alternativeUris[$default_locale]);
                 }
                 $this->sitemap->addTag(new MultilingualTag(
-                    url($uri),
+                    $absoluteUrl,
                     $page->updated_at,
                     $sitemapChangeFrequency[$page->type] ?? 'daily',
                     $priority,
                     $alternativeUris
                 ));
             } else {
-                $this->sitemap->addTag(url($uri), $page->updated_at, 'daily', $priority);
+                $this->sitemap->addTag($absoluteUrl, $page->updated_at, 'daily', $priority);
             }
         }
         return $this->sitemap->renderSitemap();
