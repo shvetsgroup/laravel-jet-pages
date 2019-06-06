@@ -41,9 +41,20 @@ class Cache extends Command
 
         $pages = app('pages')->getAll();
         $cacheBuilder = new StaticCache();
+
+        if (app()->bound('laravellocalization')) {
+            $localization = app('laravellocalization');
+        }
+        else {
+            $localization = app();
+        }
+
+        $currentLocale = app()->getLocale();
         foreach ($pages as $page) {
+            $localization->setLocale($page->getAttribute('locale'));
             $cacheBuilder->cachePage($page);
         }
+        $localization->setLocale($currentLocale);
 
         print('Cache has been successfully re-built in ' . round(microtime(true) - $start_time, 4) . 's');
     }
