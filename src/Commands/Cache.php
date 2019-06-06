@@ -23,7 +23,7 @@ class Cache extends Command
      *
      * @var string
      */
-    protected $description = 'Build content cache.';
+    protected $description = 'Generate content static cache.';
 
     /**
      * Execute console command.

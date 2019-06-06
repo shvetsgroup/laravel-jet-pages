@@ -51,11 +51,10 @@ class JetPagesServiceProvider extends RouteServiceProvider
         });
         $this->app->alias('builder', BaseBuilder::class);
 
-        $this->app->singleton('command.jetpages.build', function () {
-            return new Commands\Build();
-            return new Commands\Cache();
-        });
-        $this->commands(['command.jetpages.build']);
+        $this->commands([
+            Commands\Build::class,
+            Commands\Cache::class,
+        ]);
     }
 
     /**

@@ -20,7 +20,7 @@ class Build extends Command
      *
      * @var string
      */
-    protected $description = 'Build content cache.';
+    protected $description = 'Build content structure.';
 
     /**
      * Execute console command.
