@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
 use ShvetsGroup\JetPages\Builders\StaticCache;
 use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\PageUtils;
 
 class Cache extends Command
 {
@@ -36,12 +37,6 @@ class Cache extends Command
             config(['jetpages.cache_dir' => $cache_dir]);
         }
 
-        $baseUrl = $this->option('base_url') ?? config('app.url');
-        url()->forceRootUrl($baseUrl);
-
-        $pages = app('pages')->getAll();
-        $cacheBuilder = new StaticCache();
-
         if (app()->bound('laravellocalization')) {
             $localization = app('laravellocalization');
         }
@@ -49,8 +44,24 @@ class Cache extends Command
             $localization = app();
         }
 
+        $baseUrl = $this->option('base_url') ?? config('app.url');
+        url()->forceRootUrl($baseUrl);
+
+        $localeDomains = config('laravellocalization.localeDomains');
+        $localesOnThisDomain = [];
+        if ($localeDomains) {
+            $domain = parse_url($baseUrl)['host'];
+            $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
+        }
+
+        $pages = app('pages')->getAll();
+        $cacheBuilder = new StaticCache();
+
         $currentLocale = app()->getLocale();
         foreach ($pages as $page) {
+            if ($localesOnThisDomain && !in_array($page->locale, $localesOnThisDomain)) {
+                continue;
+            }
             $localization->setLocale($page->getAttribute('locale'));
             $cacheBuilder->cachePage($page);
         }
