@@ -12,10 +12,8 @@ class Build extends Command
      *
      * @var string
      */
-    protected $signature = 'jetpages
-                            {--d|cache_dir= : Override standard cache directory.}
-                            {--c|clear : Clear all generated data and re-import from scratch.}
-                            {--u|base_url= : Base url for the generated cache files.}';
+    protected $signature = 'jetpages:build
+                            {--r|reset : Clear all generated data and re-import from scratch.}';
 
     /**
      * The console command description.
@@ -31,15 +29,8 @@ class Build extends Command
     public function handle(BaseBuilder $builder)
     {
         $start_time = microtime(true);
-        $clear = $this->option('clear');
-        if ($cache_dir = $this->option('cache_dir')) {
-            config(['jetpages.cache_dir' => $cache_dir]);
-        }
-
-        $baseUrl = $this->option('base_url') ?? config('app.url');
-        url()->forceRootUrl($baseUrl);
-
-        $builder->build($clear);
+        $reset = $this->option('reset');
+        $builder->build($reset);
         print('Content has been successfully re-built in ' . round(microtime(true) - $start_time, 4) . 's');
     }
 }
