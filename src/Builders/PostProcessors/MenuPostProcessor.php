@@ -58,7 +58,9 @@ class MenuPostProcessor implements PostProcessor
             foreach ($outline as $uri => $tree) {
                 $menu['children'][$uri] = $this->build_toc_recursive($registry, $tree, $locale, $uri);
             }
-            $this->cache->forever('menu:' . $locale, $menu);
+
+            $this->files->makeDirectory(storage_path('app/menu'), 0755, true, true);
+            $this->files->put(storage_path('app/menu/' . $locale . '.json'), json_encode($menu, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK));
         }
     }
 

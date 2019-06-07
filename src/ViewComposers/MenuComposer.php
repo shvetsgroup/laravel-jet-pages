@@ -31,7 +31,14 @@ class MenuComposer
         }
 
         $locale = $view->offsetGet('locale');
-        $menu = Cache::get('menu:' . $locale);
+
+        $menuFile = storage_path('app/menu/' . $locale . '.json');
+        if (file_exists($menuFile)) {
+            $menu = json_decode(file_get_contents($menuFile), true);
+        }
+        else {
+            $menu = [];
+        }
 
         if (!$this->set_active_trail($menu, $uri) && $view->offsetExists('breadcrumb')) {
             $breadcrumb = $view->offsetGet('breadcrumb');
