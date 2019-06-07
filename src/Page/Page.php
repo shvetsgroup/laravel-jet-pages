@@ -285,28 +285,7 @@ class Page implements Arrayable
      */
     public function render($reset = false)
     {
-        $cache = $this->getAttribute('cache', true);
-
-        if ($cache && !$reset) {
-            $cachedOutput = Cache::get('jetpage:rendered:' . $this->localeSlug());
-
-            if ($cachedOutput) {
-                list($date, $output) = explode('#', $cachedOutput, 2);
-                $date = Carbon::parse($date);
-            }
-
-            if ($cachedOutput && $output && $date->gte($this->updated_at)) {
-                return $output;
-            }
-        }
-
-        $output = view($this->getRenderableView(), $this->renderArray())->render();
-
-        if ($cache) {
-            Cache::forever('jetpage:rendered:' . $this->localeSlug(), Carbon::now() . '#' . $output);
-        }
-
-        return $output;
+        return view($this->getRenderableView(), $this->renderArray())->render();
     }
 
     /**
