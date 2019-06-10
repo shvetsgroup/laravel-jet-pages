@@ -42,4 +42,33 @@ abstract class AbstractRenderer implements Renderer
      * @return string
      */
     abstract public function renderContent($content, Page $page, PageRegistry $registry);
+
+    /**
+     * @param $content
+     * @param $code
+     * @return string
+     */
+    public static function escapeCodeFragments($content, &$code)
+    {
+        $content = preg_replace_callback('#(<code([^>]*)>([\s\S]+?)</code>|<pre([^>]*)>([\s\S]+?)</pre>|<script([^>]*)>([\s\S]+?)</script>|<style([^>]*)>([\s\S]+?)</style>|%%%([\s\S]+?)%%%)#',
+            function ($m) use (&$code) {
+                $code[] = $m[0];
+                return "#%#%#" . count($code) . "#%#%#";
+            }, $content);
+
+        return $content;
+    }
+
+    /**
+     * @param $content
+     * @param $code
+     * @return string
+     */
+    public static function unescapeCodeFragments($content, $code)
+    {
+        return preg_replace_callback('|#%#%#([0-9]+)#%#%#|',
+            function ($m) use ($code) {
+                return $code[$m[1] - 1];
+            }, $content);
+    }
 }
