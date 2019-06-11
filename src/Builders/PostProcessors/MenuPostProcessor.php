@@ -66,7 +66,7 @@ class MenuPostProcessor implements PostProcessor
 
     protected function build_toc_recursive(PageRegistry $registry, $menu_item, $locale, $uri)
     {
-        if (strlen($uri) > 0 && ($uri[0] == '/' || preg_match('#^https?://#', $uri))) {
+        if (strlen($uri) > 0 && ($uri[0] == '/' || preg_match('#^https?://#u', $uri))) {
             $result = ['href' => $uri];
         }
         else {

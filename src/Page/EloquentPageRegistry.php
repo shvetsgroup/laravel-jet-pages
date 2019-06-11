@@ -161,8 +161,10 @@ class EloquentPageRegistry extends SimplePageRegistry
 
         $data = json_decode($attributes['data'], true);
         unset($attributes['data']);
-        foreach ($data as $k => $v) {
-            $attributes[$k] = $v;
+        if (is_array($data)) {
+            foreach ($data as $k => $v) {
+                $attributes[$k] = $v;
+            }
         }
 
         foreach ($attributes as $k => $v) {

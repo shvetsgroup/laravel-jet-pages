@@ -17,7 +17,7 @@ class IncludeRenderer extends AbstractRenderer
     public function renderContent($content, Page $page, PageRegistry $registry)
     {
         $files = app('Illuminate\Filesystem\Filesystem');
-        $regexp = '|!INCLUDE\s+"([^"]*)"|';
+        $regexp = '|!INCLUDE\s+"([^"]*)"|u';
         $content = preg_replace_callback($regexp, function($matches) use ($files) {
             $include_path = $matches[1];
 
@@ -27,9 +27,9 @@ class IncludeRenderer extends AbstractRenderer
                 $full_path = base_path($include_path);
             }
 
-            if (preg_match('/\.(png|gif|jpe?g)$/', $include_path)) {
-                if (preg_match('/^img:/', $include_path)) {
-                    $full_path = preg_replace('/.*?img:/', '', $full_path);
+            if (preg_match('/\.(png|gif|jpe?g)$/u', $include_path)) {
+                if (preg_match('/^img:/u', $include_path)) {
+                    $full_path = preg_replace('/.*?img:/u', '', $full_path);
                     $contents = '<img src="' . $full_path . '" alt="" />';
                 }
                 else {
@@ -41,7 +41,7 @@ class IncludeRenderer extends AbstractRenderer
                 // Remove BOM, if any.
                 $contents = preg_replace('/^\x{FEFF}/u', '', $contents);
                 // Normalize line-endings.
-                $contents = preg_replace("%(\r\n|\r|\n)%", "\n", $contents);
+                $contents = preg_replace("%(\r\n|\r|\n)%u", "\n", $contents);
                 $contents = rtrim($contents, "\n");
             }
 

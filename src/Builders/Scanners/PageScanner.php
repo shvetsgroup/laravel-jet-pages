@@ -20,7 +20,7 @@ class PageScanner implements Scanner
     protected $pages;
 
     protected $type = 'page';
-    protected $regex = '#\.(txt|html|md)$#';
+    protected $regex = '#\.(txt|html|md)$#u';
 
     public function __construct()
     {
@@ -93,7 +93,7 @@ class PageScanner implements Scanner
     {
         $path = $file->getRelativePathname();
         $extension = pathinfo($path, PATHINFO_EXTENSION);
-        $localeSlug = preg_replace("/\.[^.]+$/", "", $path);
+        $localeSlug = preg_replace("/\.[^.]+$/u", "", $path);
         list($locale, $slug) = PageUtils::extractLocaleFromLocaleSlug($localeSlug, true);
         return [
             'scanner' => get_class($this),
@@ -102,7 +102,7 @@ class PageScanner implements Scanner
             'type' => $this->type,
             'extension' => $extension,
             'path' => $file->getRealPath(),
-            'relative_path' => preg_replace('|^' . preg_quote(\ShvetsGroup\JetPages\content_path(), '|') . '[\/]*|', '', $file->getRealPath()),
+            'relative_path' => preg_replace('|^' . preg_quote(\ShvetsGroup\JetPages\content_path(), '|u') . '[\/]*|', '', $file->getRealPath()),
             'content' => $file->getContents(),
             'updated_at' => date('Y-m-d H:i:s', max($file->getMTime(), $file->getCTime())),
         ];

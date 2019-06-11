@@ -298,7 +298,7 @@ class PageUtils
             $domain = static::getLocaleDomain($locale);
 
             if ($domain) {
-                $url = preg_replace('#(?<=://)([^/]+?)(?=(/|\?|$))#', $domain, $url);
+                $url = preg_replace('#(?<=://)([^/]+?)(?=(/|\?|$))#u', $domain, $url);
             }
         }
 

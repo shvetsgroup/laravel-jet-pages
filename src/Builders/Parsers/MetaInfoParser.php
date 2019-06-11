@@ -21,11 +21,11 @@ class MetaInfoParser implements Parser
         }
 
         $matches = [];
-        if (!preg_match_all('#(^|(?<=[\n\r]))\-\-\-\R#', $content, $matches) || count($matches[0]) < 2) {
+        if (!preg_match_all('#(^|(?<=[\n\r]))\-\-\-\R#u', $content, $matches) || count($matches[0]) < 2) {
             return;
         }
 
-        $values = preg_split('|^\-\-\-\R|m', $content, 2, PREG_SPLIT_NO_EMPTY);
+        $values = preg_split('|^\-\-\-\R|mu', $content, 2, PREG_SPLIT_NO_EMPTY);
 
         if (count($values) == 1) {
             $page->setAttribute('content', $values[0]);
