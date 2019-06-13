@@ -100,9 +100,9 @@ class PageController extends Controller
         if (empty($supportedLocales) || !is_array($supportedLocales)) {
             $supportedLocales[$defaultLocale] = ['name' => 'English', 'native' => 'English'];
         }
-        foreach ($supportedLocales as $locale => $data) {
+        foreach ($supportedLocales as $l => $data) {
             if (!in_array($locale, $localesOnThisDomain)) {
-                unset($supportedLocales[$locale]);
+                unset($supportedLocales[$l]);
             }
         }
 

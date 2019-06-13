@@ -146,9 +146,9 @@ class PageUtils
      * @param $slug
      * @return string
      */
-    static function makeUri($locale, $slug)
+    static function makeUri($locale, $slug, $onMainDomain = false)
     {
-        $prefix = static::getLocalePrefix($locale);
+        $prefix = static::getLocalePrefix($locale, $onMainDomain);
         $uri = static::slugToUri($slug);
 
         if ($prefix && $uri == '/') {
@@ -164,7 +164,7 @@ class PageUtils
      * @param $locale
      * @return string
      */
-    static function getLocalePrefix($locale)
+    static function getLocalePrefix($locale, $onMainDomain = false)
     {
         if (!$locale) {
             return '';
@@ -176,7 +176,7 @@ class PageUtils
         }
 
         $localeDomains = config('laravellocalization.localeDomains');
-        if (!$localeDomains) {
+        if (!$localeDomains || $onMainDomain) {
             return ($locale == config('app.default_locale', '')) ? '' : $locale . '/';
         }
 
