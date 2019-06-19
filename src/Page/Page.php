@@ -97,6 +97,10 @@ class Page implements Arrayable
      */
     public function getAttribute($key, $default = null)
     {
+        if ($key == 'uri' && !isset($this->attributes['uri'])) {
+            $this->attributes['uri'] = $this->uri();
+        }
+
         return Arr::get($this->attributes, $key, $default);
     }
 
@@ -162,9 +166,11 @@ class Page implements Arrayable
      */
     function uri($absolute = false, $withoutDomain = false)
     {
-        $uri = $this->getAttribute('uri');
+        if (isset($this->attributes['uri'])) {
+            $uri = $this->getAttribute('uri');
+        }
 
-        if (!$uri) {
+        if (!isset($uri)) {
             $locale = $this->getAttribute('locale');
             $slug = $this->getAttribute('slug');
             $uri = PageUtils::makeUri($locale, $slug);
