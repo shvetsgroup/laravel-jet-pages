@@ -44,8 +44,16 @@ class PageController extends Controller
         }
 
         if (!$page || $page->isPrivate()) {
-            if ($destination = cache("redirect:{$uri}")) {
-                return redirect($destination, 301);
+            $redirectsFile = storage_path('app/redirects/redirects.json');
+            if (file_exists($redirectsFile)) {
+                $redirects = json_decode(file_get_contents($redirectsFile), true);
+            }
+            else {
+                $redirects = [];
+            }
+
+            if (isset($redirects[$uri])) {
+                return redirect($redirects[$uri], 301);
             } else {
                 return abort(404);
             }

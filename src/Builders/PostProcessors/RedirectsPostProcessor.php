@@ -32,11 +32,13 @@ class RedirectsPostProcessor implements PostProcessor
     public function postProcess(array $updatedPages, PageRegistry $registry)
     {
         $path = content_path('redirects.yml');
+
         if ($this->files->exists($path)) {
             $redirects = Yaml::parse($this->files->get($path));
-            foreach ($redirects as $redirect => $destination) {
-                $this->cache->forever("redirect:{$redirect}", $destination);
-            }
+
+            $this->files->makeDirectory(storage_path('app/redirects'), 0755, true, true);
+            $this->files->put(storage_path('app/redirects/redirects.json'),
+                json_encode($redirects, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK));
         }
     }
 }
