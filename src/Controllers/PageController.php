@@ -30,8 +30,8 @@ class PageController extends Controller
     {
         $fullUrl = PageUtils::getBaseUrl() . ltrim($uri, '/');
 
-        list($locale, $uri) = PageUtils::extractLocaleFromURL($fullUrl);
-        $slug = PageUtils::uriToSlug($uri);
+        list($locale, $_uri) = PageUtils::extractLocaleFromURL($fullUrl);
+        $slug = PageUtils::uriToSlug($_uri);
 
         $this->setLocale($locale);
 
