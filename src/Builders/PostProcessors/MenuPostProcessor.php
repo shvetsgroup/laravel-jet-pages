@@ -14,15 +14,9 @@ class MenuPostProcessor implements PostProcessor
      */
     protected $files;
 
-    /**
-     * @var \Illuminate\Contracts\Cache\Store
-     */
-    private $cache;
-
     public function __construct()
     {
         $this->files = app('Illuminate\Filesystem\Filesystem');
-        $this->cache = app('cache.store');
     }
 
     /**
