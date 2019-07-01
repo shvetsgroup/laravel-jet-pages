@@ -423,7 +423,14 @@ class SimplePageRegistry implements PageRegistry
      */
     public function lastBuildTime()
     {
-        return app('cache.store')->get("jetpages_last_built", 0);
+        $timestampFile = storage_path('app/content_timestamps/build.json');
+        if (file_exists($timestampFile)) {
+            $time = json_decode(file_get_contents($timestampFile));
+        }
+        else {
+            $time = 0;
+        }
+        return $time;
     }
 
     /**
@@ -433,7 +440,10 @@ class SimplePageRegistry implements PageRegistry
     public function updateBuildTime()
     {
         $time = date('Y-m-d H:i:s');
-        app('cache.store')->forever("jetpages_last_built", $time);
+        $files = app('Illuminate\Filesystem\Filesystem');
+        $files->makeDirectory(storage_path('app/content_timestamps'), 0755, true, true);
+        $files->put(storage_path('app/content_timestamps/build.json'), json_encode($time));
+
         return $time;
     }
 }
