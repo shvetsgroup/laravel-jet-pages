@@ -273,7 +273,7 @@ class PageUtils
     static function getBaseUrl($url = null)
     {
         if (!$url) {
-            $url = url()->current();
+            $url = url()->current() ?? config('app.url');
         }
 
         $parts = parse_url($url);
