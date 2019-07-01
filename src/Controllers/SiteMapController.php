@@ -59,7 +59,7 @@ class SiteMapController extends Controller
         foreach ($pages as $page) {
             $pageLocale = $page->getAttribute('locale');
 
-            if ($localesOnThisDomain && !in_array($pageLocale, $localesOnThisDomain)) {
+            if (isset($localesOnThisDomain) && !in_array($pageLocale, $localesOnThisDomain)) {
                 continue;
             }
 
