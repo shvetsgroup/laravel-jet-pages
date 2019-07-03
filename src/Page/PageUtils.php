@@ -262,7 +262,13 @@ class PageUtils
             $url = url()->current();
         }
 
-        return parse_url($url)['host'];
+        $parts = parse_url($url);
+
+        if (empty($parts['host'])) {
+            return request()->getHost();
+        }
+
+        return $parts['host'];
     }
 
     /**
@@ -273,10 +279,18 @@ class PageUtils
     static function getBaseUrl($url = null)
     {
         if (!$url) {
-            $url = url()->current() ?? config('app.url');
+            $url = url()->current();
         }
 
         $parts = parse_url($url);
+
+        if (empty($parts['host'])) {
+            return trim(config('app.url'), '/') . '/';
+        }
+        else if (empty($parts['scheme'])) {
+            $parts['scheme'] = config('sg.ssl') ? 'https' : 'http';
+        }
+
         return $parts['scheme'] . '://' . $parts['host'] . '/';
     }
 

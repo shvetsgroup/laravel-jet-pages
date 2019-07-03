@@ -268,4 +268,14 @@ class PageUtilsTest extends AbstractTestCase
         $this->assertEquals('/', PageUtils::makeUri('en', 'index'));
         $this->assertEquals('ru', PageUtils::makeUri('ru', 'index'));
     }
+
+    public function testBaseDir() {
+        config(['app.url' => 'http://example.com/']);
+        $this->assertEquals('http://example.com/', PageUtils::getBaseUrl());
+        config(['app.url' => 'http://example.com']);
+        $this->assertEquals('http://example.com/', PageUtils::getBaseUrl());
+
+        $this->assertEquals('http://example.cn/', PageUtils::getBaseUrl('http://example.cn/'));
+        $this->assertEquals('http://example.com/', PageUtils::getBaseUrl('example.cn'));
+    }
 }
