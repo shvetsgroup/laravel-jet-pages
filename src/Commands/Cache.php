@@ -46,13 +46,7 @@ class Cache extends Command
 
         $baseUrl = $this->option('base_url') ?? config('app.url');
         url()->forceRootUrl($baseUrl);
-
-        $localeDomains = config('laravellocalization.localeDomains');
-        $localesOnThisDomain = [];
-        if ($localeDomains) {
-            $domain = parse_url($baseUrl)['host'];
-            $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
-        }
+        $localesOnThisDomain = PageUtils::getLocalesOnDomain($baseUrl);
 
         $pages = app('pages')->getAll();
         $cacheBuilder = new StaticCache();

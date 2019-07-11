@@ -5,6 +5,7 @@ namespace ShvetsGroup\JetPages\Controllers;
 use Illuminate\Routing\Controller;
 use ShvetsGroup\JetPages\Builders\Outline;
 use ShvetsGroup\JetPages\Page\PageRegistry;
+use ShvetsGroup\JetPages\Page\PageUtils;
 use Watson\Sitemap\Sitemap;
 use Watson\Sitemap\Tags\MultilingualTag;
 
@@ -48,13 +49,7 @@ class SiteMapController extends Controller
             'page' => 'default'
         ]);
 
-
-        $parts = parse_url(url()->current());
-        $localeDomains = config('laravellocalization.localeDomains');
-        if ($localeDomains) {
-            $domain = $parts['host'];
-            $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
-        }
+        $localesOnThisDomain = PageUtils::getLocalesOnDomain();
 
         foreach ($pages as $page) {
             $pageLocale = $page->getAttribute('locale');

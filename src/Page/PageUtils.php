@@ -252,6 +252,38 @@ class PageUtils
     }
 
     /**
+     * Return locales that should be present on this domain.
+     *
+     * @param null $url
+     * @return array
+     */
+    static function getLocalesOnDomain($url = null) {
+        if (!$url) {
+            $url = url()->current();
+        }
+
+        // Prevent //something/path parsed as full url with host.
+        $url = ltrim($url, '/');
+
+        $parts = parse_url($url);
+
+        if (empty($parts['host'])) {
+            $domain = request()->getHost();
+        }
+        else {
+            $domain = $parts['host'];
+        }
+
+        $localeDomains = config('laravellocalization.localeDomains');
+        $localesOnThisDomain = null;
+        if ($localeDomains) {
+            $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
+        }
+
+        return $localesOnThisDomain;
+    }
+
+    /**
      * Get the current host. The reason why we use this instead of request()->getHost()
      * is because we want to be able to mock the host in unit tests.
      * @return mixed
@@ -261,6 +293,9 @@ class PageUtils
         if (!$url) {
             $url = url()->current();
         }
+
+        // Prevent //something/path parsed as full url with host.
+        $url = ltrim($url, '/');
 
         $parts = parse_url($url);
 
@@ -281,6 +316,9 @@ class PageUtils
         if (!$url) {
             $url = url()->current();
         }
+
+        // Prevent //something/path parsed as full url with host.
+        $url = ltrim($url, '/');
 
         $parts = parse_url($url);
 
