@@ -340,7 +340,7 @@ class PageUtils
      * @return string
      */
     static function absoluteUrl($uri, $locale = null) {
-        $url = url($uri);
+        $url = url($uri, [], config('sg.ssl'));
 
         $localeDomains = config('laravellocalization.localeDomains');
         if ($localeDomains) {
