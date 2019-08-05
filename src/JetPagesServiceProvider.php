@@ -101,21 +101,38 @@ class JetPagesServiceProvider extends RouteServiceProvider
         // routes registered after it.
         $this->app->booted(function () use ($router) {
             $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => ['static-cache']], function () use ($router) {
-                // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
-                $router->get('/', 'PageController@show');
 
-                $exceptions = [];
-
-                if ($nova = config('nova.path', '')) {
-                    $nova = trim($nova, '/');
-                    $exceptions[] = $nova . '$';
-                    $exceptions[] = $nova . '/';
-                    $exceptions[] = 'nova-api/';
+                $routesFile = storage_path('app/routes/routes.json');
+                if (file_exists($routesFile)) {
+                    $routes = json_decode(file_get_contents($routesFile), true);
                 }
+                
+                if (!empty($routes)) {
 
-                $exceptions = $exceptions ? '(?!' . implode('|', $exceptions). ')' : '';
+                    foreach ($routes as $r) {
+                        list($locale, $uri) = explode(':', $r, 2);
+                        $router->get($uri, 'PageController@show')->middleware('set_locale:' . $locale);
+                    }
 
-                $router->get('{all}', 'PageController@show')->where(['all' => '^' . $exceptions . '.*$']);
+                }
+                else {
+
+                    // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
+                    $router->get('/', 'PageController@show');
+
+                    $exceptions = [];
+
+                    if ($nova = config('nova.path', '')) {
+                        $nova = trim($nova, '/');
+                        $exceptions[] = $nova . '$';
+                        $exceptions[] = $nova . '/';
+                        $exceptions[] = 'nova-api/';
+                    }
+
+                    $exceptions = $exceptions ? '(?!' . implode('|', $exceptions). ')' : '';
+
+                    $router->get('{all}', 'PageController@show')->where(['all' => '^' . $exceptions . '.*$']);
+                }
             });
         });
     }

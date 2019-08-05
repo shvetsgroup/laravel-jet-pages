@@ -9,6 +9,7 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 
 class BaseBuilder
 {
+    protected $files;
     protected $pageRegistry;
     protected $scanners = [];
     protected $parsers = [];
@@ -17,6 +18,7 @@ class BaseBuilder
 
     public function __construct($pageRegistry = null, $scanners = [], $parsers = [], $renderers = [], $postProcessors = [])
     {
+        $this->files = app('Illuminate\Filesystem\Filesystem');
         $this->pageRegistry = $pageRegistry ?: app('pages');
 
         $scanners = $scanners ?: config('jetpages.content_scanners', ['pages']);
@@ -149,6 +151,7 @@ class BaseBuilder
     {
         if ($reset) {
             $this->pageRegistry->reset();
+            $this->files->deleteDirectories(storage_path('app/routes'));
         }
         $this->pageRegistry->getAll();
 
@@ -166,6 +169,16 @@ class BaseBuilder
         $this->do('postProcess', $this->pageRegistry, $updatedPages);
         $this->pageRegistry->import($updatedPages);
         $this->pageRegistry->updateBuildTime();
+
+        $routes = [];
+        foreach ($this->pageRegistry->getAll() as $page) {
+            if ($page->isPrivate()) {
+                continue;
+            }
+            $routes[] = $page->locale . ':' . $page->uri();
+        }
+        $this->files->makeDirectory(storage_path('app/routes'), 0755, true, true);
+        $this->files->put(storage_path('app/routes/routes.json'), json_encode($routes));
     }
 
     /**

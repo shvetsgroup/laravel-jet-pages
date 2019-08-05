@@ -26,8 +26,10 @@ class PageController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function show($uri = '/')
+    public function show(Request $request, $uri = null)
     {
+        $uri = $uri ?: $request->path();
+
         $fullUrl = PageUtils::getBaseUrl() . ltrim($uri, '/');
 
         list($locale, $_uri) = PageUtils::extractLocaleFromURL($fullUrl);
