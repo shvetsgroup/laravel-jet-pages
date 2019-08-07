@@ -279,6 +279,10 @@ class PageUtils
         if ($localeDomains) {
             $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
         }
+        else {
+            $supportedLocales = config('laravellocalization.supportedLocales');
+            return $supportedLocales ? array_keys($supportedLocales) : [app()->getLocale()];
+        }
 
         return $localesOnThisDomain;
     }
