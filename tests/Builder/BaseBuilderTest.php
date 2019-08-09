@@ -25,6 +25,7 @@ class BaseBuilderTest extends AbstractTestCase
     protected function getEnvironmentSetUp($app)
     {
         parent::getEnvironmentSetUp($app);
+        $app->config->set('jetpages.driver', 'database');
         $app->config->set('jetpages.content_scanners', []);
         $app->config->set('jetpages.content_parsers', []);
         $app->config->set('jetpages.content_renderers', []);
@@ -57,6 +58,21 @@ class BaseBuilderTest extends AbstractTestCase
         $this->builder->registerScanner(PageScanner::class, 'pages');
         $this->builder->registerParser(MetaInfoParser::class);
         $this->builder->build();
+    }
+
+    /**
+     * Test that registed scanner is run during the scan.
+     */
+    public function testBuild2()
+    {
+        $this->builder->registerScanner(PageScanner::class, 'pages');
+        $this->builder->registerParser(MetaInfoParser::class);
+        $this->builder->build();
+
+        $this->refreshApplication();
+
+        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.');
+        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.');
     }
 
     /**

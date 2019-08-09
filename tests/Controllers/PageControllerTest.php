@@ -23,6 +23,7 @@ class PageControllerTest extends AbstractTestCase
         parent::setUp();
         $this->controller = app()->make(PageController::class);
         $this->pages = app()->make('pages');
+
     }
 
     /**

@@ -75,6 +75,17 @@ class PageController extends Controller
     }
 
     /**
+     * Redirect route.
+     *
+     * @param null $from
+     * @param null $to
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    public function redirect($from, $to) {
+        return redirect($to, 301);
+    }
+
+    /**
      * Set app locale.
      *
      * @param $locale

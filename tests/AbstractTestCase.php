@@ -2,6 +2,7 @@
 
 namespace ShvetsGroup\Tests\JetPages;
 
+use Illuminate\Filesystem\Filesystem;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use GrahamCampbell\TestBench\AbstractPackageTestCase;
 use ShvetsGroup\JetPages\JetPagesServiceProvider;
@@ -80,6 +81,12 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
 
     public function setUp()
     {
+        $files = new Filesystem();
+        $files->deleteDirectory($this->getBasePath() . '/storage/app/routes');
+        $files->deleteDirectory($this->getBasePath() . '/storage/app/menu');
+        $files->deleteDirectory($this->getBasePath() . '/storage/app/redirects');
+        $files->deleteDirectory($this->getBasePath() . '/storage/app/content_timestamps');
+
         parent::setUp();
 
         if ($this->migrate) {
@@ -89,7 +96,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
             ]);
         }
         @unlink($this->getBasePath() . '/resources/content');
-        symlink(__DIR__.'/fixture/resources/content', $this->getBasePath() . '/resources/content');
+        symlink(__DIR__ . '/fixture/resources/content', $this->getBasePath() . '/resources/content');
     }
 
     /**

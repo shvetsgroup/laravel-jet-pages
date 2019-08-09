@@ -8,6 +8,7 @@ use ShvetsGroup\JetPages\Builders\BaseBuilder;
 use ShvetsGroup\JetPages\Builders\Outline;
 use ShvetsGroup\JetPages\Builders\StaticCache;
 use ShvetsGroup\JetPages\Middleware\StaticCache as StaticCacheMiddleware;
+use ShvetsGroup\JetPages\Page\PageUtils;
 
 class JetPagesServiceProvider extends RouteServiceProvider
 {
@@ -100,6 +101,54 @@ class JetPagesServiceProvider extends RouteServiceProvider
         // the route list. Otherwise, catch-all route will break some other
         // routes registered after it.
         $this->app->booted(function () use ($router) {
+
+            $router->group(['namespace' => __NAMESPACE__ . '\Controllers'], function () use ($router) {
+
+                $redirectsFile = storage_path('app/redirects/redirects.json');
+                if (!file_exists($redirectsFile)) {
+                    return;
+                }
+
+                $localeDomains = [];
+                $redirects = json_decode(file_get_contents($redirectsFile), true);
+                foreach ($redirects as $from => $to) {
+
+                    list($locale, $slug) = PageUtils::uriToLocaleSlugArray($from);
+                    $localeSlug = PageUtils::makeLocaleSlug($locale, $slug);
+                    $from = PageUtils::makeUri($locale, $slug);
+                    $fromFull = PageUtils::absoluteUrl($from, $locale);
+
+                    if (!starts_with($to, 'http://') && !starts_with($to, 'https://')) {
+                        list($locale, $slug) = PageUtils::uriToLocaleSlugArray($to);
+                        $toFull = PageUtils::absoluteUrl(PageUtils::makeUri($locale, $slug), $locale);
+                    }
+                    else {
+                        $toFull = $to;
+                    }
+
+                    $routeData = [
+                        'uses' => 'PageController@redirect',
+                        'name' => $localeSlug,
+                    ];
+
+                    if (config('laravellocalization.supportedLocales')) {
+                        $routeData['middleware'] = 'set_locale:' . $locale;
+                    }
+
+                    if (config('laravellocalization.localeDomains')) {
+                        if (!isset($localeDomains[$locale])) {
+                            $localeDomains[$locale] = PageUtils::getLocaleDomain($locale);
+                        }
+                        $domain = $localeDomains[$locale];
+                        $routeData['domain'] = $domain;
+                    }
+
+                    $router->get($from, $routeData)
+                        ->defaults('from', $fromFull)
+                        ->defaults('to', $toFull);
+                }
+            });
+
             $router->group(['namespace' => __NAMESPACE__ . '\Controllers', 'middleware' => ['static-cache']], function () use ($router) {
 
                 $routesFile = storage_path('app/routes/routes.json');
@@ -109,9 +158,30 @@ class JetPagesServiceProvider extends RouteServiceProvider
                 
                 if (!empty($routes)) {
 
+                    $localeDomains = [];
                     foreach ($routes as $r) {
                         list($locale, $uri) = explode(':', $r, 2);
-                        $router->get($uri, 'PageController@show')->middleware('set_locale:' . $locale);
+                        list(,$slug) = PageUtils::uriToLocaleSlugArray($uri);
+                        $localeSlug = PageUtils::makeLocaleSlug($locale, $slug);
+
+                        $routeData = [
+                            'uses' => 'PageController@show',
+                            'name' => $localeSlug,
+                        ];
+
+                        if (config('laravellocalization.supportedLocales')) {
+                            $routeData['middleware'] = 'set_locale:' . $locale;
+                        }
+
+                        if (config('laravellocalization.localeDomains')) {
+                            if (!isset($localeDomains[$locale])) {
+                                $localeDomains[$locale] = PageUtils::getLocaleDomain($locale);
+                            }
+                            $domain = $localeDomains[$locale];
+                            $routeData['domain'] = $domain;
+                        }
+
+                        $router->get($uri, $routeData);
                     }
 
                 }
