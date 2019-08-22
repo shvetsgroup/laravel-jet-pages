@@ -142,9 +142,7 @@ class PageController extends Controller
      */
     public function getContentTimestamp()
     {
-        $lastBuild = $this->pages->lastBuildTime();
-        $lastUpdated = $this->pages->lastUpdatedTime();
-        $date = $lastBuild ?: $lastUpdated;
+        $date = $this->pages->lastBuildTime() ?: $this->pages->lastUpdatedTime();
 
         return response()->json([
             'timestamp' => $date ? strtotime($date) : 0
