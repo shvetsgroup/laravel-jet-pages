@@ -23,16 +23,27 @@ class RobotsTxtController extends Controller
      */
     public function robots()
     {
-        if (app()->environment() == 'production') {
-            // If on the live server, serve a nice, welcoming robots.txt.
-            $this->robots->addUserAgent('*');
-            $this->robots->addSitemap(url('sitemap.xml'));
-        } else {
-            // If you're on any other server, tell everyone to go away.
-            $this->robots->addUserAgent('*');
-            $this->robots->addDisallow('/');
+        $robots_txt = $this->robots->generate();
+
+        if (!$robots_txt) {
+            $addedStar = false;
+
+            if (strpos($robots_txt, 'sitemap.xml') === false) {
+                $this->robots->addUserAgent('*');
+                $addedStar = true;
+                $this->robots->addSitemap(url('sitemap.xml'));
+            }
+
+            if (app()->environment() != 'production') {
+                if (!$addedStar) {
+                    $this->robots->addUserAgent('*');
+                }
+                $this->robots->addDisallow('/');
+            }
+
+            $robots_txt = $this->robots->generate();
         }
 
-        return response($this->robots->generate(), 200, ['Content-Type' => 'text/plain']);
+        return response($robots_txt, 200, ['Content-Type' => 'text/plain']);
     }
 }
