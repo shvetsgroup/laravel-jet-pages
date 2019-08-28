@@ -31,11 +31,6 @@ if (!function_exists('declare_catch_all_route')) {
 // the route list. Otherwise, catch-all route will break some other
 // routes registered after it.
 app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDomains) {
-    // Having the routes rebuild each time on development is painful.
-    // We can rely on a catch-all route during dev time.
-    if (config('app.debug')) {
-        return declare_catch_all_route($router);
-    }
 
     $routesFile = storage_path('app/routes/routes.json');
     if (!file_exists($routesFile)) {
