@@ -2,13 +2,14 @@
 
 namespace ShvetsGroup\Tests\JetPages\Builders;
 
+use Illuminate\Support\Facades\Artisan;
 use Mockery;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
 use ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser;
+use ShvetsGroup\JetPages\Builders\PostProcessors\RedirectsPostProcessor;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
-use function ShvetsGroup\JetPages\content_path;
 
 class BaseBuilderTest extends AbstractTestCase
 {
@@ -20,6 +21,7 @@ class BaseBuilderTest extends AbstractTestCase
     public function setUp()
     {
         parent::setUp();
+        $this->linkFixtureContent();
     }
 
     protected function getEnvironmentSetUp($app)
@@ -61,7 +63,7 @@ class BaseBuilderTest extends AbstractTestCase
     }
 
     /**
-     * Test that registed scanner is run during the scan.
+     * Test that registered scanner is run during the scan.
      */
     public function testBuild2()
     {
@@ -73,6 +75,31 @@ class BaseBuilderTest extends AbstractTestCase
 
         $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.');
         $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.');
+    }
+
+    /**
+     * Test that registered scanner is run during the scan.
+     */
+    public function testBuild3()
+    {
+        $this->builder->registerScanner(PageScanner::class, 'pages');
+        $this->builder->registerParser(MetaInfoParser::class);
+        $this->builder->registerPostProcessor(RedirectsPostProcessor::class);
+        $this->builder->build();
+
+        $this->refreshApplication();
+
+        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.');
+        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.');
+        $this->get('a')->assertRedirect('b');
+
+        $this->app = $this->createApplication(function(){
+            config(['app.debug' => true]);
+        });
+
+        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.');
+        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.');
+        $this->get('a')->assertRedirect('b');
     }
 
     /**
@@ -89,5 +116,28 @@ class BaseBuilderTest extends AbstractTestCase
     public function testFindFilesErrorPathNonExistent()
     {
         $this->builder->registerScanner(PageScanner::class, ['123']);
+    }
+
+    /**
+     * This is a hacky solution to pass some config before routes initialization.
+     */
+    public function createApplication($afterConfigFunc = null)
+    {
+        $app = $this->resolveApplication();
+
+        $this->resolveApplicationBindings($app);
+        $this->resolveApplicationExceptionHandler($app);
+        $this->resolveApplicationCore($app);
+        $this->resolveApplicationConfiguration($app);
+
+        if ($afterConfigFunc) {
+            call_user_func($afterConfigFunc);
+        }
+
+        $this->resolveApplicationHttpKernel($app);
+        $this->resolveApplicationConsoleKernel($app);
+        $this->resolveApplicationBootstrappers($app);
+
+        return $app;
     }
 }

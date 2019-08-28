@@ -22,6 +22,7 @@ class PageScannerTest extends AbstractTestCase
     public function setUp()
     {
         parent::setUp();
+        $this->linkFixtureContent();
         $this->scanner = new PageScanner();
         $this->files = app('Illuminate\Filesystem\Filesystem');
     }

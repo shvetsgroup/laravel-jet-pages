@@ -96,6 +96,13 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
             ]);
         }
         @unlink($this->getBasePath() . '/resources/content');
+    }
+
+    /**
+     * Link directory with test content.
+     */
+    public function linkFixtureContent() {
+        @unlink($this->getBasePath() . '/resources/content');
         symlink(__DIR__ . '/fixture/resources/content', $this->getBasePath() . '/resources/content');
     }
 

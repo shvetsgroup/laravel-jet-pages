@@ -227,8 +227,18 @@ class PageUtils
      * @param $locale
      * @return string
      */
-    static function getLocaleDomain($locale)
+    static function getLocaleDomain($locale, $reset = false)
     {
+        static $cachedValue = [];
+
+        if ($reset) {
+            $cachedValue = [];
+        }
+
+        if (isset($cachedValue[$locale])) {
+            return $cachedValue[$locale];
+        }
+
         $currentDomain = static::getHost();
 
         $localeDomains = config('laravellocalization.localeDomains');
@@ -243,10 +253,14 @@ class PageUtils
                         $domain = static::getHost(config('app.url'));
                     }
 
+                    $cachedValue[$locale] = $domain;
+
                     return $domain;
                 }
             }
         }
+
+        $cachedValue[$locale] = $currentDomain;
 
         return $currentDomain;
     }

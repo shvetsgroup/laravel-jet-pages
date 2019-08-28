@@ -15,6 +15,7 @@ class OutlineBuilderTest extends AbstractTestCase
     public function setUp()
     {
         parent::setUp();
+        $this->linkFixtureContent();
         $this->outline = app()->make(Outline::class);
     }
 

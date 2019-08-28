@@ -20,6 +20,7 @@ class PageUtilsTest extends AbstractTestCase
     {
         config(['laravellocalization' => []]);
         app()->setLocale('en');
+        PageUtils::getLocaleDomain('', true);
     }
 
     public function setConfigToOneLocale()
@@ -31,6 +32,7 @@ class PageUtilsTest extends AbstractTestCase
             ]
         ]);
         app()->setLocale('en');
+        PageUtils::getLocaleDomain('', true);
     }
 
     public function setConfigToMultipleLocales()
@@ -44,6 +46,7 @@ class PageUtilsTest extends AbstractTestCase
             ]
         ]);
         app()->setLocale('en');
+        PageUtils::getLocaleDomain('', true);
     }
 
     public function setConfigToMultipleLocaleDomains() {
@@ -55,6 +58,7 @@ class PageUtilsTest extends AbstractTestCase
             ]
         ]);
         app()->setLocale('en');
+        PageUtils::getLocaleDomain('', true);
     }
 
     public function testExtractLocaleFromUri()

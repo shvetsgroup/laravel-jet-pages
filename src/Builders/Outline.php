@@ -18,7 +18,7 @@ class Outline
                 return Yaml::parse($files->get($possible_path));
             }
         }
-        return null;
+        return [];
     }
 
     public function getFlatOutline($outline_raw = null, $locale = '')
@@ -28,9 +28,6 @@ class Outline
         }
 
         $raw = $outline_raw ?: $this->getRawOutline(null, $locale);
-        if (!$raw && $this->flat_outline[$locale]) {
-            return $this->flat_outline[$locale];
-        }
 
         $this->flat_outline[$locale] = $this->walkOutlineRecursive($raw);
 

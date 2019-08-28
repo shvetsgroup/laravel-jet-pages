@@ -19,6 +19,7 @@ class IncludeRendererTest extends AbstractTestCase
     public function setUp()
     {
         parent::setUp();
+        $this->linkFixtureContent();
         $this->renderer = new IncludeRenderer();
         $this->pages = new SimplePageRegistry();
     }
