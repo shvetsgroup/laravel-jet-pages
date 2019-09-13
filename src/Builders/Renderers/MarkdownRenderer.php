@@ -52,7 +52,7 @@ class MarkdownRenderer extends AbstractRenderer
             return $this->getConverter($locale, $registry)->convertToHtml($content);
         }
 
-        $hash = $locale.md5($content);
+        $hash = 'md_' . $locale.md5($content);
 
         if (!$this->cache->has($hash)) {
             $result = $this->getConverter($locale, $registry)->convertToHtml($content);

@@ -166,13 +166,17 @@ class PageUtils
      * @param $locale
      * @return string
      */
-    static function getLocalePrefix($locale, $onMainDomain = false)
+    static function getLocalePrefix($locale, $onMainDomain = false, $reset = false)
     {
+        static $cache = [];
+
+        if ($reset) {
+            $cache = [];
+        }
+
         if (!$locale) {
             return '';
         }
-
-        static $cache = [];
 
         if (!isset($cache[$locale][$onMainDomain])) {
             $cache[$locale] = $cache[$locale] ?? [];
