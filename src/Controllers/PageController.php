@@ -106,7 +106,7 @@ class PageController extends Controller
         }
 
         $domain = PageUtils::getHost();
-        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
+        $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
         if (!$localesOnThisDomain) {
             throw new \Exception("Can not determine locale configuration on this domain.");
         }

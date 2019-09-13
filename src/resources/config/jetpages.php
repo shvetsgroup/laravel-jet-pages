@@ -101,6 +101,8 @@ return [
     */
     'rebuild_page_on_view' => env('APP_DEBUG', false),
 
+    'cache_markdown' => env('APP_CACHE_MARKDOWN', false),
+
     /*
     |--------------------------------------------------------------------------
     | Additional view providers

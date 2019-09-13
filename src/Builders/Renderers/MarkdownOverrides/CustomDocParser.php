@@ -14,6 +14,7 @@ use League\CommonMark\Environment;
 use League\CommonMark\InlineParserEngine;
 use League\CommonMark\Node\NodeWalker;
 use League\CommonMark\Reference\Reference;
+use League\CommonMark\Reference\ReferenceMap;
 
 /**
  * Exact copy of DocParser with addition of global reference cache.
@@ -25,12 +26,17 @@ class CustomDocParser extends DocParser
     /**
      * @var array Custom references map.
      */
-    private $references = [];
+    private $referenceMap;
+
     /**
-     * @param array $references
+     * @param  array  $references
      */
-    public function setReferences($references) {
-        $this->references = $references;
+    public function setReferences($references)
+    {
+        $this->referenceMap = new ReferenceMap();
+        foreach ($references as $title => $pair) {
+            $this->referenceMap->addReference(new Reference($title, $pair['url'], $pair['title']));
+        }
     }
     //-------------------------
 
@@ -51,7 +57,7 @@ class CustomDocParser extends DocParser
     private $maxNestingLevel;
 
     /**
-     * @param Environment $environment
+     * @param  Environment  $environment
      */
     public function __construct(Environment $environment)
     {
@@ -69,7 +75,7 @@ class CustomDocParser extends DocParser
     }
 
     /**
-     * @param string $input
+     * @param  string  $input
      *
      * @return string[]
      */
@@ -88,19 +94,13 @@ class CustomDocParser extends DocParser
     }
 
     /**
-     * @param string $input
+     * @param  string  $input
      *
      * @return Document
      */
     public function parse($input)
     {
-        $context = new Context(new Document(), $this->getEnvironment());
-
-        //-------------------------
-        foreach ($this->references as $title => $pair) {
-            $context->getDocument()->getReferenceMap()->addReference(new Reference($title, $pair['url'], $pair['title']));
-        }
-        //-------------------------
+        $context = new Context(new CustomDocument($this->referenceMap), $this->getEnvironment());
 
         $lines = $this->preProcessInput($input);
         foreach ($lines as $line) {
@@ -182,8 +182,8 @@ class CustomDocParser extends DocParser
     /**
      * Sets the container to the last open child (or its parent)
      *
-     * @param ContextInterface $context
-     * @param Cursor           $cursor
+     * @param  ContextInterface  $context
+     * @param  Cursor  $cursor
      */
     private function resetContainer(ContextInterface $context, Cursor $cursor)
     {
@@ -208,8 +208,8 @@ class CustomDocParser extends DocParser
     /**
      * Parse blocks
      *
-     * @param ContextInterface $context
-     * @param Cursor           $cursor
+     * @param  ContextInterface  $context
+     * @param  Cursor  $cursor
      */
     private function parseBlocks(ContextInterface $context, Cursor $cursor)
     {
@@ -230,8 +230,8 @@ class CustomDocParser extends DocParser
     }
 
     /**
-     * @param ContextInterface $context
-     * @param Cursor           $cursor
+     * @param  ContextInterface  $context
+     * @param  Cursor  $cursor
      *
      * @return bool
      */
@@ -244,8 +244,8 @@ class CustomDocParser extends DocParser
     }
 
     /**
-     * @param ContextInterface $context
-     * @param Cursor           $cursor
+     * @param  ContextInterface  $context
+     * @param  Cursor  $cursor
      */
     private function setAndPropagateLastLineBlank(ContextInterface $context, Cursor $cursor)
     {

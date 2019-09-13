@@ -2,56 +2,79 @@
 
 namespace ShvetsGroup\JetPages\Builders\Renderers;
 
-use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Converter;
 use League\CommonMark\Environment;
 use League\CommonMark\HtmlRenderer;
+use ShvetsGroup\JetPages\Builders\Renderers\MarkdownOverrides\CustomDocument;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
 class MarkdownRenderer extends AbstractRenderer
 {
-    protected $converter;
-
-    protected $docParser;
-
+    protected $converters;
+    protected $docParsers;
     protected $references = [];
     protected $referenceLocale = null;
 
     public function __construct()
     {
-        $env = Environment::createCommonMarkEnvironment();
-        $env->mergeConfig([
-            'html_input' => 'allow',
-        ]);
-        $renderer = new HtmlRenderer($env);
-        $this->docParser = new MarkdownOverrides\CustomDocParser($env);
-        $this->converter = new Converter($this->docParser, $renderer);
+        $this->docParsers = [];
+        $this->converters = [];
     }
 
     /**
      * @param $content
-     * @param Page $page
-     * @param PageRegistry $registry
+     * @param  Page  $page
+     * @param  PageRegistry  $registry
      * @return string
      */
     public function renderContent($content, Page $page, PageRegistry $registry)
     {
         if ($page->getAttribute('extension') == 'md') {
-
-            // This speeds up references rendering for about 800%.
-            if (! isset($this->references[$page->locale])) {
-                $this->references[$page->locale] = $this->getAllReferences($page->locale, $registry);
-            }
-            if ($this->referenceLocale != $page->locale) {
-                $this->docParser->setReferences($this->references[$page->locale]);
-                $this->referenceLocale = $page->locale;
-            }
-
-            $content = $this->converter->convertToHtml($content);
+            $content = $this->mdToHtml($content, $page->locale, $registry);
         }
 
         return $content;
+    }
+
+    /**
+     * Convert markdown into HTML.
+     */
+    public function mdToHtml($content, $locale, PageRegistry $registry)
+    {
+        if (!config('jetpages.cache_markdown')) {
+            return $this->getConverter($locale, $registry)->convertToHtml($content);
+        }
+
+        $hash = $locale.md5($content);
+
+        if (!cache()->has($hash)) {
+            $cache = $this->getConverter($locale, $registry)->convertToHtml($content);
+            cache()->forever($hash, $cache);
+            return $cache;
+        }
+
+        return cache($hash);
+    }
+
+    /**
+     * Get Markdown converter for a locale.
+     */
+    protected function getConverter($locale, PageRegistry $registry)
+    {
+        if (!isset($this->converters[$locale])) {
+            $env = Environment::createCommonMarkEnvironment();
+            $env->mergeConfig([
+                'html_input' => 'allow',
+            ]);
+            $env->addBlockRenderer(CustomDocument::class, new \League\CommonMark\Block\Renderer\DocumentRenderer());
+            $renderer = new HtmlRenderer($env);
+            $this->docParsers[$locale] = new MarkdownOverrides\CustomDocParser($env);
+            $this->docParsers[$locale]->setReferences($this->getAllReferences($locale, $registry));
+            $this->converters[$locale] = new Converter($this->docParsers[$locale], $renderer);
+        }
+
+        return $this->converters[$locale];
     }
 
     private function getAllReferences($page_locale, PageRegistry $registry)

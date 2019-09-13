@@ -101,7 +101,7 @@ class Page implements Arrayable
             $this->attributes['uri'] = $this->uri();
         }
 
-        return Arr::get($this->attributes, $key, $default);
+        return $this->attributes[$key] ?? $default;
     }
 
     /**
@@ -120,7 +120,7 @@ class Page implements Arrayable
         if ($key == 'slug') {
             $value = PageUtils::uriToSlug($value);
             if (!$force) {
-                Arr::set($this->attributes, 'oldSlug', array_get($this->attributes, 'slug'));
+                $this->attributes['oldSlug'] = $this->attributes['slug'] ?? null;
             }
         }
         if ($key == 'slug' || $key == 'locale') {

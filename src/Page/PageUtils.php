@@ -39,7 +39,7 @@ class PageUtils
         $localeDomains = config('laravellocalization.localeDomains');
         if ($localeDomains) {
             $domain = $parts['host'];
-            $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
+            $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
 
             if (!$localesOnThisDomain) {
                 throw new \Exception("Can not determine locale configuration on this domain.");
@@ -107,7 +107,7 @@ class PageUtils
      * Check if the passed value is valid locale.
      *
      * @param $string
-     * @param null $supportedLocales
+     * @param  null  $supportedLocales
      * @return bool
      */
     static function isValidLocale($string, $supportedLocales = null)
@@ -136,7 +136,7 @@ class PageUtils
      */
     static function makeLocaleSlug($locale, $slug)
     {
-        return ($locale ? $locale . '/' : '') . $slug;
+        return ($locale ? $locale.'/' : '').$slug;
     }
 
     /**
@@ -155,7 +155,7 @@ class PageUtils
             return $locale;
         }
 
-        return $prefix . $uri;
+        return $prefix.$uri;
     }
 
     /**
@@ -170,30 +170,40 @@ class PageUtils
             return '';
         }
 
-        $hideDefaultLocaleInUrl = config('laravellocalization.hideDefaultLocaleInURL', true);
-        if (!$hideDefaultLocaleInUrl) {
-            return $locale . '/';
+        static $cache = [];
+
+        if (!isset($cache[$locale][$onMainDomain])) {
+            $cache[$locale] = $cache[$locale] ?? [];
+
+            $cache[$locale][$onMainDomain] = (function ($locale, $onMainDomain) {
+                $hideDefaultLocaleInUrl = config('laravellocalization.hideDefaultLocaleInURL', true);
+                if (!$hideDefaultLocaleInUrl) {
+                    return $locale.'/';
+                }
+
+                $localeDomains = config('laravellocalization.localeDomains');
+                if (!$localeDomains || $onMainDomain) {
+                    return ($locale == config('app.default_locale', '')) ? '' : $locale.'/';
+                }
+
+                $domain = static::getHost();
+                foreach ($localeDomains as $d => $localesInDomain) {
+                    $localesInDomain = array_wrap($localesInDomain);
+                    if (in_array($locale, $localesInDomain)) {
+                        $domain = $d;
+                    }
+                }
+                $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
+
+                if ($locale == reset($localesOnThisDomain)) {
+                    return '';
+                }
+
+                return $locale.'/';
+            })($locale, $onMainDomain);
         }
 
-        $localeDomains = config('laravellocalization.localeDomains');
-        if (!$localeDomains || $onMainDomain) {
-            return ($locale == config('app.default_locale', '')) ? '' : $locale . '/';
-        }
-
-        $domain = static::getHost();
-        foreach ($localeDomains as $d => $localesInDomain) {
-            $localesInDomain = array_wrap($localesInDomain);
-            if (in_array($locale, $localesInDomain)) {
-                $domain = $d;
-            }
-        }
-        $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain));
-
-        if ($locale == reset($localesOnThisDomain)) {
-            return '';
-        }
-
-        return $locale . '/';
+        return $cache[$locale][$onMainDomain];
     }
 
     /**
@@ -268,10 +278,11 @@ class PageUtils
     /**
      * Return locales that should be present on this domain.
      *
-     * @param null $url
+     * @param  null  $url
      * @return array
      */
-    static function getLocalesOnDomain($url = null) {
+    static function getLocalesOnDomain($url = null)
+    {
         if (!$url) {
             $url = url()->current();
         }
@@ -283,17 +294,15 @@ class PageUtils
 
         if (empty($parts['host'])) {
             $domain = request()->getHost();
-        }
-        else {
+        } else {
             $domain = $parts['host'];
         }
 
         $localeDomains = config('laravellocalization.localeDomains');
         $localesOnThisDomain = null;
         if ($localeDomains) {
-            $localesOnThisDomain = array_wrap(array_get($localeDomains, $domain, array_get($localeDomains, '')));
-        }
-        else {
+            $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
+        } else {
             $supportedLocales = config('laravellocalization.supportedLocales');
             return $supportedLocales ? array_keys($supportedLocales) : [app()->getLocale()];
         }
@@ -341,23 +350,25 @@ class PageUtils
         $parts = parse_url($url);
 
         if (empty($parts['host'])) {
-            return trim(config('app.url'), '/') . '/';
-        }
-        else if (empty($parts['scheme'])) {
-            $parts['scheme'] = config('sg.ssl') ? 'https' : 'http';
+            return trim(config('app.url'), '/').'/';
+        } else {
+            if (empty($parts['scheme'])) {
+                $parts['scheme'] = config('sg.ssl') ? 'https' : 'http';
+            }
         }
 
-        return $parts['scheme'] . '://' . $parts['host'] . '/';
+        return $parts['scheme'].'://'.$parts['host'].'/';
     }
 
     /**
      * Get an URL with a proper local domain.
      *
      * @param $uri
-     * @param null $locale
+     * @param  null  $locale
      * @return string
      */
-    static function absoluteUrl($uri, $locale = null) {
+    static function absoluteUrl($uri, $locale = null)
+    {
         $url = url($uri, [], config('sg.ssl'));
 
         $localeDomains = config('laravellocalization.localeDomains');
