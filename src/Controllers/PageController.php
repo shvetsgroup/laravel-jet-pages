@@ -2,8 +2,15 @@
 
 namespace ShvetsGroup\JetPages\Controllers;
 
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Illuminate\Routing\Redirector;
+use ReflectionException;
+use ReflectionObject;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use ShvetsGroup\JetPages\Page\PageUtils;
 
@@ -22,15 +29,15 @@ class PageController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param string $uri
-     * @param Request $request
-     * @return \Illuminate\Http\Response
+     * @param  string  $uri
+     * @param  Request  $request
+     * @return Response
      */
     public function show(Request $request, $uri = null)
     {
         $uri = $uri ?: $request->path();
 
-        $fullUrl = PageUtils::getBaseUrl() . ltrim($uri, '/');
+        $fullUrl = PageUtils::getBaseUrl().ltrim($uri, '/');
 
         list($locale, $_uri) = PageUtils::extractLocaleFromURL($fullUrl);
         $slug = PageUtils::uriToSlug($_uri);
@@ -49,8 +56,7 @@ class PageController extends Controller
             $redirectsFile = storage_path('app/redirects/redirects.json');
             if (file_exists($redirectsFile)) {
                 $redirects = json_decode(file_get_contents($redirectsFile), true);
-            }
-            else {
+            } else {
                 $redirects = [];
             }
 
@@ -77,11 +83,12 @@ class PageController extends Controller
     /**
      * Redirect route.
      *
-     * @param null $from
-     * @param null $to
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @param  null  $from
+     * @param  null  $to
+     * @return RedirectResponse|Redirector
      */
-    public function redirect($from, $to) {
+    public function redirect($from, $to)
+    {
         return redirect($to, 301);
     }
 
@@ -89,9 +96,10 @@ class PageController extends Controller
      * Set app locale.
      *
      * @param $locale
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public function setLocale($locale) {
+    public function setLocale($locale)
+    {
         if (!app()->bound('laravellocalization')) {
             app()->setLocale($locale);
             return;
@@ -108,11 +116,11 @@ class PageController extends Controller
         $domain = PageUtils::getHost();
         $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
         if (!$localesOnThisDomain) {
-            throw new \Exception("Can not determine locale configuration on this domain.");
+            throw new Exception("Can not determine locale configuration on this domain.");
         }
 
         $defaultLocale = reset($localesOnThisDomain);
-        $r = new \ReflectionObject($localization);
+        $r = new ReflectionObject($localization);
         $p = $r->getProperty('defaultLocale');
         $p->setAccessible(true);
         $p->setValue($localization, $defaultLocale);
@@ -138,7 +146,7 @@ class PageController extends Controller
     /**
      * This timestamp can be used to invalidate local client content cache.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getContentTimestamp()
     {

@@ -8,8 +8,8 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 interface PostProcessor
 {
     /**
-     * @param Page[] $updatedPages
-     * @param PageRegistry $registry
+     * @param  Page[]  $updatedPages
+     * @param  PageRegistry  $registry
      * @return
      */
     public function postProcess(array $updatedPages, PageRegistry $registry);

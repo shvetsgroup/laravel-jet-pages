@@ -2,6 +2,8 @@
 
 namespace ShvetsGroup\JetPages\Builders;
 
-class BuilderException extends \Exception
+use Exception;
+
+class BuilderException extends Exception
 {
 }

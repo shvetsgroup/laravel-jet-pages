@@ -2,6 +2,8 @@
 
 namespace ShvetsGroup\JetPages\Builders\Renderers;
 
+use Illuminate\Contracts\Cache\Store;
+use League\CommonMark\Block\Renderer\DocumentRenderer;
 use League\CommonMark\Converter;
 use League\CommonMark\Environment;
 use League\CommonMark\HtmlRenderer;
@@ -11,15 +13,19 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 
 class MarkdownRenderer extends AbstractRenderer
 {
-    protected $converters;
-    protected $docParsers;
+    /**
+     * @var Store
+     */
+    private $cache;
+
+    protected $converters = [];
+    protected $docParsers = [];
     protected $references = [];
     protected $referenceLocale = null;
 
     public function __construct()
     {
-        $this->docParsers = [];
-        $this->converters = [];
+        $this->cache = app('cache.store');
     }
 
     /**
@@ -48,13 +54,13 @@ class MarkdownRenderer extends AbstractRenderer
 
         $hash = $locale.md5($content);
 
-        if (!cache()->has($hash)) {
-            $cache = $this->getConverter($locale, $registry)->convertToHtml($content);
-            cache()->forever($hash, $cache);
-            return $cache;
+        if (!$this->cache->has($hash)) {
+            $result = $this->getConverter($locale, $registry)->convertToHtml($content);
+            $this->cache->forever($hash, $result);
+            return $result;
         }
 
-        return cache($hash);
+        return $this->cache->get($hash);
     }
 
     /**
@@ -67,7 +73,7 @@ class MarkdownRenderer extends AbstractRenderer
             $env->mergeConfig([
                 'html_input' => 'allow',
             ]);
-            $env->addBlockRenderer(CustomDocument::class, new \League\CommonMark\Block\Renderer\DocumentRenderer());
+            $env->addBlockRenderer(CustomDocument::class, new DocumentRenderer());
             $renderer = new HtmlRenderer($env);
             $this->docParsers[$locale] = new MarkdownOverrides\CustomDocParser($env);
             $this->docParsers[$locale]->setReferences($this->getAllReferences($locale, $registry));

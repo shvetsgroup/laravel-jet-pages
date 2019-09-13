@@ -2,14 +2,15 @@
 
 namespace ShvetsGroup\JetPages\Builders\Parsers;
 
+use RuntimeException;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
 class NavigationParser implements Parser
 {
     /**
-     * @param Page $page
-     * @param PageRegistry $registry
+     * @param  Page  $page
+     * @param  PageRegistry  $registry
      */
     public function parse(Page $page, PageRegistry $registry)
     {
@@ -27,13 +28,16 @@ class NavigationParser implements Parser
         $getNavData = function ($locale, $slug) use ($registry) {
             $page = $registry->findBySlug($locale, $slug);
             if (!$page) {
-                // TODO: fix before production.
-                return;
-                throw new \RuntimeException("Can not find page with id '$locale/$slug'.");
+                if (config('app.debug')) {
+                    throw new RuntimeException("Can not find page with id '$locale/$slug'.");
+                }
+                else {
+                    return null;
+                }
             }
             return [
                 'href' => $page->uri(true, true),
-                'title'  => $page->getAttribute('title_short') ?: $page->getAttribute('title'),
+                'title' => $page->getAttribute('title_short') ?: $page->getAttribute('title'),
             ];
         };
 

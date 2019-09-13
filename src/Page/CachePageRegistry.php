@@ -2,10 +2,12 @@
 
 namespace ShvetsGroup\JetPages\Page;
 
+use Illuminate\Contracts\Cache\Store;
+
 class CachePageRegistry extends SimplePageRegistry
 {
     /**
-     * @var \Illuminate\Contracts\Cache\Store
+     * @var Store
      */
     private $cache;
 
@@ -97,7 +99,7 @@ class CachePageRegistry extends SimplePageRegistry
 
     /**
      * Write page data to repository.
-     * @param Page $page
+     * @param  Page  $page
      * @return Page
      */
     public function save(Page $page)
@@ -112,7 +114,7 @@ class CachePageRegistry extends SimplePageRegistry
 
     /**
      * Scratch page data to repository.
-     * @param string $localeSlug
+     * @param  string  $localeSlug
      */
     protected function scratch($localeSlug)
     {
@@ -126,14 +128,14 @@ class CachePageRegistry extends SimplePageRegistry
      * Add or remove a page from index.
      *
      * @param $localeSlug
-     * @param bool $delete
+     * @param  bool  $delete
      */
-    private function updateIndex($localeSlug, $time = 0, $delete = false) {
+    private function updateIndex($localeSlug, $time = 0, $delete = false)
+    {
         $index = $this->cache->get("jetpage_index", []);
         if ($delete) {
             unset($index[$localeSlug]);
-        }
-        else {
+        } else {
             $index[$localeSlug] = $time;
         }
         $this->cache->forever("jetpage_index", $index);

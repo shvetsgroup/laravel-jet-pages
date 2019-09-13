@@ -24,13 +24,13 @@ class Build extends Command
 
     /**
      * Execute console command.
-     * @param BaseBuilder $builder
+     * @param  BaseBuilder  $builder
      */
     public function handle(BaseBuilder $builder)
     {
         $start_time = microtime(true);
         $reset = $this->option('reset');
         $builder->build($reset);
-        print('Content has been successfully re-built in ' . round(microtime(true) - $start_time, 4) . 's');
+        print('Content has been successfully re-built in '.round(microtime(true) - $start_time, 4).'s');
     }
 }

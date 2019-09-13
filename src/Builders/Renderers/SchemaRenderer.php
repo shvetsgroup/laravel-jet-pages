@@ -11,8 +11,8 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 class SchemaRenderer implements Renderer
 {
     /**
-     * @param Page $page
-     * @param PageRegistry $registry
+     * @param  Page  $page
+     * @param  PageRegistry  $registry
      */
     public function render(Page $page, PageRegistry $registry)
     {

@@ -2,6 +2,8 @@
 
 namespace ShvetsGroup\JetPages\Page;
 
+use Exception;
+
 class PageUtils
 {
     /**
@@ -42,7 +44,7 @@ class PageUtils
             $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
 
             if (!$localesOnThisDomain) {
-                throw new \Exception("Can not determine locale configuration on this domain.");
+                throw new Exception("Can not determine locale configuration on this domain.");
             }
 
             return static::extractLocale($parts['path'] ?? '', false, reset($localesOnThisDomain), array_combine($localesOnThisDomain, $localesOnThisDomain));

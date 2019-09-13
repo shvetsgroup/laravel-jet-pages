@@ -2,6 +2,8 @@
 
 namespace ShvetsGroup\JetPages\Builders\Scanners;
 
-class PageProcessingException extends \Exception
+use Exception;
+
+class PageProcessingException extends Exception
 {
 }

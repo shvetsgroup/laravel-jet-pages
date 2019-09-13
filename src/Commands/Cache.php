@@ -5,7 +5,6 @@ namespace ShvetsGroup\JetPages\Commands;
 use Illuminate\Console\Command;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
 use ShvetsGroup\JetPages\Builders\StaticCache;
-use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageUtils;
 
 class Cache extends Command
@@ -28,7 +27,7 @@ class Cache extends Command
 
     /**
      * Execute console command.
-     * @param BaseBuilder $builder
+     * @param  BaseBuilder  $builder
      */
     public function handle(BaseBuilder $builder)
     {
@@ -39,8 +38,7 @@ class Cache extends Command
 
         if (app()->bound('laravellocalization')) {
             $localization = app('laravellocalization');
-        }
-        else {
+        } else {
             $localization = app();
         }
 
@@ -61,6 +59,6 @@ class Cache extends Command
         }
         $localization->setLocale($currentLocale);
 
-        print('Cache has been successfully re-built in ' . round(microtime(true) - $start_time, 4) . 's');
+        print('Cache has been successfully re-built in '.round(microtime(true) - $start_time, 4).'s');
     }
 }

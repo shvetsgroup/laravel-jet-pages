@@ -12,8 +12,8 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 abstract class AbstractRenderer implements Renderer
 {
     /**
-     * @param Page $page
-     * @param PageRegistry $registry
+     * @param  Page  $page
+     * @param  PageRegistry  $registry
      */
     public function render(Page $page, PageRegistry $registry)
     {
@@ -26,19 +26,20 @@ abstract class AbstractRenderer implements Renderer
 
     /**
      * Return "content" and all fields with start with "content_".
-     * @param Page $page
+     * @param  Page  $page
      * @return array
      */
-    public function getContentFields(Page $page) {
-        return array_filter(array_keys($page->toArray()), function($key){ return preg_match('#content($|_)#', $key); });
+    public function getContentFields(Page $page)
+    {
+        return array_filter(array_keys($page->toArray()), function ($key) { return preg_match('#content($|_)#', $key); });
     }
 
     /**
      * Define in subclass to decorate a page field.
      *
      * @param $content
-     * @param Page $page
-     * @param PageRegistry $registry
+     * @param  Page  $page
+     * @param  PageRegistry  $registry
      * @return string
      */
     abstract public function renderContent($content, Page $page, PageRegistry $registry);
@@ -53,7 +54,7 @@ abstract class AbstractRenderer implements Renderer
         $content = preg_replace_callback('#(```([\s\S]+?)```|<code([^>]*)>([\s\S]+?)</code>|<pre([^>]*)>([\s\S]+?)</pre>|<script([^>]*)>([\s\S]+?)</script>|<style([^>]*)>([\s\S]+?)</style>|%%%([\s\S]+?)%%%)#u',
             function ($m) use (&$code) {
                 $code[] = $m[0];
-                return "#%#%#" . count($code) . "#%#%#";
+                return "#%#%#".count($code)."#%#%#";
             }, $content);
 
         return $content;

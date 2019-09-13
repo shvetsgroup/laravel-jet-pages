@@ -2,10 +2,12 @@
 
 namespace ShvetsGroup\JetPages\Page;
 
+use Illuminate\Database\Connection;
+
 class EloquentPageRegistry extends SimplePageRegistry
 {
     /**
-     * @var \Illuminate\Database\Connection
+     * @var Connection
      */
     private $db;
     protected $db_fields = ['id', 'locale', 'slug', 'title', 'data', 'created_at', 'updated_at'];
@@ -90,7 +92,7 @@ class EloquentPageRegistry extends SimplePageRegistry
 
     /**
      * Write page data to repository.
-     * @param Page $page
+     * @param  Page  $page
      * @return Page
      */
     public function save(Page $page)
@@ -107,7 +109,7 @@ class EloquentPageRegistry extends SimplePageRegistry
 
     /**
      * Scratch page data to repository.
-     * @param string $localeSlug
+     * @param  string  $localeSlug
      */
     protected function scratch($localeSlug)
     {
@@ -119,7 +121,7 @@ class EloquentPageRegistry extends SimplePageRegistry
 
     /**
      * Convert page to a suitable database record.
-     * @param Page $page
+     * @param  Page  $page
      * @return array
      */
     protected function toDbRecord(Page $page)
@@ -150,7 +152,7 @@ class EloquentPageRegistry extends SimplePageRegistry
             return null;
         }
 
-        $attributes = (array)$values;
+        $attributes = (array) $values;
         unset($attributes['id']);
         if (isset($attributes['created_at'])) {
             $attributes['created_at'] = $attributes['created_at'];
@@ -178,7 +180,7 @@ class EloquentPageRegistry extends SimplePageRegistry
 
     /**
      * Return page list keyed with localeSlug.
-     * @param array $records
+     * @param  array  $records
      * @return array
      */
     private function listRecordsByKey($records)

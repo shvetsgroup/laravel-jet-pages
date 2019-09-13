@@ -32,47 +32,47 @@ interface PageRegistry
 
     /**
      * Create a new page object.
-     * @param array $attributes
+     * @param  array  $attributes
      * @return Page
      */
     public function new(array $attributes = []);
 
     /**
      * Create a new page object and save it.
-     * @param array $attributes
+     * @param  array  $attributes
      * @return Page
      */
     public function createAndSave(array $attributes = []);
 
     /**
      * Make sure page timestamps are set.
-     * @param Page $page
+     * @param  Page  $page
      * @return $this
      */
     public function prepare(Page $page);
 
     /**
      * Import pages from other registry.
-     * @param PageRegistry|array $registry
+     * @param  PageRegistry|array  $registry
      */
     public function import($registry);
 
     /**
      * Temporarily add a page to repository. You need to call saveAll to persist them.
-     * @param Page $page
+     * @param  Page  $page
      * @return Page
      */
     public function add(Page $page);
 
     /**
      * Temporarily add pages to repository. You need to call saveAll to persist them.
-     * @param array $pages
+     * @param  array  $pages
      * @return $this
      */
     public function addAll(array $pages);
 
     /**
-     * @param Page $page
+     * @param  Page  $page
      * @return Page
      */
     public function save(Page $page);
@@ -88,7 +88,7 @@ interface PageRegistry
     public function updateIndexes();
 
     /**
-     * @param Page $page
+     * @param  Page  $page
      * @return $this
      */
     public function delete(Page $page);
@@ -108,7 +108,7 @@ interface PageRegistry
      *
      * @param $locale
      * @param $slug
-     * @param array $fields
+     * @param  array  $fields
      * @return mixed
      */
     public function getPageData($locale, $slug, array $fields);
@@ -116,7 +116,7 @@ interface PageRegistry
     /**
      * Load all pages by their field value.
      *
-     * @param string|array $key
+     * @param  string|array  $key
      * @param $value
      * @return Page[]
      */
@@ -125,7 +125,7 @@ interface PageRegistry
     /**
      * Load a first page by its field value.
      *
-     * @param string|array $key
+     * @param  string|array  $key
      * @param $value
      * @return Page
      */
@@ -195,7 +195,7 @@ interface PageRegistry
     public function updateBuildTime();
 
     /**
-     * @param Page $freshPage
+     * @param  Page  $freshPage
      * @return bool
      */
     public function needsUpdate(Page $freshPage);

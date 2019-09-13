@@ -2,9 +2,9 @@
 
 namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
+use ShvetsGroup\JetPages\Builders\StaticCache;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Builders\StaticCache;
 
 class StaticCachePostProcessor implements PostProcessor
 {
@@ -20,15 +20,14 @@ class StaticCachePostProcessor implements PostProcessor
         $this->staticCache = app('jetpages.staticCache');
         if (app()->bound('laravellocalization')) {
             $this->localization = app('laravellocalization');
-        }
-        else {
+        } else {
             $this->localization = app();
         }
     }
 
     /**
-     * @param Page[] $updatedPages
-     * @param PageRegistry $registry
+     * @param  Page[]  $updatedPages
+     * @param  PageRegistry  $registry
      */
     public function postProcess(array $updatedPages, PageRegistry $registry)
     {

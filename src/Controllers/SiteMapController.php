@@ -2,6 +2,7 @@
 
 namespace ShvetsGroup\JetPages\Controllers;
 
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use ShvetsGroup\JetPages\Builders\Outline;
 use ShvetsGroup\JetPages\Page\PageRegistry;
@@ -35,17 +36,17 @@ class SiteMapController extends Controller
 
     /**
      * Display the sitemap.
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function sitemap()
     {
         $pages = $this->pages->getPublic();
 
-        $sitemapChangeFrequency = config('jetpages.sitemap_change_frequency',[
+        $sitemapChangeFrequency = config('jetpages.sitemap_change_frequency', [
             'page' => 'daily'
         ]);
 
-        $sitemapPriorities = config('jetpages.sitemap_priority',[
+        $sitemapPriorities = config('jetpages.sitemap_priority', [
             'page' => 'default'
         ]);
 
@@ -71,8 +72,7 @@ class SiteMapController extends Controller
             } else {
                 if (isset($sitemapPriorities[$page->type]) && $sitemapPriorities[$page->type] != 'default') {
                     $priority = $sitemapPriorities[$page->type];
-                }
-                else {
+                } else {
                     $priority = round(((isset($outline[$slug]) ? (0.5 / max(1, $outline[$slug])) : 0) + 0.5) * 100) / 100;
                 }
             }

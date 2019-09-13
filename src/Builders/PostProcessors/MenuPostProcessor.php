@@ -2,15 +2,16 @@
 
 namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
+use Illuminate\Filesystem\Filesystem;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use ShvetsGroup\JetPages\Page\PageUtils;
-use function \ShvetsGroup\JetPages\content_path;
+use function ShvetsGroup\JetPages\content_path;
 
 class MenuPostProcessor implements PostProcessor
 {
     /**
-     * @var \Illuminate\Filesystem\Filesystem
+     * @var Filesystem
      */
     protected $files;
 
@@ -20,8 +21,8 @@ class MenuPostProcessor implements PostProcessor
     }
 
     /**
-     * @param Page[] $updatedPages
-     * @param PageRegistry $registry
+     * @param  Page[]  $updatedPages
+     * @param  PageRegistry  $registry
      */
     public function postProcess(array $updatedPages, PageRegistry $registry)
     {
@@ -54,7 +55,7 @@ class MenuPostProcessor implements PostProcessor
             }
 
             $this->files->makeDirectory(storage_path('app/menu'), 0755, true, true);
-            $this->files->put(storage_path('app/menu/' . $locale . '.json'), json_encode($menu, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK));
+            $this->files->put(storage_path('app/menu/'.$locale.'.json'), json_encode($menu, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK));
         }
     }
 
@@ -62,8 +63,7 @@ class MenuPostProcessor implements PostProcessor
     {
         if (strlen($uri) > 0 && ($uri[0] == '/' || preg_match('#^https?://#u', $uri))) {
             $result = ['href' => $uri];
-        }
-        else {
+        } else {
             $result = [
                 'href' => PageUtils::makeUri($locale, PageUtils::uriToSlug($uri))
             ];
@@ -79,8 +79,7 @@ class MenuPostProcessor implements PostProcessor
             if (isset($menu_item['_title'])) {
                 if (starts_with($menu_item['_title'], 'trans:')) {
                     $result['title'] = trans($menu_item['_title'], [], $locale);
-                }
-                else {
+                } else {
                     $result['title'] = $menu_item['_title'];
                 }
             }

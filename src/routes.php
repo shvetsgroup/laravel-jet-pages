@@ -18,14 +18,14 @@ if (!function_exists('declare_catch_all_route')) {
 
         if ($nova = config('nova.path', '')) {
             $nova = trim($nova, '/');
-            $exceptions[] = $nova . '$';
-            $exceptions[] = $nova . '/';
+            $exceptions[] = $nova.'$';
+            $exceptions[] = $nova.'/';
             $exceptions[] = 'nova-api/';
         }
 
-        $exceptions = $exceptions ? '(?!' . implode('|', $exceptions) . ')' : '';
+        $exceptions = $exceptions ? '(?!'.implode('|', $exceptions).')' : '';
 
-        $router->middleware('static-cache')->get('{all}', 'ShvetsGroup\JetPages\Controllers\PageController@show')->where(['all' => '^' . $exceptions . '.*$']);
+        $router->middleware('static-cache')->get('{all}', 'ShvetsGroup\JetPages\Controllers\PageController@show')->where(['all' => '^'.$exceptions.'.*$']);
     }
 }
 
@@ -78,7 +78,7 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
             ];
 
             if ($configSupportedLocales) {
-                $routeData['middleware'] = 'set_locale:' . $locale;
+                $routeData['middleware'] = 'set_locale:'.$locale;
             }
 
             if ($configLocaleDomains) {
@@ -86,8 +86,7 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
                     $localeDomains[$locale] = PageUtils::getLocaleDomain($locale);
                 }
                 $routeData['domain'] = $localeDomains[$locale];
-            }
-            elseif ($dynamicStuffOnSubdomain) {
+            } elseif ($dynamicStuffOnSubdomain) {
                 $routeData['domain'] = $mainDomain;
             }
 
@@ -112,7 +111,7 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
             ];
 
             if ($configSupportedLocales) {
-                $routeData['middleware'] = 'set_locale:' . $locale;
+                $routeData['middleware'] = 'set_locale:'.$locale;
             }
 
             if ($configLocaleDomains) {
@@ -120,8 +119,7 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
                     $localeDomains[$locale] = PageUtils::getLocaleDomain($locale);
                 }
                 $routeData['domain'] = $localeDomains[$locale];
-            }
-            elseif ($dynamicStuffOnSubdomain) {
+            } elseif ($dynamicStuffOnSubdomain) {
                 $routeData['domain'] = $mainDomain;
             }
 

@@ -9,8 +9,8 @@ use Symfony\Component\Yaml\Yaml;
 class MetaInfoParser implements Parser
 {
     /**
-     * @param Page $page
-     * @param PageRegistry $registry
+     * @param  Page  $page
+     * @param  PageRegistry  $registry
      */
     public function parse(Page $page, PageRegistry $registry)
     {

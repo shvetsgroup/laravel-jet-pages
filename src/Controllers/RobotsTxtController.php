@@ -2,8 +2,9 @@
 
 namespace ShvetsGroup\JetPages\Controllers;
 
-use Illuminate\Routing\Controller;
 use EllisTheDev\Robots\Robots;
+use Illuminate\Http\Response;
+use Illuminate\Routing\Controller;
 
 class RobotsTxtController extends Controller
 {
@@ -19,7 +20,7 @@ class RobotsTxtController extends Controller
 
     /**
      * Display the robots.txt.
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function robots()
     {

@@ -3,7 +3,6 @@
 namespace ShvetsGroup\JetPages\ViewComposers;
 
 use Illuminate\View\View;
-use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageUtils;
 
 class LocaleComposer
@@ -11,7 +10,7 @@ class LocaleComposer
     /**
      * Bind data to the view.
      *
-     * @param  View $view
+     * @param  View  $view
      *
      * @return void
      */

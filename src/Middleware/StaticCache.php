@@ -2,24 +2,26 @@
 
 namespace ShvetsGroup\JetPages\Middleware;
 
+use App;
+use Auth;
 use Closure;
 use File;
-use Auth;
-use App;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class StaticCache
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request $request
-     * @param  \Closure                 $next
+     * @param  Request  $request
+     * @param  Closure  $next
      *
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
-        /* @var $response \Symfony\Component\HttpFoundation\Response */
+        /* @var $response Response */
         $response = $next($request);
 
         /* @var $staticCache \ShvetsGroup\JetPages\Builders\StaticCache */

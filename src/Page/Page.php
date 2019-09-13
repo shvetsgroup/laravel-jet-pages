@@ -2,9 +2,6 @@
 
 namespace ShvetsGroup\JetPages\Page;
 
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 
 class Page implements Arrayable
@@ -45,7 +42,7 @@ class Page implements Arrayable
 
     /**
      * Return page's locale/slug combination string.
-     * @param string $slugField
+     * @param  string  $slugField
      * @return string
      * @throws PageException
      */
@@ -77,7 +74,7 @@ class Page implements Arrayable
 
     /**
      * Convert page to array.
-     * @param array $attributes
+     * @param  array  $attributes
      * @return $this
      */
     public function setAttributes(array $attributes = [], $force = false)
@@ -92,7 +89,7 @@ class Page implements Arrayable
      * Helper to get attribute.
      *
      * @param $key
-     * @param null $default
+     * @param  null  $default
      * @return mixed
      */
     public function getAttribute($key, $default = null)
@@ -107,9 +104,9 @@ class Page implements Arrayable
     /**
      * Helper to set attribute.
      *
-     * @param string $key
-     * @param mixed $value
-     * @param bool $force
+     * @param  string  $key
+     * @param  mixed  $value
+     * @param  bool  $force
      * @return $this
      */
     public function setAttribute($key, $value, $force = false)
@@ -146,7 +143,7 @@ class Page implements Arrayable
 
     /**
      * Fill the page with an array of attributes.
-     * @param array $attributes
+     * @param  array  $attributes
      * @return $this
      */
     public function fill(array $attributes = [])
@@ -160,8 +157,8 @@ class Page implements Arrayable
 
     /**
      * Generate valid uri from locale and slug.
-     * @param bool $absolute
-     * @param bool $withoutDomain
+     * @param  bool  $absolute
+     * @param  bool  $withoutDomain
      * @return string
      */
     function uri($absolute = false, $withoutDomain = false)
@@ -192,7 +189,7 @@ class Page implements Arrayable
 
     /**
      * Get the translation uris for a page.
-     * @param bool $absolute
+     * @param  bool  $absolute
      * @return array
      */
     function translationUris($absolute = false)
@@ -221,7 +218,7 @@ class Page implements Arrayable
     /**
      * Return all alternative uris of a page.
      *
-     * @param bool $absolute
+     * @param  bool  $absolute
      * @return array
      */
     function alternativeUris($absolute = false)
@@ -275,7 +272,7 @@ class Page implements Arrayable
         $view = $this->getAttribute('view') ?: 'page';
         $view_providers = array_merge([''], config('jetpages.extra_view_providers', []), ["sg/jetpages"]);
         foreach ($view_providers as $view_provider) {
-            $v = $view_provider ? $view_provider . '::' . $view : $view;
+            $v = $view_provider ? $view_provider.'::'.$view : $view;
             if (view()->exists($v)) {
                 $view = $v;
                 break;
@@ -297,7 +294,7 @@ class Page implements Arrayable
     /**
      * Dynamically retrieve attributes on the page.
      *
-     * @param string $key
+     * @param  string  $key
      * @return mixed
      */
     public function __get($key)
@@ -308,8 +305,8 @@ class Page implements Arrayable
     /**
      * Dynamically set attributes on the page.
      *
-     * @param string $key
-     * @param mixed $value
+     * @param  string  $key
+     * @param  mixed  $value
      * @return void
      */
     public function __set($key, $value)
@@ -320,7 +317,7 @@ class Page implements Arrayable
     /**
      * Determine if an attribute or relation exists on the page.
      *
-     * @param string $key
+     * @param  string  $key
      * @return bool
      */
     public function __isset($key)
@@ -331,7 +328,7 @@ class Page implements Arrayable
     /**
      * Unset an attribute on the page.
      *
-     * @param string $key
+     * @param  string  $key
      * @return void
      */
     public function __unset($key)

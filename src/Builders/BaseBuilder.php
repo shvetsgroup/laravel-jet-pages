@@ -2,8 +2,9 @@
 
 namespace ShvetsGroup\JetPages\Builders;
 
-use ShvetsGroup\JetPages\Builders\Scanners\Scanner;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
+use ShvetsGroup\JetPages\Builders\Scanners\Scanner;
+use function ShvetsGroup\JetPages\content_path;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
@@ -90,7 +91,7 @@ class BaseBuilder
         foreach ($paths as &$path) {
             // Relative paths point to content directory.
             if (!$path || $path[0] !== '/') {
-                $path = \ShvetsGroup\JetPages\content_path($path);
+                $path = content_path($path);
             }
             if (!is_dir($path)) {
                 throw new BuilderException("Scanner path should be a directory, '$path' given.");
@@ -146,8 +147,8 @@ class BaseBuilder
 
     /**
      * Build and save the page maps.
-     * @param bool $reset
-     * @param array $localeSlugsToReload
+     * @param  bool  $reset
+     * @param  array  $localeSlugsToReload
      */
     public function build($reset = false, $localeSlugsToReload = [])
     {
@@ -161,9 +162,10 @@ class BaseBuilder
 
         if (!$localeSlugsToReload) {
             $localeSlugsToReload = [];
-        }
-        else if (!is_array($localeSlugsToReload)) {
-            $localeSlugsToReload = [$localeSlugsToReload];
+        } else {
+            if (!is_array($localeSlugsToReload)) {
+                $localeSlugsToReload = [$localeSlugsToReload];
+            }
         }
 
         $updatedPages = $this->scan($this->pageRegistry, $localeSlugsToReload);
@@ -179,15 +181,15 @@ class BaseBuilder
             if ($page->isPrivate()) {
                 continue;
             }
-            $routes[] = $page->locale . ':' . $page->uri();
+            $routes[] = $page->locale.':'.$page->uri();
         }
         $this->files->makeDirectory(dirname($this->routesFile), 0755, true, true);
         $this->files->put($this->routesFile, json_encode($routes));
     }
 
     /**
-     * @param PageRegistry $registry
-     * @param Page[] $pages
+     * @param  PageRegistry  $registry
+     * @param  Page[]  $pages
      * @return Page[]
      */
     protected function getUpdatedPages(PageRegistry $registry, array $pages)
@@ -207,9 +209,9 @@ class BaseBuilder
 
     /**
      * Scan raw files for basic page information.
-     * @param PageRegistry $registry
-     * @param array $localeSlugsToReload
-     * @return \ShvetsGroup\JetPages\Page\Page[]
+     * @param  PageRegistry  $registry
+     * @param  array  $localeSlugsToReload
+     * @return Page[]
      */
     protected function scan(PageRegistry $registry, $localeSlugsToReload = [])
     {
@@ -247,7 +249,7 @@ class BaseBuilder
     }
 
     /**
-     * @param array $scanner_pair
+     * @param  array  $scanner_pair
      * @return Scanner
      */
     private function makeScanner($scanner_pair)
@@ -261,7 +263,7 @@ class BaseBuilder
 
     /**
      * Scan raw files for basic page information.
-     * @param Page $page
+     * @param  Page  $page
      * @return array|Page
      */
     protected function reScan($page)
@@ -278,7 +280,7 @@ class BaseBuilder
         $filepath = dirname($filename);
         foreach ($this->scanners as $scanner_pair) {
             foreach ($scanner_pair['paths'] as $path) {
-                if (mb_strpos($filepath, rtrim($path, '/') . '/') !== false) {
+                if (mb_strpos($filepath, rtrim($path, '/').'/') !== false) {
                     $scanner = $this->makeScanner($scanner_pair);
                     return $scanner->scanFile($filename, $path);
                 }
@@ -289,9 +291,9 @@ class BaseBuilder
 
     /**
      * Parse and decorate basic page objects.
-     * @param string $method
-     * @param PageRegistry $registry
-     * @param Page[] $pages
+     * @param  string  $method
+     * @param  PageRegistry  $registry
+     * @param  Page[]  $pages
      */
     protected function do($method, PageRegistry $registry, $pages = [])
     {
@@ -305,15 +307,14 @@ class BaseBuilder
         if (empty($pages) && $method != 'postProcess') {
             return;
         }
-        
+
         foreach ($this->{$lists[$method]} as $obj_name) {
             $obj = app()->make($obj_name);
             if ($method != 'postProcess') {
                 foreach ($pages as $page) {
                     call_user_func(array($obj, $method), $page, $registry);
                 }
-            }
-            else {
+            } else {
                 call_user_func(array($obj, $method), $pages, $registry);
             }
             $registry->updateIndexes();

@@ -2,6 +2,8 @@
 
 namespace ShvetsGroup\JetPages\Page;
 
-class PageException extends \Exception
+use Exception;
+
+class PageException extends Exception
 {
 }

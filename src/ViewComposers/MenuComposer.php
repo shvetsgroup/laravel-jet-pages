@@ -2,8 +2,8 @@
 
 namespace ShvetsGroup\JetPages\ViewComposers;
 
-use Illuminate\View\View;
 use Cache;
+use Illuminate\View\View;
 
 class MenuComposer
 {
@@ -11,7 +11,7 @@ class MenuComposer
     /**
      * Bind data to the view.
      *
-     * @param  View $view
+     * @param  View  $view
      *
      * @return void
      */
@@ -25,18 +25,16 @@ class MenuComposer
         }
         if (!$view->offsetExists('href')) {
             $uri = '/';
-        }
-        else {
+        } else {
             $uri = $view->offsetGet('href');
         }
 
         $locale = $view->offsetGet('locale');
 
-        $menuFile = storage_path('app/menu/' . $locale . '.json');
+        $menuFile = storage_path('app/menu/'.$locale.'.json');
         if (file_exists($menuFile)) {
             $menu = json_decode(file_get_contents($menuFile), true);
-        }
-        else {
+        } else {
             $menu = [];
         }
 
@@ -57,14 +55,14 @@ class MenuComposer
                 if ($child['href'] == $permalink) {
                     $child['trail'] = true;
                     $child['class'] = $child['class'] ?? '';
-                    $child['class'] = trim($child['class'] . ' trail active');
+                    $child['class'] = trim($child['class'].' trail active');
                     return true;
                 }
                 if (isset($child['sub_menu'])) {
                     if ($this->set_active_trail($child['sub_menu'], $permalink)) {
                         $child['trail'] = true;
                         $child['class'] = $child['class'] ?? '';
-                        $child['class'] = trim($child['class'] . ' trail');
+                        $child['class'] = trim($child['class'].' trail');
                         return true;
                     }
                 }

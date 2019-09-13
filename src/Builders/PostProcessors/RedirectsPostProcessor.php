@@ -2,20 +2,22 @@
 
 namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
+use Illuminate\Contracts\Cache\Store;
+use Illuminate\Filesystem\Filesystem;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use Symfony\Component\Yaml\Yaml;
-use function \ShvetsGroup\JetPages\content_path;
+use function ShvetsGroup\JetPages\content_path;
 
 class RedirectsPostProcessor implements PostProcessor
 {
     /**
-     * @var \Illuminate\Filesystem\Filesystem
+     * @var Filesystem
      */
     protected $files;
 
     /**
-     * @var \Illuminate\Contracts\Cache\Store
+     * @var Store
      */
     private $cache;
 
@@ -26,8 +28,8 @@ class RedirectsPostProcessor implements PostProcessor
     }
 
     /**
-     * @param Page[] $updatedPages
-     * @param PageRegistry $registry
+     * @param  Page[]  $updatedPages
+     * @param  PageRegistry  $registry
      */
     public function postProcess(array $updatedPages, PageRegistry $registry)
     {

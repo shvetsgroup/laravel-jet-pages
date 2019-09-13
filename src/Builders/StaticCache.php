@@ -2,6 +2,7 @@
 
 namespace ShvetsGroup\JetPages\Builders;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use ShvetsGroup\JetPages\Page\Page;
 use Symfony\Component\HttpFoundation\Response;
@@ -9,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 class StaticCache
 {
     /**
-     * @var \Illuminate\Filesystem\Filesystem
+     * @var Filesystem
      */
     protected $files;
 
@@ -19,17 +20,29 @@ class StaticCache
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      */
     public function handleRequest(Request $request, Response $response)
     {
-        if (config('app.debug', false)) return false;
-        if (!auth()->guest()) return false;
-        if (!$request->route()->parameter('cache', true)) return false;
-        if ($request->method() != 'GET') return false;
-        if ($request->query()) return false;
-        if ($response->getStatusCode() != 200) return false;
+        if (config('app.debug', false)) {
+            return false;
+        }
+        if (!auth()->guest()) {
+            return false;
+        }
+        if (!$request->route()->parameter('cache', true)) {
+            return false;
+        }
+        if ($request->method() != 'GET') {
+            return false;
+        }
+        if ($request->query()) {
+            return false;
+        }
+        if ($response->getStatusCode() != 200) {
+            return false;
+        }
 
         $path = $request->path();
         $content = $response->getContent();
@@ -41,12 +54,19 @@ class StaticCache
 
     /**
      * Write cache for a given page.
-     * @param Page $page
+     * @param  Page  $page
      */
-    public function cachePage(Page $page) {
-        if (config('app.debug', false)) return;
-        if (!auth()->guest()) return;
-        if (!$page->getAttribute('cache', true)) return;
+    public function cachePage(Page $page)
+    {
+        if (config('app.debug', false)) {
+            return;
+        }
+        if (!auth()->guest()) {
+            return;
+        }
+        if (!$page->getAttribute('cache', true)) {
+            return;
+        }
 
         $path = $page->uri();
         $content = $page->render();
@@ -57,11 +77,12 @@ class StaticCache
      * Do the actual cache writing.
      * @param $path
      * @param $content
-     * @param bool $is_html
+     * @param  bool  $is_html
      */
-    public function write($path, $content, $is_html = true) {
+    public function write($path, $content, $is_html = true)
+    {
         $cache_dir = config('jetpages.cache_dir', 'cache');
-        $cache_path = public_path($cache_dir . '/' . $path);
+        $cache_path = public_path($cache_dir.'/'.$path);
 
         // Do not create file cache for very long filenames.
         foreach (explode('/', $cache_path) as $part) {
@@ -74,10 +95,9 @@ class StaticCache
             if (!$this->files->isDirectory($cache_path)) {
                 $this->files->makeDirectory($cache_path, 0777, true);
             }
-            $content = $content. "<!-- Cached on " . date('Y-m-d H-i-s') . " -->\n";
-            $this->files->put($cache_path . '/index.html', $content);
-        }
-        else {
+            $content = $content."<!-- Cached on ".date('Y-m-d H-i-s')." -->\n";
+            $this->files->put($cache_path.'/index.html', $content);
+        } else {
             if (!$this->files->isDirectory(dirname($cache_path))) {
                 $this->files->makeDirectory(dirname($cache_path), 0777, true);
             }

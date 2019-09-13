@@ -46,7 +46,7 @@ class SimplePageRegistry implements PageRegistry
 
     /**
      * Import pages from other registry.
-     * @param PageRegistry|array $registry
+     * @param  PageRegistry|array  $registry
      */
     public function import($registry)
     {
@@ -72,7 +72,7 @@ class SimplePageRegistry implements PageRegistry
     /**
      * Create a new page object.
      *
-     * @param array $attributes
+     * @param  array  $attributes
      * @return Page
      */
     public function new(array $attributes = []): Page
@@ -83,7 +83,7 @@ class SimplePageRegistry implements PageRegistry
     /**
      * Create a new page object and save it.
      *
-     * @param array $attributes
+     * @param  array  $attributes
      * @return Page
      */
     public function createAndSave(array $attributes = [])
@@ -93,7 +93,7 @@ class SimplePageRegistry implements PageRegistry
 
     /**
      * Make sure page ready for saving.
-     * @param Page $page
+     * @param  Page  $page
      * @return $this
      */
     public function prepare(Page $page)
@@ -124,7 +124,7 @@ class SimplePageRegistry implements PageRegistry
 
     /**
      * Check if repository has an older version of a page.
-     * @param Page $page
+     * @param  Page  $page
      * @return bool
      */
     public function needsUpdate(Page $page)
@@ -154,7 +154,7 @@ class SimplePageRegistry implements PageRegistry
      *
      * @param $locale
      * @param $slug
-     * @param array $fields
+     * @param  array  $fields
      * @return mixed
      */
     public function getPageData($locale, $slug, array $fields)
@@ -209,9 +209,9 @@ class SimplePageRegistry implements PageRegistry
     /**
      * Load all pages by their field value.
      *
-     * @param string|array $key
+     * @param  string|array  $key
      * @param $value
-     * @param array $pages
+     * @param  array  $pages
      * @return Page[]
      */
     public function findAllBy($key, $value = null, $pages = [])
@@ -222,9 +222,9 @@ class SimplePageRegistry implements PageRegistry
     /**
      * Load a first page by its field value.
      *
-     * @param string|array $key
+     * @param  string|array  $key
      * @param $value
-     * @param array $pages
+     * @param  array  $pages
      * @return Page
      */
     public function findFirstBy($key, $value = null, $pages = [])
@@ -233,10 +233,10 @@ class SimplePageRegistry implements PageRegistry
     }
 
     /**
-     * @param string|array $key
-     * @param null $value
-     * @param bool $returnSingle
-     * @param array $pages
+     * @param  string|array  $key
+     * @param  null  $value
+     * @param  bool  $returnSingle
+     * @param  array  $pages
      * @return array|Page
      */
     protected function findBy($key, $value = null, $returnSingle = false, $pages = [])
@@ -266,7 +266,8 @@ class SimplePageRegistry implements PageRegistry
      * @param $columns
      * @return bool
      */
-    public function hasSearchIndex($columns) {
+    public function hasSearchIndex($columns)
+    {
         $name = join('__', $columns);
         return isset($this->searchIndexes[$name]);
     }
@@ -276,7 +277,8 @@ class SimplePageRegistry implements PageRegistry
      * @param $columns
      * @param $caseSensitive
      */
-    public function makeSearchIndex($columns) {
+    public function makeSearchIndex($columns)
+    {
         $name = join('__', $columns);
         foreach ($this->getAll() as $page) {
             $key = $this->makeSearchIndexKey($columns, $page);
@@ -288,11 +290,12 @@ class SimplePageRegistry implements PageRegistry
      * Make a search index key.
      *
      * @param $columns
-     * @param Page $page
+     * @param  Page  $page
      * @param $caseSensitive
      * @return string
      */
-    protected function makeSearchIndexKey($columns, Page $page) {
+    protected function makeSearchIndexKey($columns, Page $page)
+    {
         $parts = [];
         foreach ($columns as $column) {
             $part = $page->getAttribute($column);
@@ -308,14 +311,15 @@ class SimplePageRegistry implements PageRegistry
      * @param $key
      * @return Page|null
      */
-    public function findInSearchIndex($name, $key, $caseSensitive = false) {
+    public function findInSearchIndex($name, $key, $caseSensitive = false)
+    {
         $key = mb_strtolower(trim($key));
         return $this->searchIndexes[$name][$key] ?? null;
     }
 
     /**
      * Save page back to cache.
-     * @param Page $page
+     * @param  Page  $page
      * @return Page
      */
     public function save(Page $page)
@@ -340,7 +344,7 @@ class SimplePageRegistry implements PageRegistry
     /**
      * Remove old page from the store and index.
      *
-     * @param Page $page
+     * @param  Page  $page
      * @return string
      */
     private function removeOld(Page $page)
@@ -355,7 +359,7 @@ class SimplePageRegistry implements PageRegistry
 
     /**
      * Remove the page.
-     * @param Page $page
+     * @param  Page  $page
      * @return $this
      */
     public function delete(Page $page)
@@ -373,7 +377,8 @@ class SimplePageRegistry implements PageRegistry
      * @return mixed|void
      * @throws PageException
      */
-    function updateIndexes() {
+    function updateIndexes()
+    {
         foreach ($this->pages as $localeSlug => $page) {
             if ($localeSlug !== $page->localeSlug()) {
                 $this->add($page);
@@ -384,7 +389,7 @@ class SimplePageRegistry implements PageRegistry
 
     /**
      * Temporarily add a page to repository. You need to call saveAll to persist them.
-     * @param Page $page
+     * @param  Page  $page
      * @return Page
      */
     public function add(Page $page)
@@ -397,7 +402,7 @@ class SimplePageRegistry implements PageRegistry
 
     /**
      * Temporarily add pages to repository. You need to call saveAll to persist them.
-     * @param array $pages
+     * @param  array  $pages
      * @return $this
      */
     public function addAll(array $pages)
@@ -409,7 +414,7 @@ class SimplePageRegistry implements PageRegistry
 
     /**
      * Scratch page data to repository.
-     * @param string $localeSlug
+     * @param  string  $localeSlug
      */
     protected function scratch($localeSlug)
     {
@@ -426,8 +431,7 @@ class SimplePageRegistry implements PageRegistry
         $timestampFile = storage_path('app/content_timestamps/build.json');
         if (file_exists($timestampFile)) {
             $time = json_decode(file_get_contents($timestampFile));
-        }
-        else {
+        } else {
             $time = 0;
         }
         return $time;

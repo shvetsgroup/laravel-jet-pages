@@ -2,6 +2,8 @@
 
 namespace ShvetsGroup\JetPages\Builders\Scanners;
 
+use Illuminate\Filesystem\Filesystem;
+use function ShvetsGroup\JetPages\content_path;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use ShvetsGroup\JetPages\Page\PageUtils;
@@ -10,7 +12,7 @@ use Symfony\Component\Finder\SplFileInfo;
 class PageScanner implements Scanner
 {
     /**
-     * @var \Illuminate\Filesystem\Filesystem
+     * @var Filesystem
      */
     protected $files;
 
@@ -29,7 +31,7 @@ class PageScanner implements Scanner
     }
 
     /**
-     * @param string $directory
+     * @param  string  $directory
      * @return Page[]
      */
     public function scanDirectory($directory)
@@ -39,7 +41,7 @@ class PageScanner implements Scanner
     }
 
     /**
-     * @param string $directory
+     * @param  string  $directory
      * @return array
      * @throws PageScanningException
      */
@@ -55,7 +57,7 @@ class PageScanner implements Scanner
     }
 
     /**
-     * @param array $files
+     * @param  array  $files
      * @return array
      * @throws PageProcessingException
      */
@@ -81,7 +83,7 @@ class PageScanner implements Scanner
     }
 
     /**
-     * @param SplFileInfo $file
+     * @param  SplFileInfo  $file
      * @return array|Page
      */
     public function processFile(SplFileInfo $file)
@@ -102,15 +104,15 @@ class PageScanner implements Scanner
             'type' => $this->type,
             'extension' => $extension,
             'path' => $file->getRealPath(),
-            'relative_path' => preg_replace('|^' . preg_quote(\ShvetsGroup\JetPages\content_path(), '|u') . '[\/]*|', '', $file->getRealPath()),
+            'relative_path' => preg_replace('|^'.preg_quote(content_path(), '|u').'[\/]*|', '', $file->getRealPath()),
             'content' => $file->getContents(),
             'updated_at' => date('Y-m-d H:i:s', max($file->getMTime(), $file->getCTime())),
         ];
     }
 
     /**
-     * @param string $filepath
-     * @param string $directory
+     * @param  string  $filepath
+     * @param  string  $directory
      * @return array|Page
      */
     public function scanFile($filepath, $directory)

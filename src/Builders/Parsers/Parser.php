@@ -8,8 +8,8 @@ use ShvetsGroup\JetPages\Page\PageRegistry;
 interface Parser
 {
     /**
-     * @param Page $page
-     * @param PageRegistry $registry
+     * @param  Page  $page
+     * @param  PageRegistry  $registry
      */
     public function parse(Page $page, PageRegistry $registry);
 }
