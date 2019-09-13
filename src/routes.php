@@ -5,6 +5,8 @@ use ShvetsGroup\JetPages\Page\PageUtils;
 $router = app('router');
 $configSupportedLocales = config('laravellocalization.supportedLocales');
 $configLocaleDomains = config('laravellocalization.localeDomains');
+$dynamicStuffOnSubdomain = config('sg.dynamic_stuff_on_subdomain');
+$mainDomain = config('sg.main_domain');
 
 if (!function_exists('declare_catch_all_route')) {
     function declare_catch_all_route($router)
@@ -30,7 +32,16 @@ if (!function_exists('declare_catch_all_route')) {
 // Add these routes after bootstrap is done in order to make them last in
 // the route list. Otherwise, catch-all route will break some other
 // routes registered after it.
-app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDomains) {
+app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDomains, $dynamicStuffOnSubdomain, $mainDomain) {
+
+    $router->namespace('ShvetsGroup\JetPages\Controllers')->group(function () use ($router) {
+        $router->get('ajax/jetpages/timestamp', 'PageController@getContentTimestamp');
+
+        $router->group(['middleware' => 'static-cache'], function () use ($router) {
+            $router->get('robots.txt', 'RobotsTxtController@robots');
+            $router->get('sitemap.xml', 'SiteMapController@sitemap');
+        });
+    });
 
     $routesFile = storage_path('app/routes/routes.json');
     if (!file_exists($routesFile)) {
@@ -42,7 +53,7 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
         return declare_catch_all_route($router);
     }
 
-    $router->group(['namespace' => 'ShvetsGroup\JetPages\Controllers'], function () use ($redirectsFile, $router, $configSupportedLocales, $configLocaleDomains) {
+    $router->group(['namespace' => 'ShvetsGroup\JetPages\Controllers'], function () use ($redirectsFile, $router, $configSupportedLocales, $configLocaleDomains, $dynamicStuffOnSubdomain, $mainDomain) {
         $localeDomains = [];
 
         $redirects = json_decode(file_get_contents($redirectsFile), true);
@@ -70,12 +81,14 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
                 $routeData['middleware'] = 'set_locale:' . $locale;
             }
 
-            if ($configSupportedLocales) {
+            if ($configLocaleDomains) {
                 if (!isset($localeDomains[$locale])) {
                     $localeDomains[$locale] = PageUtils::getLocaleDomain($locale);
                 }
-                $domain = $localeDomains[$locale];
-                $routeData['domain'] = $domain;
+                $routeData['domain'] = $localeDomains[$locale];
+            }
+            elseif ($dynamicStuffOnSubdomain) {
+                $routeData['domain'] = $mainDomain;
             }
 
             $router->get($from, $routeData)
@@ -84,7 +97,7 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
         }
     });
 
-    $router->group(['namespace' => 'ShvetsGroup\JetPages\Controllers', 'middleware' => 'static-cache'], function () use ($routesFile, $router, $configSupportedLocales, $configLocaleDomains) {
+    $router->group(['namespace' => 'ShvetsGroup\JetPages\Controllers', 'middleware' => 'static-cache'], function () use ($routesFile, $router, $configSupportedLocales, $configLocaleDomains, $dynamicStuffOnSubdomain, $mainDomain) {
         $localeDomains = [];
 
         $routes = json_decode(file_get_contents($routesFile), true);
@@ -102,12 +115,14 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
                 $routeData['middleware'] = 'set_locale:' . $locale;
             }
 
-            if ($configSupportedLocales) {
+            if ($configLocaleDomains) {
                 if (!isset($localeDomains[$locale])) {
                     $localeDomains[$locale] = PageUtils::getLocaleDomain($locale);
                 }
-                $domain = $localeDomains[$locale];
-                $routeData['domain'] = $domain;
+                $routeData['domain'] = $localeDomains[$locale];
+            }
+            elseif ($dynamicStuffOnSubdomain) {
+                $routeData['domain'] = $mainDomain;
             }
 
             $router->get($uri, $routeData);
@@ -115,11 +130,3 @@ app()->booted(function () use ($router, $configSupportedLocales, $configLocaleDo
     });
 });
 
-$router->namespace('ShvetsGroup\JetPages\Controllers')->group(function () use ($router) {
-    $router->get('ajax/jetpages/timestamp', 'PageController@getContentTimestamp');
-
-    $router->group(['middleware' => 'static-cache'], function () use ($router) {
-        $router->get('robots.txt', 'RobotsTxtController@robots');
-        $router->get('sitemap.xml', 'SiteMapController@sitemap');
-    });
-});
