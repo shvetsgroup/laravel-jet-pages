@@ -49,9 +49,9 @@ abstract class AbstractRenderer implements Renderer
      * @param $code
      * @return string
      */
-    public static function escapeCodeFragments($content, &$code)
+    public static function escapeCodeFragments($content, &$code, $pattern = null)
     {
-        $content = preg_replace_callback('#(```([\s\S]+?)```|<code([^>]*)>([\s\S]+?)</code>|<pre([^>]*)>([\s\S]+?)</pre>|<script([^>]*)>([\s\S]+?)</script>|<style([^>]*)>([\s\S]+?)</style>|%%%([\s\S]+?)%%%)#u',
+        $content = preg_replace_callback($pattern ?? '#(?:```([\s\S]+?)```|<code([^>]*)>([\s\S]+?)</code>|<pre([^>]*)>([\s\S]+?)</pre>|<script([^>]*)>([\s\S]+?)</script>|<style([^>]*)>([\s\S]+?)</style>|%%%([\s\S]+?)%%%)#u',
             function ($m) use (&$code) {
                 $code[] = $m[0];
                 return "#%#%#".count($code)."#%#%#";
