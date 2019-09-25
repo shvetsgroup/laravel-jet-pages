@@ -16,9 +16,11 @@ class Page implements Arrayable
         if (!isset($attributes['locale'])) {
             $attributes['locale'] = config('app.default_locale', '');
         }
+
         if (!isset($attributes['private'])) {
             $attributes['private'] = false;
         }
+
         $this->setAttributes($attributes, true);
     }
 
@@ -114,16 +116,20 @@ class Page implements Arrayable
         if (($key == 'created_at' || $key == 'updated_at') && is_object($value)) {
             $value = $value->timestamp;
         }
+
         if ($key == 'slug') {
             $value = PageUtils::uriToSlug($value);
             if (!$force) {
                 $this->attributes['oldSlug'] = $this->attributes['slug'] ?? null;
             }
         }
+
         if ($key == 'slug' || $key == 'locale') {
             unset($this->attributes['localeSlug']);
         }
-        array_set($this->attributes, $key, $value);
+
+        $this->attributes[$key] = $value;
+
         return $this;
     }
 
@@ -138,6 +144,7 @@ class Page implements Arrayable
         if (isset($this->attributes[$key])) {
             unset($this->attributes[$key]);
         }
+
         return $this;
     }
 
@@ -203,6 +210,7 @@ class Page implements Arrayable
         $pages = app('pages');
         $this_locale = $this->getAttribute('locale');
         $this_slug = $this->getAttribute('slug');
+
         foreach ($locales as $locale => $data) {
             if ($locale == $this_locale) {
                 continue;
@@ -229,11 +237,13 @@ class Page implements Arrayable
 
         // Default language first, and rest sorted by alphabet.
         $default_locale = config('app.default_locale', '');
+
         if ($default_locale && isset($result[$default_locale])) {
             $d = $result[$default_locale];
             unset($result[$default_locale]);
             $result = array_merge([$default_locale => $d], $result);
         }
+
         return $result;
     }
 
