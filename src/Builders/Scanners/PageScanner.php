@@ -3,11 +3,11 @@
 namespace ShvetsGroup\JetPages\Builders\Scanners;
 
 use Illuminate\Filesystem\Filesystem;
-use function ShvetsGroup\JetPages\content_path;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Facades\PageUtils;
 use Symfony\Component\Finder\SplFileInfo;
+use function ShvetsGroup\JetPages\content_path;
 
 class PageScanner implements Scanner
 {

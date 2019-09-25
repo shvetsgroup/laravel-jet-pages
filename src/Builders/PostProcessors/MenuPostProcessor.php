@@ -3,9 +3,9 @@
 namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
 use Illuminate\Filesystem\Filesystem;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Facades\PageUtils;
 use function ShvetsGroup\JetPages\content_path;
 
 class MenuPostProcessor implements PostProcessor
@@ -48,7 +48,7 @@ class MenuPostProcessor implements PostProcessor
             }
             $menu = [
                 'class' => 'menu-list',
-                'children' => []
+                'children' => [],
             ];
             foreach ($outline as $uri => $tree) {
                 $menu['children'][$uri] = $this->build_toc_recursive($registry, $tree, $locale, $uri);
@@ -65,7 +65,7 @@ class MenuPostProcessor implements PostProcessor
             $result = ['href' => $uri];
         } else {
             $result = [
-                'href' => PageUtils::makeUri($locale, PageUtils::uriToSlug($uri))
+                'href' => PageUtils::makeUri($locale, PageUtils::uriToSlug($uri)),
             ];
             $page = $registry->findBySlug($locale, PageUtils::uriToSlug($uri));
 
@@ -101,7 +101,7 @@ class MenuPostProcessor implements PostProcessor
             if ($sub_menu) {
                 $result['sub_menu'] = [
                     'class' => '',
-                    'children' => $sub_menu
+                    'children' => $sub_menu,
                 ];
             }
         }

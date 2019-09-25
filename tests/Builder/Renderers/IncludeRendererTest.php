@@ -2,10 +2,11 @@
 
 namespace ShvetsGroup\Tests\JetPages\Builders\Renderers;
 
-use ShvetsGroup\JetPages\Builders\Renderers\Renderer;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use ShvetsGroup\JetPages\Builders\Renderers\IncludeRenderer;
-use ShvetsGroup\JetPages\Page\SimplePageRegistry;
+use ShvetsGroup\JetPages\Builders\Renderers\Renderer;
 use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class IncludeRendererTest extends AbstractTestCase
@@ -32,11 +33,10 @@ class IncludeRendererTest extends AbstractTestCase
         $this->assertEquals("test\ntest\ninclude\ntest", $page->getAttribute('content'));
     }
 
-    /**
-     * @expectedException \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
     public function testIncludeDoesNotExist()
     {
+        $this->expectException(FileNotFoundException::class);
+
         $data = ['slug' => 'test', 'content' => "test\n!INCLUDE  \"123\"\ntest"];
         $page = new Page($data);
         $this->renderer->render($page, $this->pages);

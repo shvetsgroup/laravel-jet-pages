@@ -3,7 +3,6 @@
 namespace ShvetsGroup\JetPages\Page;
 
 use Illuminate\Contracts\Support\Arrayable;
-
 use ShvetsGroup\JetPages\Facades\PageUtils;
 
 class Page implements Arrayable

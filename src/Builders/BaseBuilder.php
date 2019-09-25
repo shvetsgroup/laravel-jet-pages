@@ -4,9 +4,9 @@ namespace ShvetsGroup\JetPages\Builders;
 
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
 use ShvetsGroup\JetPages\Builders\Scanners\Scanner;
-use function ShvetsGroup\JetPages\content_path;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
+use function ShvetsGroup\JetPages\content_path;
 
 class BaseBuilder
 {
@@ -100,7 +100,7 @@ class BaseBuilder
 
         $this->scanners[] = [
             'scanner' => $scanner,
-            'paths' => $paths
+            'paths' => $paths,
         ];
     }
 
@@ -312,10 +312,10 @@ class BaseBuilder
             $obj = app()->make($obj_name);
             if ($method != 'postProcess') {
                 foreach ($pages as $page) {
-                    call_user_func(array($obj, $method), $page, $registry);
+                    call_user_func([$obj, $method], $page, $registry);
                 }
             } else {
-                call_user_func(array($obj, $method), $pages, $registry);
+                call_user_func([$obj, $method], $pages, $registry);
             }
             $registry->updateIndexes();
         }

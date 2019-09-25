@@ -2,10 +2,10 @@
 
 namespace ShvetsGroup\Tests\JetPages\Builders\Scanners;
 
-use ShvetsGroup\JetPages\Builders\Parsers\Parser;
 use ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser;
-use ShvetsGroup\JetPages\Page\SimplePageRegistry;
+use ShvetsGroup\JetPages\Builders\Parsers\Parser;
 use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class MetaInfoParserTest extends AbstractTestCase
@@ -59,6 +59,7 @@ class MetaInfoParserTest extends AbstractTestCase
         $this->parser->parse($page, $this->pages);
         $this->assertEquals($data['content'], $page->getAttribute('content'));
     }
+
     public function noMetaData()
     {
         return [

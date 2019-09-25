@@ -3,8 +3,9 @@
 namespace ShvetsGroup\Tests\JetPages\Page;
 
 use Carbon\Carbon;
-use ShvetsGroup\Tests\JetPages\AbstractTestCase;
+use ShvetsGroup\JetPages\Page\PageException;
 use ShvetsGroup\JetPages\Page\PageRegistry;
+use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 abstract class AbstractPageRegistryTest extends AbstractTestCase
 {
@@ -34,11 +35,9 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
         $this->assertEquals(null, $this->registry->findByUri($this->data['slug']));
     }
 
-    /**
-     * @expectedException \ShvetsGroup\JetPages\Page\PageException
-     */
     public function testCreateEmpty()
     {
+        $this->expectException(PageException::class);
         $this->registry->createAndSave([]);
     }
 
@@ -92,11 +91,11 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
     public function testGetAll()
     {
         $page = $this->registry->createAndSave($this->data);
-        $this->assertArrayHasKey('en/' . $this->data['slug'], $this->registry->getAll());
+        $this->assertArrayHasKey('en/'.$this->data['slug'], $this->registry->getAll());
         $page->slug = 'new';
         $this->registry->save($page);
         $this->assertArrayHasKey('en/new', $this->registry->getAll());
-        $this->assertArrayNotHasKey('en/' . $this->data['slug'], $this->registry->getAll());
+        $this->assertArrayNotHasKey('en/'.$this->data['slug'], $this->registry->getAll());
         $this->registry->delete($page);
         $this->assertEquals([], $this->registry->getAll());
     }

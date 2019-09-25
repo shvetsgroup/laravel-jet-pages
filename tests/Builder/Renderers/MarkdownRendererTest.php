@@ -4,8 +4,8 @@ namespace ShvetsGroup\Tests\JetPages\Builders\Renderers;
 
 use ShvetsGroup\JetPages\Builders\Renderers\MarkdownRenderer;
 use ShvetsGroup\JetPages\Builders\Renderers\Renderer;
-use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class MarkdownRendererTest extends AbstractTestCase

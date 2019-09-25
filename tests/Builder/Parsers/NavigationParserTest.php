@@ -2,10 +2,10 @@
 
 namespace ShvetsGroup\Tests\JetPages\Builders\Parsers;
 
-use ShvetsGroup\JetPages\Builders\Parsers\Parser;
 use ShvetsGroup\JetPages\Builders\Parsers\NavigationParser;
-use ShvetsGroup\JetPages\Page\SimplePageRegistry;
+use ShvetsGroup\JetPages\Builders\Parsers\Parser;
 use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class NavigationParserTest extends AbstractTestCase
@@ -27,7 +27,7 @@ class NavigationParserTest extends AbstractTestCase
         $test_result = [];
         $pages = [];
         foreach ($index as $i) {
-            $test_result[$i] = ['href' => '/' . $i, 'title' => $i];
+            $test_result[$i] = ['href' => '/'.$i, 'title' => $i];
             $pages[$i] = new Page(['slug' => $i, 'title' => $i]);
         }
         $registry = new SimplePageRegistry($pages);
@@ -35,7 +35,7 @@ class NavigationParserTest extends AbstractTestCase
         app('jetpages.outline')->getFlatOutline([
             'test0' => ['test-1' => 1],
             'test1' => 1,
-            'test2' => ['test3' => 1, 'test4' => 1]
+            'test2' => ['test3' => 1, 'test4' => 1],
         ], 'en');
 
         $nav = new NavigationParser();

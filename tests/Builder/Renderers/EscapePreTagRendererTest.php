@@ -2,10 +2,10 @@
 
 namespace ShvetsGroup\Tests\JetPages\Builders\Renderers;
 
-use ShvetsGroup\JetPages\Builders\Renderers\Renderer;
 use ShvetsGroup\JetPages\Builders\Renderers\EscapePreTagRenderer;
-use ShvetsGroup\JetPages\Page\SimplePageRegistry;
+use ShvetsGroup\JetPages\Builders\Renderers\Renderer;
 use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\SimplePageRegistry;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class EscapePreTagRendererTest extends AbstractTestCase

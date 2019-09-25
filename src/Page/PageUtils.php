@@ -15,11 +15,13 @@ class PageUtils
     protected $cacheLocalePrefix;
     protected $cacheLocaleDomain;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->refreshCaches();
     }
 
-    public function refreshCaches() {
+    public function refreshCaches()
+    {
         $this->configLocaleDomains = config('laravellocalization.localeDomains');
         $this->configSSL = config('sg.ssl');
         $this->configDefaultLocale = config('app.default_locale', 'en');

@@ -30,8 +30,7 @@ class NavigationParser implements Parser
             if (!$page) {
                 if (config('app.debug')) {
                     throw new RuntimeException("Can not find page with id '$locale/$slug'.");
-                }
-                else {
+                } else {
                     return null;
                 }
             }

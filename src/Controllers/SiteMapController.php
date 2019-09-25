@@ -5,8 +5,8 @@ namespace ShvetsGroup\JetPages\Controllers;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use ShvetsGroup\JetPages\Builders\Outline;
-use ShvetsGroup\JetPages\Page\PageRegistry;
 use ShvetsGroup\JetPages\Facades\PageUtils;
+use ShvetsGroup\JetPages\Page\PageRegistry;
 use Watson\Sitemap\Sitemap;
 use Watson\Sitemap\Tags\MultilingualTag;
 
@@ -43,11 +43,11 @@ class SiteMapController extends Controller
         $pages = $this->pages->getPublic();
 
         $sitemapChangeFrequency = config('jetpages.sitemap_change_frequency', [
-            'page' => 'daily'
+            'page' => 'daily',
         ]);
 
         $sitemapPriorities = config('jetpages.sitemap_priority', [
-            'page' => 'default'
+            'page' => 'default',
         ]);
 
         $localesOnThisDomain = PageUtils::getLocalesOnDomain();

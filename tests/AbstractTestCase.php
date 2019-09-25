@@ -2,13 +2,14 @@
 
 namespace ShvetsGroup\Tests\JetPages;
 
+use EllisTheDev\Robots\RobotsServiceProvider;
+use GrahamCampbell\TestBench\AbstractPackageTestCase;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use GrahamCampbell\TestBench\AbstractPackageTestCase;
 use ShvetsGroup\JetPages\JetPagesServiceProvider;
 use ShvetsGroup\JetPages\Page\Page;
 use Watson\Sitemap\SitemapServiceProvider;
-use EllisTheDev\Robots\RobotsServiceProvider;
 
 /**
  * This is the abstract test case class.
@@ -28,7 +29,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
     /**
      * Setup the application environment.
      *
-     * @param \Illuminate\Contracts\Foundation\Application $app
+     * @param  Application  $app
      *
      * @return void
      */
@@ -38,12 +39,12 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
         $app->config->set('jetpages.driver', 'cache');
 //        $app->config->set('database.default', 'mysql');
         $app->config->set('database.connections.sqlite', [
-            'driver'   => 'mysql',
+            'driver' => 'mysql',
             'host' => '127.0.0.1',
             'port' => '3306',
             'database' => 'refactoring',
-            'username'   => 'root',
-            'password'   => 'root',
+            'username' => 'root',
+            'password' => 'root',
             'charset' => 'utf8',
             'collation' => 'utf8_unicode_ci',
             'prefix' => '',
@@ -55,7 +56,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
     /**
      * Get the required service providers.
      *
-     * @param \Illuminate\Contracts\Foundation\Application $app
+     * @param  Application  $app
      *
      * @return string[]
      */
@@ -63,14 +64,14 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
     {
         return [
             SitemapServiceProvider::class,
-            RobotsServiceProvider::class
+            RobotsServiceProvider::class,
         ];
     }
 
     /**
      * Get the service provider class.
      *
-     * @param \Illuminate\Contracts\Foundation\Application $app
+     * @param  Application  $app
      *
      * @return string
      */
@@ -82,37 +83,39 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
     public function setUp()
     {
         $files = new Filesystem();
-        $files->deleteDirectory($this->getBasePath() . '/storage/app/routes');
-        $files->deleteDirectory($this->getBasePath() . '/storage/app/menu');
-        $files->deleteDirectory($this->getBasePath() . '/storage/app/redirects');
-        $files->deleteDirectory($this->getBasePath() . '/storage/app/content_timestamps');
+        $files->deleteDirectory($this->getBasePath().'/storage/app/routes');
+        $files->deleteDirectory($this->getBasePath().'/storage/app/menu');
+        $files->deleteDirectory($this->getBasePath().'/storage/app/redirects');
+        $files->deleteDirectory($this->getBasePath().'/storage/app/content_timestamps');
 
         parent::setUp();
 
         if ($this->migrate) {
             $this->artisan('migrate', [
                 '--database' => 'sqlite',
-                '--path' => realpath(__DIR__ . '/../src/resources/migrations'),
+                '--path' => realpath(__DIR__.'/../src/resources/migrations'),
             ]);
         }
-        @unlink($this->getBasePath() . '/resources/content');
+        @unlink($this->getBasePath().'/resources/content');
     }
 
     /**
      * Link directory with test content.
      */
-    public function linkFixtureContent() {
-        @unlink($this->getBasePath() . '/resources/content');
-        symlink(__DIR__ . '/fixture/resources/content', $this->getBasePath() . '/resources/content');
+    public function linkFixtureContent()
+    {
+        @unlink($this->getBasePath().'/resources/content');
+        symlink(__DIR__.'/fixture/resources/content', $this->getBasePath().'/resources/content');
     }
 
     /**
      * Ignore timestamps when comparing Pages.
      *
-     * @param array $data
-     * @param Page $page
+     * @param  array  $data
+     * @param  Page  $page
      */
-    public function assertPageEquals(array $data, Page $page) {
+    public function assertPageEquals(array $data, Page $page)
+    {
         $page_data = $page->toArray();
         unset($data['uri']);
         unset($page_data['uri']);

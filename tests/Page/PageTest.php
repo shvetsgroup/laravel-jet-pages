@@ -2,8 +2,9 @@
 
 namespace ShvetsGroup\Tests\JetPages\Page;
 
-use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 use ShvetsGroup\JetPages\Page\Page;
+use ShvetsGroup\JetPages\Page\PageException;
+use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class PageTest extends AbstractTestCase
 {
@@ -20,7 +21,7 @@ class PageTest extends AbstractTestCase
             'locale' => 'en',
             'slug' => 'test',
             'title' => 'title',
-            'content' => 'content'
+            'content' => 'content',
         ];
     }
 
@@ -37,11 +38,10 @@ class PageTest extends AbstractTestCase
         $this->assertEquals(null, $page->getAttribute('title'));
     }
 
-    /**
-     * @expectedException \ShvetsGroup\JetPages\Page\PageException
-     */
     public function testLocaleSlugException()
     {
+        $this->expectException(PageException::class);
+
         $page = new Page();
         $page->localeSlug();
     }

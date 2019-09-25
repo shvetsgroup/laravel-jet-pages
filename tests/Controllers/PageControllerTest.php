@@ -2,9 +2,9 @@
 
 namespace ShvetsGroup\Tests\JetPages\Controllers;
 
+use ShvetsGroup\JetPages\Controllers\PageController;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
-use ShvetsGroup\JetPages\Controllers\PageController;
 
 class PageControllerTest extends AbstractTestCase
 {
@@ -32,7 +32,7 @@ class PageControllerTest extends AbstractTestCase
     {
         $this->pages->createAndSave([
             'slug' => 'index',
-            'title' => 'Test Index'
+            'title' => 'Test Index',
         ]);
         $this->get('/')->assertStatus(200)->assertSee('Test Index');
     }
@@ -45,7 +45,7 @@ class PageControllerTest extends AbstractTestCase
         $this->pages->createAndSave([
             'slug' => 'a-page',
             'title' => 'Test title',
-            'content' => 'Test content'
+            'content' => 'Test content',
         ]);
         $this->get('a-page')->assertStatus(200)->assertSee('Test title')->assertSee('Test content');
     }

@@ -103,7 +103,7 @@ class EloquentPageRegistry extends SimplePageRegistry
         $page->localeSlug();
         $this->db->table('pages')->updateOrInsert([
             'locale' => $page->getAttribute('locale'),
-            'slug' => $page->getAttribute('slug')
+            'slug' => $page->getAttribute('slug'),
         ], $this->toDbRecord($page));
         return $page;
     }

@@ -2,9 +2,9 @@
 
 namespace ShvetsGroup\Tests\JetPages\Builders;
 
-use Illuminate\Support\Facades\Artisan;
 use Mockery;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
+use ShvetsGroup\JetPages\Builders\BuilderException;
 use ShvetsGroup\JetPages\Builders\Parsers\MetaInfoParser;
 use ShvetsGroup\JetPages\Builders\PostProcessors\RedirectsPostProcessor;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
@@ -93,7 +93,7 @@ class BaseBuilderTest extends AbstractTestCase
         $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.');
         $this->get('a')->assertRedirect('b');
 
-        $this->app = $this->createApplication(function(){
+        $this->app = $this->createApplication(function () {
             config(['app.debug' => true]);
         });
 
@@ -102,19 +102,15 @@ class BaseBuilderTest extends AbstractTestCase
         $this->get('a')->assertRedirect('b');
     }
 
-    /**
-     * @expectedException \ShvetsGroup\JetPages\Builders\BuilderException
-     */
     public function testFindFilesErrorPathNotString()
     {
+        $this->expectException(BuilderException::class);
         $this->builder->registerScanner(PageScanner::class, 123);
     }
 
-    /**
-     * @expectedException \ShvetsGroup\JetPages\Builders\BuilderException
-     */
     public function testFindFilesErrorPathNonExistent()
     {
+        $this->expectException(BuilderException::class);
         $this->builder->registerScanner(PageScanner::class, ['123']);
     }
 

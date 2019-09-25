@@ -2,10 +2,12 @@
 
 namespace ShvetsGroup\Tests\JetPages\Builders\Scanners;
 
+use Illuminate\Filesystem\Filesystem;
 use ShvetsGroup\JetPages\Builders\Scanners\PageScanner;
+use ShvetsGroup\JetPages\Builders\Scanners\PageScanningException;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
-use function ShvetsGroup\JetPages\content_path;
 use Symfony\Component\Finder\SplFileInfo;
+use function ShvetsGroup\JetPages\content_path;
 
 class PageScannerTest extends AbstractTestCase
 {
@@ -15,7 +17,7 @@ class PageScannerTest extends AbstractTestCase
     private $scanner;
 
     /**
-     * @var \Illuminate\Filesystem\Filesystem
+     * @var Filesystem
      */
     private $files;
 
@@ -41,7 +43,7 @@ class PageScannerTest extends AbstractTestCase
 
     public function testProcessFile()
     {
-        $path = content_path('pages') . '/index.md';
+        $path = content_path('pages').'/index.md';
         $file = new SplFileInfo($path, '', 'index.md');
         $page = $this->scanner->processFile($file);
         $this->assertEquals('index', $page->getAttribute('slug'));
@@ -53,14 +55,12 @@ title: "Test md"
 ---
 Some **test** <i>content</i>.
 SRC
-, $page->getAttribute('content'));
+            , $page->getAttribute('content'));
     }
 
-    /**
-     * @expectedException \ShvetsGroup\JetPages\Builders\Scanners\PageScanningException
-     */
     public function testFindFilesError()
     {
+        $this->expectException(PageScanningException::class);
         $this->scanner->findFiles(content_path('pages/123'));
     }
 }
