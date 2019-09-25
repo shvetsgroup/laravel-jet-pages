@@ -21,9 +21,15 @@ class PageController extends Controller
      */
     private $pages;
 
+    /**
+     * @var PageUtils
+     */
+    private $pageUtils;
+
     public function __construct()
     {
         $this->pages = app('pages');
+        $this->pageUtils = app('page.utils');
     }
 
     /**
@@ -37,10 +43,10 @@ class PageController extends Controller
     {
         $uri = $uri ?: $request->path();
 
-        $fullUrl = PageUtils::getBaseUrl().ltrim($uri, '/');
+        $fullUrl = $this->pageUtils->getBaseUrl().ltrim($uri, '/');
 
-        list($locale, $_uri) = PageUtils::extractLocaleFromURL($fullUrl);
-        $slug = PageUtils::uriToSlug($_uri);
+        list($locale, $_uri) = $this->pageUtils->extractLocaleFromURL($fullUrl);
+        $slug = $this->pageUtils->uriToSlug($_uri);
 
         $this->setLocale($locale);
 
@@ -113,7 +119,7 @@ class PageController extends Controller
             return $localization->setLocale($locale);
         }
 
-        $domain = PageUtils::getHost();
+        $domain = $this->pageUtils->getHost();
         $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
         if (!$localesOnThisDomain) {
             throw new Exception("Can not determine locale configuration on this domain.");

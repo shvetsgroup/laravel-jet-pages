@@ -6,7 +6,7 @@ use Illuminate\Filesystem\Filesystem;
 use function ShvetsGroup\JetPages\content_path;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Page\PageUtils;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 use Symfony\Component\Finder\SplFileInfo;
 
 class PageScanner implements Scanner

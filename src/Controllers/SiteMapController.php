@@ -6,7 +6,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use ShvetsGroup\JetPages\Builders\Outline;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Page\PageUtils;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 use Watson\Sitemap\Sitemap;
 use Watson\Sitemap\Tags\MultilingualTag;
 

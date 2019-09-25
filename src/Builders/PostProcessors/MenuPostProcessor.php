@@ -5,7 +5,7 @@ namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 use Illuminate\Filesystem\Filesystem;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Page\PageUtils;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 use function ShvetsGroup\JetPages\content_path;
 
 class MenuPostProcessor implements PostProcessor

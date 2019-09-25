@@ -1,7 +1,5 @@
 <?php
 
-use ShvetsGroup\JetPages\Page\PageUtils;
-
 $router = app('router');
 $configSupportedLocales = config('laravellocalization.supportedLocales');
 $configLocaleDomains = config('laravellocalization.localeDomains');

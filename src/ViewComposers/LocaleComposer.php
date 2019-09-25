@@ -3,7 +3,7 @@
 namespace ShvetsGroup\JetPages\ViewComposers;
 
 use Illuminate\View\View;
-use ShvetsGroup\JetPages\Page\PageUtils;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 
 class LocaleComposer
 {

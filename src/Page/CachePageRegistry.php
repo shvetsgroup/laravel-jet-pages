@@ -3,6 +3,7 @@
 namespace ShvetsGroup\JetPages\Page;
 
 use Illuminate\Contracts\Cache\Store;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 
 class CachePageRegistry extends SimplePageRegistry
 {

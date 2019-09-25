@@ -5,7 +5,7 @@ namespace ShvetsGroup\JetPages\Commands;
 use Illuminate\Console\Command;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
 use ShvetsGroup\JetPages\Builders\StaticCache;
-use ShvetsGroup\JetPages\Page\PageUtils;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 
 class Cache extends Command
 {

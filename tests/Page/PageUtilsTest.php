@@ -16,11 +16,15 @@ class PageUtilsTest extends AbstractTestCase
         \URL::forceRootUrl($this->baseUrl);
     }
 
+    private function freshPageUtils() {
+        return new PageUtils();
+    }
+
     public function setConfigToNoneLocales()
     {
         config(['laravellocalization' => []]);
         app()->setLocale('en');
-        PageUtils::getLocaleDomain('', true);
+        $this->freshPageUtils()->getLocaleDomain('', true);
     }
 
     public function setConfigToOneLocale()
@@ -32,7 +36,7 @@ class PageUtilsTest extends AbstractTestCase
             ]
         ]);
         app()->setLocale('en');
-        PageUtils::getLocaleDomain('', true);
+        $this->freshPageUtils()->getLocaleDomain('', true);
     }
 
     public function setConfigToMultipleLocales()
@@ -46,7 +50,7 @@ class PageUtilsTest extends AbstractTestCase
             ]
         ]);
         app()->setLocale('en');
-        PageUtils::getLocaleDomain('', true);
+        $this->freshPageUtils()->getLocaleDomain('', true);
     }
 
     public function setConfigToMultipleLocaleDomains() {
@@ -58,106 +62,106 @@ class PageUtilsTest extends AbstractTestCase
             ]
         ]);
         app()->setLocale('en');
-        PageUtils::getLocaleDomain('', true);
+        $this->freshPageUtils()->getLocaleDomain('', true);
     }
 
     public function testExtractLocaleFromUri()
     {
         $this->setConfigToNoneLocales();
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURI(''));
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURI('/'));
-        $this->assertEquals(['en', 'test'], PageUtils::extractLocaleFromURI('test'));
-        $this->assertEquals(['en', 'en/test'], PageUtils::extractLocaleFromURI('en/test'));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURI(''));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURI('/'));
+        $this->assertEquals(['en', 'test'], $this->freshPageUtils()->extractLocaleFromURI('test'));
+        $this->assertEquals(['en', 'en/test'], $this->freshPageUtils()->extractLocaleFromURI('en/test'));
 
         config(['laravellocalization.hideDefaultLocaleInURL' => true]);
-        $this->assertEquals(['en', 'test'], PageUtils::extractLocaleFromURI('test'));
-        $this->assertEquals(['en', 'en/test'], PageUtils::extractLocaleFromURI('en/test'));
+        $this->assertEquals(['en', 'test'], $this->freshPageUtils()->extractLocaleFromURI('test'));
+        $this->assertEquals(['en', 'en/test'], $this->freshPageUtils()->extractLocaleFromURI('en/test'));
 
         config(['laravellocalization.hideDefaultLocaleInURL' => false]);
-        $this->assertEquals(['en', 'test'], PageUtils::extractLocaleFromURI('test'));
-        $this->assertEquals(['en', 'test'], PageUtils::extractLocaleFromURI('en/test'));
+        $this->assertEquals(['en', 'test'], $this->freshPageUtils()->extractLocaleFromURI('test'));
+        $this->assertEquals(['en', 'test'], $this->freshPageUtils()->extractLocaleFromURI('en/test'));
 
 
         $this->setConfigToMultipleLocales();
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURI(''));
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURI('/'));
-        $this->assertEquals(['en', 'test'], PageUtils::extractLocaleFromURI('test'));
-        $this->assertEquals(['en', 'en/test'], PageUtils::extractLocaleFromURI('en/test'));
-        $this->assertEquals(['ru', ''], PageUtils::extractLocaleFromURI('ru'));
-        $this->assertEquals(['ru', ''], PageUtils::extractLocaleFromURI('ru/'));
-        $this->assertEquals(['ru', 'test'], PageUtils::extractLocaleFromURI('ru/test'));
-        $this->assertEquals(['ru', 'en/test'], PageUtils::extractLocaleFromURI('ru/en/test'));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURI(''));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURI('/'));
+        $this->assertEquals(['en', 'test'], $this->freshPageUtils()->extractLocaleFromURI('test'));
+        $this->assertEquals(['en', 'en/test'], $this->freshPageUtils()->extractLocaleFromURI('en/test'));
+        $this->assertEquals(['ru', ''], $this->freshPageUtils()->extractLocaleFromURI('ru'));
+        $this->assertEquals(['ru', ''], $this->freshPageUtils()->extractLocaleFromURI('ru/'));
+        $this->assertEquals(['ru', 'test'], $this->freshPageUtils()->extractLocaleFromURI('ru/test'));
+        $this->assertEquals(['ru', 'en/test'], $this->freshPageUtils()->extractLocaleFromURI('ru/en/test'));
 
         config(['laravellocalization.hideDefaultLocaleInURL' => true]);
-        $this->assertEquals(['en', 'test'], PageUtils::extractLocaleFromURI('test'));
-        $this->assertEquals(['en', 'en/test'], PageUtils::extractLocaleFromURI('en/test'));
-        $this->assertEquals(['ru', 'test'], PageUtils::extractLocaleFromURI('ru/test'));
+        $this->assertEquals(['en', 'test'], $this->freshPageUtils()->extractLocaleFromURI('test'));
+        $this->assertEquals(['en', 'en/test'], $this->freshPageUtils()->extractLocaleFromURI('en/test'));
+        $this->assertEquals(['ru', 'test'], $this->freshPageUtils()->extractLocaleFromURI('ru/test'));
 
         config(['laravellocalization.hideDefaultLocaleInURL' => false]);
-        $this->assertEquals(['en', 'test'], PageUtils::extractLocaleFromURI('test'));
-        $this->assertEquals(['en', 'test'], PageUtils::extractLocaleFromURI('en/test'));
-        $this->assertEquals(['ru', 'test'], PageUtils::extractLocaleFromURI('ru/test'));
+        $this->assertEquals(['en', 'test'], $this->freshPageUtils()->extractLocaleFromURI('test'));
+        $this->assertEquals(['en', 'test'], $this->freshPageUtils()->extractLocaleFromURI('en/test'));
+        $this->assertEquals(['ru', 'test'], $this->freshPageUtils()->extractLocaleFromURI('ru/test'));
     }
 
     public function testExtractLocaleFromUrl()
     {
         $this->setConfigToNoneLocales();
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURL('http://example.com'));
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURL('http://example.com/'));
-        $this->assertEquals(['en', 'en'], PageUtils::extractLocaleFromURL('http://example.com/en'));
-        $this->assertEquals(['en', 'ru'], PageUtils::extractLocaleFromURL('http://example.cn/ru'));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.com'));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.com/'));
+        $this->assertEquals(['en', 'en'], $this->freshPageUtils()->extractLocaleFromURL('http://example.com/en'));
+        $this->assertEquals(['en', 'ru'], $this->freshPageUtils()->extractLocaleFromURL('http://example.cn/ru'));
 
         $this->setConfigToMultipleLocales();
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURL('http://example.com'));
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURL('http://example.com/'));
-        $this->assertEquals(['en', 'en'], PageUtils::extractLocaleFromURL('http://example.com/en'));
-        $this->assertEquals(['ru', ''], PageUtils::extractLocaleFromURL('http://example.com/ru'));
-        $this->assertEquals(['ru', ''], PageUtils::extractLocaleFromURL('http://example.cn/ru'));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.com'));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.com/'));
+        $this->assertEquals(['en', 'en'], $this->freshPageUtils()->extractLocaleFromURL('http://example.com/en'));
+        $this->assertEquals(['ru', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.com/ru'));
+        $this->assertEquals(['ru', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.cn/ru'));
 
         $this->setConfigToMultipleLocaleDomains();
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURL('http://example.com'));
-        $this->assertEquals(['en', ''], PageUtils::extractLocaleFromURL('http://example.com/'));
-        $this->assertEquals(['en', 'en'], PageUtils::extractLocaleFromURL('http://example.com/en'));
-        $this->assertEquals(['ru', ''], PageUtils::extractLocaleFromURL('http://example.com/ru'));
-        $this->assertEquals(['zh', ''], PageUtils::extractLocaleFromURL('http://example.cn'));
-        $this->assertEquals(['zh', 'ru'], PageUtils::extractLocaleFromURL('http://example.cn/ru'));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.com'));
+        $this->assertEquals(['en', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.com/'));
+        $this->assertEquals(['en', 'en'], $this->freshPageUtils()->extractLocaleFromURL('http://example.com/en'));
+        $this->assertEquals(['ru', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.com/ru'));
+        $this->assertEquals(['zh', ''], $this->freshPageUtils()->extractLocaleFromURL('http://example.cn'));
+        $this->assertEquals(['zh', 'ru'], $this->freshPageUtils()->extractLocaleFromURL('http://example.cn/ru'));
     }
 
     public function testAbsoluteUrl()
     {
         $this->setConfigToNoneLocales();
         config(['laravellocalization.hideDefaultLocaleInURL' => false]);
-        $this->assertEquals('http://example.com', PageUtils::absoluteUrl('', 'en'));
-        $this->assertEquals('http://example.com', PageUtils::absoluteUrl('/', 'en'));
-        $this->assertEquals('http://example.com/test', PageUtils::absoluteUrl('test', 'en'));
+        $this->assertEquals('http://example.com', $this->freshPageUtils()->absoluteUrl('', 'en'));
+        $this->assertEquals('http://example.com', $this->freshPageUtils()->absoluteUrl('/', 'en'));
+        $this->assertEquals('http://example.com/test', $this->freshPageUtils()->absoluteUrl('test', 'en'));
 
         $this->setConfigToMultipleLocales();
         config(['laravellocalization.hideDefaultLocaleInURL' => true]);
-        $this->assertEquals('http://example.com', PageUtils::absoluteUrl('', 'en'));
-        $this->assertEquals('http://example.com/ru', PageUtils::absoluteUrl('ru', 'ru'));
-        $this->assertEquals('http://example.com/zh', PageUtils::absoluteUrl('zh', 'zh'));
-        $this->assertEquals('http://example.com/test', PageUtils::absoluteUrl('test', 'en'));
-        $this->assertEquals('http://example.com/ru/test', PageUtils::absoluteUrl('ru/test', 'ru'));
+        $this->assertEquals('http://example.com', $this->freshPageUtils()->absoluteUrl('', 'en'));
+        $this->assertEquals('http://example.com/ru', $this->freshPageUtils()->absoluteUrl('ru', 'ru'));
+        $this->assertEquals('http://example.com/zh', $this->freshPageUtils()->absoluteUrl('zh', 'zh'));
+        $this->assertEquals('http://example.com/test', $this->freshPageUtils()->absoluteUrl('test', 'en'));
+        $this->assertEquals('http://example.com/ru/test', $this->freshPageUtils()->absoluteUrl('ru/test', 'ru'));
 
         $this->setConfigToMultipleLocaleDomains();
         config(['laravellocalization.hideDefaultLocaleInURL' => true]);
-        $this->assertEquals('http://example.com', PageUtils::absoluteUrl('', 'en'));
-        $this->assertEquals('http://example.com/ru', PageUtils::absoluteUrl('ru', 'ru'));
-        $this->assertEquals('http://example.com/test', PageUtils::absoluteUrl('test', 'en'));
-        $this->assertEquals('http://example.com/ru/test', PageUtils::absoluteUrl('ru/test', 'ru'));
-        $this->assertEquals('http://example.cn', PageUtils::absoluteUrl('', 'zh'));
-        $this->assertEquals('http://example.cn/test', PageUtils::absoluteUrl('test', 'zh'));
+        $this->assertEquals('http://example.com', $this->freshPageUtils()->absoluteUrl('', 'en'));
+        $this->assertEquals('http://example.com/ru', $this->freshPageUtils()->absoluteUrl('ru', 'ru'));
+        $this->assertEquals('http://example.com/test', $this->freshPageUtils()->absoluteUrl('test', 'en'));
+        $this->assertEquals('http://example.com/ru/test', $this->freshPageUtils()->absoluteUrl('ru/test', 'ru'));
+        $this->assertEquals('http://example.cn', $this->freshPageUtils()->absoluteUrl('', 'zh'));
+        $this->assertEquals('http://example.cn/test', $this->freshPageUtils()->absoluteUrl('test', 'zh'));
 
         \URL::forceScheme('http');
         \URL::forceRootUrl('http://example.cn');
         $this->setConfigToMultipleLocaleDomains();
         config(['app.url' => 'http://example.com']);
-        $this->assertEquals('http://example.com', PageUtils::absoluteUrl('', 'en'));
-        $this->assertEquals('http://example.com/ru', PageUtils::absoluteUrl('ru', 'ru'));
-        $this->assertEquals('http://example.com/test', PageUtils::absoluteUrl('test', 'en'));
-        $this->assertEquals('http://example.com/ru/test', PageUtils::absoluteUrl('ru/test', 'ru'));
-        $this->assertEquals('http://example.cn', PageUtils::absoluteUrl('', 'zh'));
-        $this->assertEquals('http://example.cn/test', PageUtils::absoluteUrl('test', 'zh'));
+        $this->assertEquals('http://example.com', $this->freshPageUtils()->absoluteUrl('', 'en'));
+        $this->assertEquals('http://example.com/ru', $this->freshPageUtils()->absoluteUrl('ru', 'ru'));
+        $this->assertEquals('http://example.com/test', $this->freshPageUtils()->absoluteUrl('test', 'en'));
+        $this->assertEquals('http://example.com/ru/test', $this->freshPageUtils()->absoluteUrl('ru/test', 'ru'));
+        $this->assertEquals('http://example.cn', $this->freshPageUtils()->absoluteUrl('', 'zh'));
+        $this->assertEquals('http://example.cn/test', $this->freshPageUtils()->absoluteUrl('test', 'zh'));
 
         \URL::forceScheme('http');
         \URL::forceRootUrl('http://example.cn');
@@ -169,12 +173,12 @@ class PageUtilsTest extends AbstractTestCase
             ]
         ]);
         config(['app.url' => 'http://example.com']);
-        $this->assertEquals('http://example.com', PageUtils::absoluteUrl('', 'en'));
-        $this->assertEquals('http://example.com/ru', PageUtils::absoluteUrl('ru', 'ru'));
-        $this->assertEquals('http://example.com/test', PageUtils::absoluteUrl('test', 'en'));
-        $this->assertEquals('http://example.com/ru/test', PageUtils::absoluteUrl('ru/test', 'ru'));
-        $this->assertEquals('http://example.cn', PageUtils::absoluteUrl('', 'zh'));
-        $this->assertEquals('http://example.cn/test', PageUtils::absoluteUrl('test', 'zh'));
+        $this->assertEquals('http://example.com', $this->freshPageUtils()->absoluteUrl('', 'en'));
+        $this->assertEquals('http://example.com/ru', $this->freshPageUtils()->absoluteUrl('ru', 'ru'));
+        $this->assertEquals('http://example.com/test', $this->freshPageUtils()->absoluteUrl('test', 'en'));
+        $this->assertEquals('http://example.com/ru/test', $this->freshPageUtils()->absoluteUrl('ru/test', 'ru'));
+        $this->assertEquals('http://example.cn', $this->freshPageUtils()->absoluteUrl('', 'zh'));
+        $this->assertEquals('http://example.cn/test', $this->freshPageUtils()->absoluteUrl('test', 'zh'));
     }
 
     /**
@@ -183,7 +187,7 @@ class PageUtilsTest extends AbstractTestCase
     public function testDontIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured($uri, $result)
     {
         $this->setConfigToNoneLocales();
-        $this->assertEquals($result, PageUtils::uriToLocaleSlugArray($uri));
+        $this->assertEquals($result, $this->freshPageUtils()->uriToLocaleSlugArray($uri));
     }
     public function dataDontIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured()
     {
@@ -203,7 +207,7 @@ class PageUtilsTest extends AbstractTestCase
     {
         $this->setConfigToMultipleLocales();
         config(['laravellocalization.hideDefaultLocaleInURL' => true]);
-        $this->assertEquals($result, PageUtils::uriToLocaleSlugArray($uri));
+        $this->assertEquals($result, $this->freshPageUtils()->uriToLocaleSlugArray($uri));
     }
     public function dataDontIncludeDefaultLocaleInUrl_WithLanguageSupportConfigured()
     {
@@ -223,7 +227,7 @@ class PageUtilsTest extends AbstractTestCase
     {
         $this->setConfigToNoneLocales();
         config(['laravellocalization.hideDefaultLocaleInURL' => false]);
-        $this->assertEquals($result, PageUtils::uriToLocaleSlugArray($uri));
+        $this->assertEquals($result, $this->freshPageUtils()->uriToLocaleSlugArray($uri));
     }
     public function dataIncludeDefaultLocaleInUrl_WithNoLanguageSupportConfigured()
     {
@@ -243,7 +247,7 @@ class PageUtilsTest extends AbstractTestCase
     {
         $this->setConfigToMultipleLocales();
         config(['laravellocalization.hideDefaultLocaleInURL' => false]);
-        $this->assertEquals($result, PageUtils::uriToLocaleSlugArray($uri));
+        $this->assertEquals($result, $this->freshPageUtils()->uriToLocaleSlugArray($uri));
     }
     public function dataIncludeDefaultLocaleInUrl_WithLanguageSupportConfigured()
     {
@@ -258,28 +262,28 @@ class PageUtilsTest extends AbstractTestCase
 
     public function testSlugToUri()
     {
-        $this->assertEquals('/', PageUtils::slugToUri('index'));
+        $this->assertEquals('/', $this->freshPageUtils()->slugToUri('index'));
     }
 
     public function testUriToSlug()
     {
-        $this->assertEquals('index', PageUtils::uriToSlug(''));
-        $this->assertEquals('index', PageUtils::uriToSlug('/'));
+        $this->assertEquals('index', $this->freshPageUtils()->uriToSlug(''));
+        $this->assertEquals('index', $this->freshPageUtils()->uriToSlug('/'));
     }
 
     public function makeLocaleUri() {
-        $this->assertEquals('/', PageUtils::makeUri(null, 'index'));
-        $this->assertEquals('/', PageUtils::makeUri('en', 'index'));
-        $this->assertEquals('ru', PageUtils::makeUri('ru', 'index'));
+        $this->assertEquals('/', $this->freshPageUtils()->makeUri(null, 'index'));
+        $this->assertEquals('/', $this->freshPageUtils()->makeUri('en', 'index'));
+        $this->assertEquals('ru', $this->freshPageUtils()->makeUri('ru', 'index'));
     }
 
     public function testBaseDir() {
         config(['app.url' => 'http://example.com/']);
-        $this->assertEquals('http://example.com/', PageUtils::getBaseUrl());
+        $this->assertEquals('http://example.com/', $this->freshPageUtils()->getBaseUrl());
         config(['app.url' => 'http://example.com']);
-        $this->assertEquals('http://example.com/', PageUtils::getBaseUrl());
+        $this->assertEquals('http://example.com/', $this->freshPageUtils()->getBaseUrl());
 
-        $this->assertEquals('http://example.cn/', PageUtils::getBaseUrl('http://example.cn/'));
-        $this->assertEquals('http://example.com/', PageUtils::getBaseUrl('example.cn'));
+        $this->assertEquals('http://example.cn/', $this->freshPageUtils()->getBaseUrl('http://example.cn/'));
+        $this->assertEquals('http://example.com/', $this->freshPageUtils()->getBaseUrl('example.cn'));
     }
 }

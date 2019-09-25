@@ -3,6 +3,7 @@
 namespace ShvetsGroup\JetPages\Page;
 
 use Illuminate\Database\Connection;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 
 class EloquentPageRegistry extends SimplePageRegistry
 {

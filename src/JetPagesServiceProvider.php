@@ -3,6 +3,7 @@
 namespace ShvetsGroup\JetPages;
 
 use Exception;
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 use ShvetsGroup\JetPages\Builders\BaseBuilder;
 use ShvetsGroup\JetPages\Builders\Outline;
@@ -22,7 +23,11 @@ class JetPagesServiceProvider extends ServiceProvider
         // change the original value.
         config()->set('app.default_locale', config('app.locale', ''));
 
-        $this->app->bind('page', Page\PageUtils::class);
+        $loader = AliasLoader::getInstance();
+
+        $this->app->singleton('page.utils', Page\PageUtils::class);
+        $loader->alias('PageUtils', Facades\PageUtils::class);
+
         $this->app->singleton('pages', function ($app) {
             $driver = config('jetpages.driver', 'cache');
             switch ($driver) {
@@ -37,6 +42,7 @@ class JetPagesServiceProvider extends ServiceProvider
             }
         });
         $this->app->alias('pages', Page\PageRegistry::class);
+        $loader->alias('PageRegistry', Facades\PageRegistry::class);
 
         $this->app->singleton('jetpages.outline', function () {
             return new Outline();

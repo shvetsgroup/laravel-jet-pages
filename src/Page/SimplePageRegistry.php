@@ -3,6 +3,7 @@
 namespace ShvetsGroup\JetPages\Page;
 
 use Carbon\Carbon;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 
 class SimplePageRegistry implements PageRegistry
 {

@@ -4,9 +4,9 @@ namespace ShvetsGroup\JetPages\Builders\Parsers;
 
 use Illuminate\Support\Arr;
 use RuntimeException;
+use ShvetsGroup\JetPages\Facades\PageUtils;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
-use ShvetsGroup\JetPages\Page\PageUtils;
 
 class BreadcrumbParser implements Parser
 {
