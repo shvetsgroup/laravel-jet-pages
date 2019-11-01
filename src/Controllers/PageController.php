@@ -54,11 +54,6 @@ class PageController extends Controller
         $slug = $this->pageUtils->uriToSlug($_uri);
         $this->setLocale($locale);
 
-        $rebuildOnEachView = config('jetpages.rebuild_page_on_view', config('app.debug', false));
-        if ($rebuildOnEachView) {
-            app('builder')->build(false, $this->pageUtils->makeLocaleSlug($locale, $slug));
-        }
-
         // 1. Try to find a suitable redirect.
         $redirects = $this->cache->get('jetpages:redirects');
         if ($redirects === null) {
@@ -89,6 +84,12 @@ class PageController extends Controller
 
         // 3. If routes file is not loaded or if page is found, seek the page in DB.
         $page = $this->pages->findBySlug($locale, $slug);
+
+        if ($page && $rebuildOnEachView = config('jetpages.rebuild_page_on_view', config('app.debug', false))) {
+            app('builder')->build(false, $this->pageUtils->makeLocaleSlug($locale, $slug));
+            $page = $this->pages->findBySlug($locale, $slug);
+        }
+
         if (!$page || $page->isPrivate()) {
             return abort(404);
         }
