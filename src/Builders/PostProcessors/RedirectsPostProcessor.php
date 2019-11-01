@@ -38,6 +38,8 @@ class RedirectsPostProcessor implements PostProcessor
         if ($this->files->exists($path)) {
             $redirects = Yaml::parse($this->files->get($path));
 
+            $this->cache->forever('jetpages:redirects', $redirects);
+
             $this->files->makeDirectory(storage_path('app/redirects'), 0755, true, true);
             $this->files->put(storage_path('app/redirects/redirects.json'),
                 json_encode($redirects, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK));

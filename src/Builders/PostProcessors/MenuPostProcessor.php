@@ -2,6 +2,7 @@
 
 namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
+use Illuminate\Contracts\Cache\Store;
 use Illuminate\Filesystem\Filesystem;
 use ShvetsGroup\JetPages\Facades\PageUtils;
 use ShvetsGroup\JetPages\Page\Page;
@@ -11,13 +12,25 @@ use function ShvetsGroup\JetPages\content_path;
 class MenuPostProcessor implements PostProcessor
 {
     /**
+     * @var PageUtils
+     */
+    private $pageUtils;
+
+    /**
      * @var Filesystem
      */
     protected $files;
 
+    /**
+     * @var Store
+     */
+    private $cache;
+
     public function __construct()
     {
+        $this->pageUtils = app('page.utils');
         $this->files = app('Illuminate\Filesystem\Filesystem');
+        $this->cache = app('cache.store');
     }
 
     /**
@@ -54,6 +67,8 @@ class MenuPostProcessor implements PostProcessor
                 $menu['children'][$uri] = $this->build_toc_recursive($registry, $tree, $locale, $uri);
             }
 
+            $this->cache->forever('jetpages:menu:'.$locale, $menu);
+
             $this->files->makeDirectory(storage_path('app/menu'), 0755, true, true);
             $this->files->put(storage_path('app/menu/'.$locale.'.json'), json_encode($menu, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK));
         }
@@ -65,9 +80,9 @@ class MenuPostProcessor implements PostProcessor
             $result = ['href' => $uri];
         } else {
             $result = [
-                'href' => PageUtils::makeUri($locale, PageUtils::uriToSlug($uri)),
+                'href' => $this->pageUtils->makeUri($locale, $this->pageUtils->uriToSlug($uri)),
             ];
-            $page = $registry->findBySlug($locale, PageUtils::uriToSlug($uri));
+            $page = $registry->findBySlug($locale, $this->pageUtils->uriToSlug($uri));
 
             if ($page) {
                 $result['title'] = $page->getAttribute('title_short') ?: $page->getAttribute('title');

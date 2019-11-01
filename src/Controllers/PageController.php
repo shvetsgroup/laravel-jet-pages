@@ -3,6 +3,7 @@
 namespace ShvetsGroup\JetPages\Controllers;
 
 use Exception;
+use Illuminate\Contracts\Cache\Store;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,19 +18,25 @@ use ShvetsGroup\JetPages\Page\PageUtils;
 class PageController extends Controller
 {
     /**
+     * @var PageUtils
+     */
+    private $pageUtils;
+
+    /**
      * @var PageRegistry
      */
     private $pages;
 
     /**
-     * @var PageUtils
+     * @var Store
      */
-    private $pageUtils;
+    private $cache;
 
     public function __construct()
     {
-        $this->pages = app('pages');
         $this->pageUtils = app('page.utils');
+        $this->pages = app('pages');
+        $this->cache = app('cache.store');
     }
 
     /**
@@ -42,35 +49,48 @@ class PageController extends Controller
     public function show(Request $request, $uri = null)
     {
         $uri = $uri ?: $request->path();
-
         $fullUrl = $this->pageUtils->getBaseUrl().ltrim($uri, '/');
-
         list($locale, $_uri) = $this->pageUtils->extractLocaleFromURL($fullUrl);
         $slug = $this->pageUtils->uriToSlug($_uri);
-
         $this->setLocale($locale);
-
-        $page = $this->pages->findBySlug($locale, $slug);
 
         $rebuildOnEachView = config('jetpages.rebuild_page_on_view', config('app.debug', false));
         if ($rebuildOnEachView) {
-            app('builder')->build(false, $page ? $page->localeSlug() : []);
-            $page = $this->pages->findBySlug($locale, $slug);
+            app('builder')->build(false, $this->pageUtils->makeLocaleSlug($locale, $slug));
         }
 
-        if (!$page || $page->isPrivate()) {
+        // 1. Try to find a suitable redirect.
+        $redirects = $this->cache->get('jetpages:redirects');
+        if ($redirects === null) {
             $redirectsFile = storage_path('app/redirects/redirects.json');
             if (file_exists($redirectsFile)) {
                 $redirects = json_decode(file_get_contents($redirectsFile), true);
             } else {
                 $redirects = [];
             }
+            $this->cache->forever('jetpages:redirects', $redirects);
+        }
+        if (is_array($redirects) && isset($redirects[$uri])) {
+            return redirect($redirects[$uri], 301);
+        }
 
-            if (isset($redirects[$uri])) {
-                return redirect($redirects[$uri], 301);
-            } else {
-                return abort(404);
+        // 2. Then try to see if the page exists in the routes file quickly.
+        $routes = $this->cache->get('jetpages:routes');
+        if ($routes === null) {
+            $routesFile = storage_path('app/routes/routes.json');
+            if (file_exists($routesFile)) {
+                $routes = json_decode(file_get_contents($routesFile), true);
+                $this->cache->forever('jetpages:routes', $routes);
             }
+        }
+        if (is_array($routes) && (!isset($routes[$locale.':'.$uri]) || !$routes[$locale.':'.$uri])) {
+            return abort(404);
+        }
+
+        // 3. If routes file is not loaded or if page is found, seek the page in DB.
+        $page = $this->pages->findBySlug($locale, $slug);
+        if (!$page || $page->isPrivate()) {
+            return abort(404);
         }
 
         $html = $page->render($rebuildOnEachView);

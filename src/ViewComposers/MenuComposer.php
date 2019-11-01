@@ -2,11 +2,20 @@
 
 namespace ShvetsGroup\JetPages\ViewComposers;
 
-use Cache;
+use Illuminate\Contracts\Cache\Store;
 use Illuminate\View\View;
 
 class MenuComposer
 {
+    /**
+     * @var Store
+     */
+    private $cache;
+
+    public function __construct()
+    {
+        $this->cache = app('cache.store');
+    }
 
     /**
      * Bind data to the view.
@@ -31,11 +40,15 @@ class MenuComposer
 
         $locale = $view->offsetGet('locale');
 
-        $menuFile = storage_path('app/menu/'.$locale.'.json');
-        if (file_exists($menuFile)) {
-            $menu = json_decode(file_get_contents($menuFile), true);
-        } else {
-            $menu = [];
+        $menu = $this->cache->get('jetpages:menu:'.$locale);
+        if ($menu === null) {
+            $menuFile = storage_path('app/menu/'.$locale.'.json');
+            if (file_exists($menuFile)) {
+                $menu = json_decode(file_get_contents($menuFile), true);
+            } else {
+                $menu = [];
+            }
+            $this->cache->forever('jetpages:menu:'.$locale, $menu);
         }
 
         if (!$this->set_active_trail($menu, $uri) && $view->offsetExists('breadcrumb')) {

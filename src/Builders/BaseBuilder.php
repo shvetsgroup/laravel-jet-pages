@@ -17,12 +17,14 @@ class BaseBuilder
     protected $renderers = [];
     protected $postProcessors = [];
     protected $routesFile = null;
+    protected $cache;
 
     public function __construct($pageRegistry = null, $scanners = [], $parsers = [], $renderers = [], $postProcessors = [])
     {
         $this->files = app('Illuminate\Filesystem\Filesystem');
-        $this->pageRegistry = $pageRegistry ?: app('pages');
         $this->routesFile = storage_path('app/routes/routes.json');
+        $this->pageRegistry = $pageRegistry ?: app('pages');
+        $this->cache = app('cache.store');
 
         $scanners = $scanners ?: config('jetpages.content_scanners', ['pages']);
         $scanners = is_array($scanners) ? $scanners : [$scanners];
@@ -157,6 +159,8 @@ class BaseBuilder
             if ($this->files->exists(dirname($this->routesFile))) {
                 $this->files->deleteDirectories(dirname($this->routesFile));
             }
+            $this->cache->delete('jetpages:routes');
+            $this->cache->delete('jetpages:redirects');
         }
         $this->pageRegistry->getAll();
 
@@ -178,11 +182,11 @@ class BaseBuilder
 
         $routes = [];
         foreach ($this->pageRegistry->getAll() as $page) {
-            if ($page->isPrivate()) {
-                continue;
-            }
-            $routes[] = $page->locale.':'.$page->uri();
+            $routes[$page->locale.':'.$page->uri()] = !$page->isPrivate();
         }
+
+        $this->cache->forever('jetpages:routes', $routes);
+
         $this->files->makeDirectory(dirname($this->routesFile), 0755, true, true);
         $this->files->put($this->routesFile, json_encode($routes));
     }
