@@ -143,7 +143,7 @@ class PageController extends Controller
         $domain = $this->pageUtils->getHost();
         $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
         if (!$localesOnThisDomain) {
-            throw new Exception("Can not determine locale configuration on this domain.");
+            throw new Exception("Can not determine locale configuration on this domain [$domain].");
         }
 
         $defaultLocale = reset($localesOnThisDomain);

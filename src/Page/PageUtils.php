@@ -70,7 +70,7 @@ class PageUtils
             $localesOnThisDomain = array_filter(array_wrap($this->configLocaleDomains[$domain] ?? $this->configLocaleDomains[''] ?? null));
 
             if (!$localesOnThisDomain) {
-                throw new Exception("Can not determine locale configuration on this domain.");
+                throw new Exception("Can not determine locale configuration on this domain [$domain].");
             }
 
             return $this->extractLocale($parts['path'] ?? '', false, reset($localesOnThisDomain), array_combine($localesOnThisDomain, $localesOnThisDomain));
