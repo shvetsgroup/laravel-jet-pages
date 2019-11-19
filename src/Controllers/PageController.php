@@ -2,7 +2,6 @@
 
 namespace ShvetsGroup\JetPages\Controllers;
 
-use Exception;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -134,17 +133,11 @@ class PageController extends Controller
 
         $localization = app('laravellocalization');
 
-        $localeDomains = config('laravellocalization.localeDomains');
-
+        $localeDomains = config('sg.localeDomains');
         if (!$localeDomains) {
             return $localization->setLocale($locale);
         }
-
-        $domain = $this->pageUtils->getHost();
-        $localesOnThisDomain = array_filter(array_wrap($localeDomains[$domain] ?? $localeDomains[''] ?? null));
-        if (!$localesOnThisDomain) {
-            throw new Exception("Can not determine locale configuration on this domain [$domain].");
-        }
+        $localesOnThisDomain = $this->pageUtils->getLocalesOnDomain();
 
         $defaultLocale = reset($localesOnThisDomain);
         $r = new ReflectionObject($localization);

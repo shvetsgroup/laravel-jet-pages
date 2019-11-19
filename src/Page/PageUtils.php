@@ -3,6 +3,7 @@
 namespace ShvetsGroup\JetPages\Page;
 
 use Exception;
+use Illuminate\Support\Arr;
 
 class PageUtils
 {
@@ -22,7 +23,7 @@ class PageUtils
 
     public function refreshCaches()
     {
-        $this->configLocaleDomains = config('laravellocalization.localeDomains');
+        $this->configLocaleDomains = config('sg.localeDomains');
         $this->configSSL = config('sg.ssl');
         $this->configDefaultLocale = config('app.default_locale', 'en');
         $this->configHideDefaultLocaleInURL = config('laravellocalization.hideDefaultLocaleInURL', true);
@@ -66,13 +67,7 @@ class PageUtils
         $parts = parse_url($url);
 
         if ($this->configLocaleDomains) {
-            $domain = $parts['host'];
-            $localesOnThisDomain = array_filter(array_wrap($this->configLocaleDomains[$domain] ?? $this->configLocaleDomains[''] ?? null));
-
-            if (!$localesOnThisDomain) {
-                throw new Exception("Can not determine locale configuration on this domain [$domain].");
-            }
-
+            $localesOnThisDomain = $this->getLocalesOnDomain($url);
             return $this->extractLocale($parts['path'] ?? '', false, reset($localesOnThisDomain), array_combine($localesOnThisDomain, $localesOnThisDomain));
         }
 
@@ -208,14 +203,8 @@ class PageUtils
                 return ($locale == $this->configDefaultLocale) ? '' : $locale.'/';
             }
 
-            $domain = $this->getHost();
-            foreach ($this->configLocaleDomains as $d => $localesInDomain) {
-                $localesInDomain = array_wrap($localesInDomain);
-                if (in_array($locale, $localesInDomain)) {
-                    $domain = $d;
-                }
-            }
-            $localesOnThisDomain = array_filter(array_wrap($this->configLocaleDomains[$domain] ?? $this->configLocaleDomains[''] ?? null));
+            $localeDomain = $this->getLocaleDomain($locale);
+            $localesOnThisDomain = $this->getLocalesOnDomain($localeDomain);
 
             if ($locale == reset($localesOnThisDomain)) {
                 return '';
@@ -267,58 +256,73 @@ class PageUtils
         $currentDomain = $this->getHost();
 
         if (is_array($this->configLocaleDomains)) {
-            foreach ($this->configLocaleDomains as $domain => $localesInDomain) {
-                $localesInDomain = array_wrap($localesInDomain);
+            $domainsForGivenLocale = Arr::wrap(Arr::get($this->configLocaleDomains, $locale, []));
+            if (empty($domainsForGivenLocale)) {
+                throw new Exception("Can not determine domain configuration for the locale [$locale].");
+            }
 
-                if (in_array($locale, $localesInDomain)) {
+            if (in_array($currentDomain, $domainsForGivenLocale)) {
+                $this->cacheLocaleDomain[$locale] = $currentDomain;
+                return $currentDomain;
+            }
 
-                    if ($domain === '' && isset($this->configLocaleDomains[$currentDomain])) {
-                        $domain = $this->getHost($this->configAppUrl);
-                    }
-
-                    $this->cacheLocaleDomain[$locale] = $domain;
-
-                    return $domain;
+            if (in_array('', $domainsForGivenLocale)) {
+                $locales = $this->getLocalesOnDomain($currentDomain);
+                if (in_array($locale, $locales)) {
+                    $this->cacheLocaleDomain[$locale] = $currentDomain;
+                    return $currentDomain;
                 }
+            }
+
+            $firstDomainForGivenLocale = reset($domainsForGivenLocale);
+            if ($firstDomainForGivenLocale) {
+                $this->cacheLocaleDomain[$locale] = $firstDomainForGivenLocale;
+                return $firstDomainForGivenLocale;
+            }
+            else {
+                $defaultDomain = $this->getHost($this->configAppUrl);
+                $this->cacheLocaleDomain[$locale] = $defaultDomain;
+                return $defaultDomain;
             }
         }
 
         $this->cacheLocaleDomain[$locale] = $currentDomain;
-
         return $currentDomain;
     }
 
     /**
      * Return locales that should be present on this domain.
      *
-     * @param  null  $url
+     * @param  null  $domain
      * @return array
      */
-    function getLocalesOnDomain($url = null)
+    function getLocalesOnDomain($domain = null)
     {
-        if (!$url) {
-            $url = url()->current();
-        }
+        $domain = $this->getHost($domain);
 
-        // Prevent //something/path parsed as full url with host.
-        $url = ltrim($url, '/');
-
-        $parts = parse_url($url);
-
-        if (empty($parts['host'])) {
-            $domain = request()->getHost();
-        } else {
-            $domain = $parts['host'];
-        }
-
-        $localesOnThisDomain = null;
         if ($this->configLocaleDomains) {
-            $localesOnThisDomain = array_filter(array_wrap($this->configLocaleDomains[$domain] ?? $this->configLocaleDomains[''] ?? null));
+            $localesOnThisDomain = [];
+            foreach ($this->configLocaleDomains as $locale => $domains) {
+                $domains = Arr::wrap($domains);
+                if (in_array($domain, $domains)) {
+                    $localesOnThisDomain[] = $locale;
+                }
+            }
+            if (empty($localesOnThisDomain)) {
+                foreach ($this->configLocaleDomains as $locale => $domains) {
+                    $domains = Arr::wrap($domains);
+                    if (in_array('', $domains)) {
+                        $localesOnThisDomain[] = $locale;
+                    }
+                }
+            }
+            if (empty($localesOnThisDomain)) {
+                throw new Exception("Can not determine locale configuration on this domain [$domain].");
+            }
+            return $localesOnThisDomain;
         } else {
             return $this->configSupportedLocales ? array_keys($this->configSupportedLocales) : [app()->getLocale()];
         }
-
-        return $localesOnThisDomain;
     }
 
     /**
@@ -330,6 +334,14 @@ class PageUtils
     {
         if (!$url) {
             $url = url()->current();
+        }
+        else {
+            $url = trim($url);
+
+            // If $url is a host.
+            if (preg_match('#^(((?!-))(xn--|_{1,1})?[a-z0-9-]{0,61}[a-z0-9]{1,1}\.)*(xn--)?([a-z0-9][a-z0-9\-]{0,60}|[a-z0-9-]{1,30}\.[a-z]{2,})$#', $url)) {
+                return $url;
+            }
         }
 
         // Prevent //something/path parsed as full url with host.

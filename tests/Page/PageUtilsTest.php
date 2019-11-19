@@ -25,25 +25,26 @@ class PageUtilsTest extends AbstractTestCase
     public function setConfigToNoneLocales()
     {
         config(['laravellocalization' => []]);
+        config(['sg.localeDomains' => null]);
         app()->setLocale('en');
-        $this->freshPageUtils()->getLocaleDomain('', true);
     }
 
     public function setConfigToOneLocale()
     {
         config(['laravellocalization' => []]);
+        config(['sg.localeDomains' => null]);
         config([
             'laravellocalization.supportedLocales' => [
                 'en' => ['name' => 'English', 'script' => 'Latn', 'native' => 'English', 'regional' => 'en_GB'],
             ],
         ]);
         app()->setLocale('en');
-        $this->freshPageUtils()->getLocaleDomain('', true);
     }
 
     public function setConfigToMultipleLocales()
     {
         config(['laravellocalization' => []]);
+        config(['sg.localeDomains' => null]);
         config([
             'laravellocalization.supportedLocales' => [
                 'en' => ['name' => 'English', 'script' => 'Latn', 'native' => 'English', 'regional' => 'en_GB'],
@@ -52,20 +53,19 @@ class PageUtilsTest extends AbstractTestCase
             ],
         ]);
         app()->setLocale('en');
-        $this->freshPageUtils()->getLocaleDomain('', true);
     }
 
     public function setConfigToMultipleLocaleDomains()
     {
         config(['laravellocalization' => []]);
         config([
-            'laravellocalization.localeDomains' => [
-                '' => ['en', 'ru'],
-                'example.cn' => 'zh',
+            'sg.localeDomains' => [
+                'en' => '',
+                'ru' => '',
+                'zh' => 'example.cn',
             ],
         ]);
         app()->setLocale('en');
-        $this->freshPageUtils()->getLocaleDomain('', true);
     }
 
     public function testExtractLocaleFromUri()
@@ -170,9 +170,10 @@ class PageUtilsTest extends AbstractTestCase
         URL::forceRootUrl('http://example.cn');
         $this->setConfigToMultipleLocaleDomains();
         config([
-            'laravellocalization.localeDomains' => [
-                'example.com' => ['en', 'ru'],
-                'example.cn' => 'zh',
+            'sg.localeDomains' => [
+                'en' => 'example.com',
+                'ru' => 'example.com',
+                'zh' => 'example.cn',
             ],
         ]);
         config(['app.url' => 'http://example.com']);
