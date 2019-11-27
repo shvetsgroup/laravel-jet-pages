@@ -6,7 +6,7 @@
     "license": "MIT",
     "require": {
         "php": ">=7.2",
-        "laravel/framework": ">=5.6.0",
+        "laravel/framework": "^5.6.0,^6.0",
         "league/commonmark": "^0.17",
         "watson/sitemap": "2.0.*",
         "ellisthedev/laravel-5-robots": "0.1.*",
