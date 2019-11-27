@@ -1,4 +1,4 @@
-<h1>{{ $title or '' }}</h1>
+<h1>{{ $title ?? '' }}</h1>
 <div class="content">
-    {!! $content or '' !!}
+    {!! $content ?? '' !!}
 </div>

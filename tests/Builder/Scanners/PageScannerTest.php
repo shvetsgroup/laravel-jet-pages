@@ -21,7 +21,7 @@ class PageScannerTest extends AbstractTestCase
      */
     private $files;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->linkFixtureContent();

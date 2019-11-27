@@ -4,6 +4,7 @@ namespace ShvetsGroup\JetPages\Builders\PostProcessors;
 
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
 use ShvetsGroup\JetPages\Facades\PageUtils;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
@@ -92,7 +93,7 @@ class MenuPostProcessor implements PostProcessor
 
         if (is_array($menu_item)) {
             if (isset($menu_item['_title'])) {
-                if (starts_with($menu_item['_title'], 'trans:')) {
+                if (Str::startsWith($menu_item['_title'], 'trans:')) {
                     $result['title'] = trans($menu_item['_title'], [], $locale);
                 } else {
                     $result['title'] = $menu_item['_title'];

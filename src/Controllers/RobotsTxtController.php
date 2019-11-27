@@ -2,49 +2,29 @@
 
 namespace ShvetsGroup\JetPages\Controllers;
 
-use EllisTheDev\Robots\Robots;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use MadWeb\Robots\Robots;
 
 class RobotsTxtController extends Controller
 {
     /**
-     * @var Robots
-     */
-    private $robots;
-
-    public function __construct()
-    {
-        $this->robots = app('robots');
-    }
-
-    /**
      * Display the robots.txt.
      * @return Response
      */
-    public function robots()
+    public function robots(Robots $robots)
     {
-        $robots_txt = $this->robots->generate();
+        $robots->addUserAgent('*');
 
-        if (!$robots_txt) {
-            $addedStar = false;
-
-            if (strpos($robots_txt, 'sitemap.xml') === false) {
-                $this->robots->addUserAgent('*');
-                $addedStar = true;
-                $this->robots->addSitemap(url('sitemap.xml'));
-            }
-
-            if (app()->environment() != 'production') {
-                if (!$addedStar) {
-                    $this->robots->addUserAgent('*');
-                }
-                $this->robots->addDisallow('/');
-            }
-
-            $robots_txt = $this->robots->generate();
+        if ($robots->shouldIndex()) {
+            // If on the live server, serve a nice, welcoming robots.txt.
+            $robots->addDisallow('/admin');
+            $robots->addSitemap('sitemap.xml');
+        } else {
+            // If you're on any other server, tell everyone to go away.
+            $robots->addDisallow('/');
         }
 
-        return response($robots_txt, 200, ['Content-Type' => 'text/plain']);
+        return response($robots->generate(), 200, ['Content-Type' => 'text/plain']);
     }
 }

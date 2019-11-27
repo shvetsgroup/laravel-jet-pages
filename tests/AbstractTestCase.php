@@ -2,10 +2,12 @@
 
 namespace ShvetsGroup\Tests\JetPages;
 
-use EllisTheDev\Robots\RobotsServiceProvider;
 use GrahamCampbell\TestBench\AbstractPackageTestCase;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use MadWeb\Robots\RobotsServiceProvider;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use ShvetsGroup\JetPages\JetPagesServiceProvider;
 use ShvetsGroup\JetPages\Page\Page;
@@ -19,6 +21,7 @@ use Watson\Sitemap\SitemapServiceProvider;
 abstract class AbstractTestCase extends AbstractPackageTestCase
 {
     use MockeryPHPUnitIntegration;
+    use DatabaseMigrations;
 
     /**
      * Override in subclasses to run migrations on setUp.
@@ -39,17 +42,8 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
         $app->config->set('jetpages.driver', 'cache');
 //        $app->config->set('database.default', 'mysql');
         $app->config->set('database.connections.sqlite', [
-            'driver' => 'mysql',
-            'host' => '127.0.0.1',
-            'port' => '3306',
-            'database' => 'refactoring',
-            'username' => 'root',
-            'password' => 'root',
-            'charset' => 'utf8',
-            'collation' => 'utf8_unicode_ci',
-            'prefix' => '',
-            'strict' => false,
-            'engine' => null,
+            'driver' => 'sqlite',
+            'database' => __DIR__ . '/test.sqlite',
         ]);
     }
 
@@ -64,7 +58,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
     {
         return [
             SitemapServiceProvider::class,
-            RobotsServiceProvider::class,
+            RobotsServiceProvider::class
         ];
     }
 
@@ -80,7 +74,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
         return JetPagesServiceProvider::class;
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         $files = new Filesystem();
         $files->deleteDirectory($this->getBasePath().'/storage/app/routes');

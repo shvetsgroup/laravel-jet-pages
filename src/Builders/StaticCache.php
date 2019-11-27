@@ -4,6 +4,7 @@ namespace ShvetsGroup\JetPages\Builders;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use ShvetsGroup\JetPages\Page\Page;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -47,7 +48,7 @@ class StaticCache
         $path = $request->path();
         $content = $response->getContent();
         $content_type = $response->headers->get('Content-Type');
-        $this->write($path, $content, starts_with($content_type, 'text/html'));
+        $this->write($path, $content, Str::startsWith($content_type, 'text/html'));
 
         return true;
     }

@@ -2,3 +2,5 @@
 composer.phar
 composer.lock
 vendor
+.phpunit.result.cache
+tests/test.sqlite

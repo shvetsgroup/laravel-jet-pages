@@ -6,7 +6,7 @@ use ShvetsGroup\JetPages\Page\CachePageRegistry;
 
 class CachePageRegistryTest extends AbstractPageRegistryTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->registry = new CachePageRegistry();

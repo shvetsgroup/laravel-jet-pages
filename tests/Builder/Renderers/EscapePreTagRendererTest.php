@@ -16,7 +16,7 @@ class EscapePreTagRendererTest extends AbstractTestCase
     private $renderer;
     private $pages;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->renderer = new EscapePreTagRenderer();

@@ -16,7 +16,7 @@ abstract class AbstractPageRegistryTest extends AbstractTestCase
 
     protected $data = [];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->data = [

@@ -18,7 +18,9 @@ class BaseBuilderTest extends AbstractTestCase
      */
     private $builder;
 
-    public function setUp()
+    protected $migrate = true;
+
+    public function setUp(): void
     {
         parent::setUp();
         $this->linkFixtureContent();

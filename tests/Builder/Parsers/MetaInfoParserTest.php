@@ -17,7 +17,7 @@ class MetaInfoParserTest extends AbstractTestCase
     private $data = [];
     private $pages;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->parser = new MetaInfoParser();

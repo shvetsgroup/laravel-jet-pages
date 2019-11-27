@@ -14,7 +14,7 @@ class EloquentPageRegistryTest extends AbstractPageRegistryTest
         $app->config->set('jetpages.driver', 'database');
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->registry = new EloquentPageRegistry();

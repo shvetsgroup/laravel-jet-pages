@@ -12,7 +12,7 @@ class OutlineBuilderTest extends AbstractTestCase
      */
     private $outline;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->linkFixtureContent();

@@ -12,7 +12,7 @@ class StaticCacheTest extends AbstractTestCase
      */
     private $pages;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->pages = app()->make('pages');
@@ -43,7 +43,7 @@ class StaticCacheTest extends AbstractTestCase
         $this->get('/test/test')->assertStatus(200);
         $path = public_path('cache/test/test/index.html');
         $this->assertFileExists($path);
-        $this->assertContains('<!-- Cached on ', file_get_contents($path));
+        $this->assertStringContainsString('<!-- Cached on ', file_get_contents($path));
     }
 
     public function testCacheSitemap()
@@ -52,7 +52,7 @@ class StaticCacheTest extends AbstractTestCase
         $this->get('/sitemap.xml')->assertStatus(200);
         $path = public_path('cache/sitemap.xml');
         $this->assertFileExists($path);
-        $this->assertNotContains('<!-- Cached on ', file_get_contents($path));
+        $this->assertStringNotContainsString('<!-- Cached on ', file_get_contents($path));
     }
 
     public function testNoCache()
