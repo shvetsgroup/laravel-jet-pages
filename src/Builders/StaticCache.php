@@ -96,7 +96,6 @@ class StaticCache
             if (!$this->files->isDirectory($cache_path)) {
                 $this->files->makeDirectory($cache_path, 0777, true);
             }
-            $content = $content."<!-- Cached on ".date('Y-m-d H-i-s')." -->\n";
             $this->files->put($cache_path.'/index.html', $content);
         } else {
             if (!$this->files->isDirectory(dirname($cache_path))) {
