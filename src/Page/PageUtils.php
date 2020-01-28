@@ -130,7 +130,8 @@ class PageUtils
      */
     function isValidLocale($string, $supportedLocales = null)
     {
-        if (mb_strlen($string) != 2) {
+        $strlen = mb_strlen($string);
+        if ($strlen != 2 && $strlen != 5) {
             return false;
         }
 
