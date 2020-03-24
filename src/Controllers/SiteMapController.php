@@ -50,6 +50,8 @@ class SiteMapController extends Controller
             'page' => 'default',
         ]);
 
+        $sitemapOverrides = config('jetpages.sitemap_overrides', []);
+
         $localesOnThisDomain = PageUtils::getLocalesOnDomain();
 
         foreach ($pages as $page) {
@@ -67,32 +69,57 @@ class SiteMapController extends Controller
 
             $slug = $page->slug;
             $absoluteUrl = $page->uri(true);
+
+            $values = [
+                'priority' => 0,
+                'updated_at' => $page->updated_at,
+                'frequency' => $sitemapChangeFrequency[$page->type] ?? 'daily',
+                'alternativeUris' => $page->alternativeUris(true),
+            ];
+
             if ($slug === 'index') {
-                $priority = 1;
+                $values['priority'] = 1;
             } else {
                 if (isset($sitemapPriorities[$page->type]) && $sitemapPriorities[$page->type] != 'default') {
-                    $priority = $sitemapPriorities[$page->type];
+                    $values['priority'] = $sitemapPriorities[$page->type];
                 } else {
-                    $priority = round(((isset($outline[$slug]) ? (0.5 / max(1, $outline[$slug])) : 0) + 0.5) * 100) / 100;
+                    $values['priority'] = round(((isset($outline[$slug]) ? (0.5 / max(1, $outline[$slug])) : 0) + 0.5) * 100) / 100;
                 }
             }
 
-            $alternativeUris = $page->alternativeUris(true);
-            if (count($alternativeUris) > 1) {
+            if (count($values['alternativeUris']) > 1) {
                 $default_locale = config('app.default_locale');
-                if (isset($alternativeUris[$default_locale])) {
-                    $alternativeUris['x-default'] = $alternativeUris[$default_locale];
-                    unset($alternativeUris[$default_locale]);
+                if (isset($values['alternativeUris'][$default_locale])) {
+                    $values['alternativeUris']['x-default'] = $values['alternativeUris'][$default_locale];
+                    unset($values['alternativeUris'][$default_locale]);
                 }
+            }
+
+            foreach ($sitemapOverrides as $rule) {
+                $result = false;
+                if (isset($rule['conditions'])) {
+                    $result = true;
+                    foreach ($rule['conditions'] as $ruleConditionField => $ruleConditionValue) {
+                        $result &= $page->$ruleConditionField == $ruleConditionValue;
+                    }
+                }
+                if ($result && isset($rule['overrides'])) {
+                    foreach ($rule['overrides'] as $ruleOverrideField => $ruleOverrideValue) {
+                        $values[$ruleOverrideField] = $ruleOverrideValue;
+                    }
+                }
+            }
+
+            if (count($values['alternativeUris']) > 1) {
                 $this->sitemap->addTag(new MultilingualTag(
                     $absoluteUrl,
-                    $page->updated_at,
-                    $sitemapChangeFrequency[$page->type] ?? 'daily',
-                    $priority,
-                    $alternativeUris
+                    $values['updated_at'],
+                    $values['frequency'],
+                    $values['priority'],
+                    $values['alternativeUris']
                 ));
             } else {
-                $this->sitemap->addTag($absoluteUrl, $page->updated_at, 'daily', $priority);
+                $this->sitemap->addTag($absoluteUrl, $values['updated_at'], $values['frequency'], $values['priority']);
             }
         }
         return $this->sitemap->renderSitemap();
