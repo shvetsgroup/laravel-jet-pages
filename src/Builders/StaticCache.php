@@ -65,6 +65,9 @@ class StaticCache
         if (!auth()->guest()) {
             return;
         }
+        if ($page->isPrivate()) {
+            return;
+        }
         if (!$page->getAttribute('cache', true)) {
             return;
         }
