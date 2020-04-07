@@ -4,10 +4,14 @@ namespace ShvetsGroup\JetPages\Builders\Renderers;
 
 use Illuminate\Contracts\Cache\Store;
 use League\CommonMark\Block\Renderer\DocumentRenderer;
+use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Converter;
 use League\CommonMark\Environment;
+use League\CommonMark\Event\DocumentParsedEvent;
+use League\CommonMark\Event\DocumentPreParsedEvent;
 use League\CommonMark\HtmlRenderer;
 use ShvetsGroup\JetPages\Builders\Renderers\MarkdownOverrides\CustomDocument;
+use ShvetsGroup\JetPages\Builders\Renderers\MarkdownOverrides\ReferenceCacheProcessor;
 use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\JetPages\Page\PageRegistry;
 
@@ -19,9 +23,7 @@ class MarkdownRenderer extends AbstractRenderer
     private $cache;
 
     protected $converters = [];
-    protected $docParsers = [];
     protected $references = [];
-    protected $referenceLocale = null;
 
     public function __construct()
     {
@@ -73,11 +75,10 @@ class MarkdownRenderer extends AbstractRenderer
             $env->mergeConfig([
                 'html_input' => 'allow',
             ]);
-            $env->addBlockRenderer(CustomDocument::class, new DocumentRenderer());
-            $renderer = new HtmlRenderer($env);
-            $this->docParsers[$locale] = new MarkdownOverrides\CustomDocParser($env);
-            $this->docParsers[$locale]->setReferences($this->getAllReferences($locale, $registry));
-            $this->converters[$locale] = new Converter($this->docParsers[$locale], $renderer);
+            $referenceCacheProcessor = new ReferenceCacheProcessor($env);
+            $referenceCacheProcessor->setReferences($this->getAllReferences($locale, $registry));
+            $env->addEventListener(DocumentPreParsedEvent::class, [$referenceCacheProcessor, 'onDocumentPreParsed']);
+            $this->converters[$locale] = new CommonMarkConverter([], $env);
         }
 
         return $this->converters[$locale];

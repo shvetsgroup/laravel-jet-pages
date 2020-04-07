@@ -75,8 +75,8 @@ class BaseBuilderTest extends AbstractTestCase
 
         $this->refreshApplication();
 
-        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.');
-        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.');
+        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.', false);
+        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.', false);
     }
 
     /**
@@ -91,16 +91,16 @@ class BaseBuilderTest extends AbstractTestCase
 
         $this->refreshApplication();
 
-        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.');
-        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.');
+        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.', false);
+        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.', false);
         $this->get('a')->assertRedirect('b');
 
         $this->app = $this->createApplication(function () {
             config(['app.debug' => true]);
         });
 
-        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.');
-        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.');
+        $this->get('/')->assertStatus(200)->assertSee('Some **test** <i>content</i>.', false);
+        $this->get('test/test')->assertStatus(200)->assertSee('Some **test** subdir <i>content</i>.', false);
         $this->get('a')->assertRedirect('b');
     }
 

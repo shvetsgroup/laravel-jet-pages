@@ -43,7 +43,6 @@ class StaticCacheTest extends AbstractTestCase
         $this->get('/test/test')->assertStatus(200);
         $path = public_path('cache/test/test/index.html');
         $this->assertFileExists($path);
-        $this->assertStringContainsString('<!-- Cached on ', file_get_contents($path));
     }
 
     public function testCacheSitemap()
