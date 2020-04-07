@@ -3,9 +3,10 @@
 namespace ShvetsGroup\JetPages\Commands;
 
 use Illuminate\Console\Command;
-use ShvetsGroup\JetPages\Builders\BaseBuilder;
-use ShvetsGroup\JetPages\Builders\StaticCache;
 use ShvetsGroup\JetPages\Facades\PageUtils;
+use ShvetsGroup\JetPages\Page\PageQuery;
+use ShvetsGroup\JetPages\PageBuilder\PageBuilder;
+use ShvetsGroup\JetPages\PageBuilder\PageCache;
 
 class Cache extends Command
 {
@@ -27,9 +28,9 @@ class Cache extends Command
 
     /**
      * Execute console command.
-     * @param  BaseBuilder  $builder
+     * @param  PageBuilder  $builder
      */
-    public function handle(BaseBuilder $builder)
+    public function handle(PageBuilder $builder)
     {
         $start_time = microtime(true);
         if ($cache_dir = $this->option('cache_dir')) {
@@ -46,12 +47,10 @@ class Cache extends Command
         url()->forceRootUrl($baseUrl);
         $localesOnThisDomain = PageUtils::getLocalesOnDomain($baseUrl);
 
-        $pages = app('pages')->getAll();
-        $cacheBuilder = new StaticCache();
-
+        $cacheBuilder = new PageCache();
         $currentLocale = app()->getLocale();
-        foreach ($pages as $page) {
-            if ($localesOnThisDomain && !in_array($page->locale, $localesOnThisDomain)) {
+        foreach (PageQuery::get() as $page) {
+            if ($localesOnThisDomain && !in_array($page->getAttribute('locale'), $localesOnThisDomain)) {
                 continue;
             }
             $localization->setLocale($page->getAttribute('locale'));

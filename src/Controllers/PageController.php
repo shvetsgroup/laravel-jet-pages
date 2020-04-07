@@ -3,39 +3,46 @@
 namespace ShvetsGroup\JetPages\Controllers;
 
 use Illuminate\Contracts\Cache\Store;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\Redirector;
-use ReflectionException;
 use ReflectionObject;
-use ShvetsGroup\JetPages\Page\PageRegistry;
+use ShvetsGroup\JetPages\Page\PageQuery;
 use ShvetsGroup\JetPages\Page\PageUtils;
+use ShvetsGroup\JetPages\PageBuilder\PageBuilder;
+use ShvetsGroup\JetPages\PageBuilder\PostProcessors\RedirectsPostProcessor;
 
 class PageController extends Controller
 {
     /**
-     * @var PageUtils
-     */
-    private $pageUtils;
-
-    /**
-     * @var PageRegistry
-     */
-    private $pages;
-
-    /**
      * @var Store
      */
-    private $cache;
+    protected $cache;
+
+    /**
+     * @var PageBuilder
+     */
+    protected $builder;
+
+    /**
+     * @var PageUtils
+     */
+    protected $pageUtils;
+
+    protected $redirectCacheFile;
+
+    protected $routesCacheFile;
 
     public function __construct()
     {
-        $this->pageUtils = app('page.utils');
-        $this->pages = app('pages');
         $this->cache = app('cache.store');
+        $this->builder = app('page.builder');
+        $this->pageUtils = app('page.utils');
+
+        $this->redirectCacheFile = storage_path(RedirectsPostProcessor::REDIRECT_CACHE_PATH);
+        $this->routesCacheFile = storage_path(PageBuilder::ROUTES_CACHE_PATH);
     }
 
     /**
@@ -43,63 +50,41 @@ class PageController extends Controller
      *
      * @param  string  $uri
      * @param  Request  $request
-     * @return Response
+     * @return RedirectResponse|Redirector|Response|void
      */
-    public function show(Request $request, $uri = null)
+    public function show(Request $request, $uri = '')
     {
-        $uri = $uri ?: $request->path();
-        $fullUrl = $this->pageUtils->getBaseUrl().ltrim($uri, '/');
-        list($locale, $_uri) = $this->pageUtils->extractLocaleFromURL($fullUrl);
-        $slug = $this->pageUtils->uriToSlug($_uri);
-        $this->setLocale($locale);
+        list($uri, $locale, $slug) = $this->getUriLocaleSlug($request, $uri);
 
-        // 1. Try to find a suitable redirect.
-        $redirects = $this->cache->get('jetpages:redirects');
-        if ($redirects === null) {
-            $redirectsFile = storage_path('app/redirects/redirects.json');
-            if (file_exists($redirectsFile)) {
-                $redirects = json_decode(file_get_contents($redirectsFile), true);
-            } else {
-                $redirects = [];
-            }
-            $this->cache->forever('jetpages:redirects', $redirects);
-        }
-        if (is_array($redirects) && isset($redirects[$uri])) {
-            return redirect($redirects[$uri], 301);
+        if ($redirect = $this->getRedirect($uri)) {
+            return redirect($redirect, 301);
         }
 
-        // 2. Then try to see if the page exists in the routes file quickly.
-        $routes = $this->cache->get('jetpages:routes');
-        if ($routes === null) {
-            $routesFile = storage_path('app/routes/routes.json');
-            if (file_exists($routesFile)) {
-                $routes = json_decode(file_get_contents($routesFile), true);
-                $this->cache->forever('jetpages:routes', $routes);
-            }
-        }
-        if (is_array($routes) && (!isset($routes[$locale.':'.$uri]) || !$routes[$locale.':'.$uri])) {
+        $this->setAppLocale($locale);
+
+        if ($this->isUnknownPageRoute($locale, $uri)) {
             return abort(404);
         }
 
         // 3. If routes file is not loaded or if page is found, seek the page in DB.
-        $page = $this->pages->findBySlug($locale, $slug);
+        $page = PageQuery::findBySlug($locale, $slug);
 
         if ($page && $rebuildOnEachView = config('jetpages.rebuild_page_on_view', config('app.debug', false))) {
-            app('builder')->build(false, $this->pageUtils->makeLocaleSlug($locale, $slug));
-            $page = $this->pages->findBySlug($locale, $slug);
+            $this->builder->forcePagesToRebuild([$this->pageUtils->makeLocaleSlug($locale, $slug)]);
+            $this->builder->build();
+            $page = PageQuery::findBySlug($locale, $slug);
         }
 
         if (!$page || $page->isPrivate()) {
             return abort(404);
         }
 
-        $html = $page->render($rebuildOnEachView);
+        $html = $page->render();
         $response = response()->make($html);
 
-        $cache = $page->getAttribute('cache', true);
-        request()->route()->setParameter('cache', $cache);
-
-        if ($cache) {
+        $pageCache = $page->getAttribute('cache');
+        request()->route()->setParameter('cache', $pageCache);
+        if ($pageCache) {
             $response->setPublic()->setMaxAge(60 * 5)->setSharedMaxAge(3600 * 24 * 365);
         }
 
@@ -118,13 +103,50 @@ class PageController extends Controller
         return redirect($to, 301);
     }
 
-    /**
-     * Set app locale.
-     *
-     * @param $locale
-     * @throws ReflectionException
-     */
-    public function setLocale($locale)
+    protected function getUriLocaleSlug(Request $request, $uri)
+    {
+        $uri = $uri ?: $request->path();
+
+        $fullUrl = $this->pageUtils->getBaseUrl().ltrim($uri, '/');
+        list($locale, $_uri) = $this->pageUtils->extractLocaleFromURL($fullUrl);
+
+        $slug = $this->pageUtils->uriToSlug($_uri);
+
+        return [$uri, $locale, $slug];
+    }
+
+    protected function getRedirect($uri)
+    {
+        $redirects = $this->cache->get('jetpages:redirects');
+
+        if ($redirects === null) {
+            if (file_exists($this->redirectCacheFile)) {
+                $redirects = json_decode(file_get_contents($this->redirectCacheFile), true);
+            }
+            if (!is_array($redirects)) {
+                $redirects = [];
+            }
+            $this->cache->forever('jetpages:redirects', $redirects);
+        }
+
+        return $redirects[$uri] ?? null;
+    }
+
+    protected function isUnknownPageRoute($locale, $uri)
+    {
+        $routes = $this->cache->get('jetpages:routes');
+
+        if ($routes === null) {
+            if (file_exists($this->routesCacheFile)) {
+                $routes = json_decode(file_get_contents($this->routesCacheFile), true);
+                $this->cache->forever('jetpages:routes', $routes);
+            }
+        }
+
+        return is_array($routes) && (!isset($routes[$locale.':'.$uri]) || !$routes[$locale.':'.$uri]);
+    }
+
+    protected function setAppLocale(string $locale)
     {
         if (!app()->bound('laravellocalization')) {
             app()->setLocale($locale);
@@ -161,21 +183,5 @@ class PageController extends Controller
         if ($originalSupportedLocales) {
             $localization->setSupportedLocales($originalSupportedLocales);
         }
-    }
-
-    /**
-     * This timestamp can be used to invalidate local client content cache.
-     *
-     * @return JsonResponse
-     */
-    public function getContentTimestamp()
-    {
-        $date = $this->pages->lastBuildTime() ?: $this->pages->lastUpdatedTime();
-
-        return response()->json([
-            'timestamp' => $date ? strtotime($date) : 0,
-        ], 200, [], JSON_NUMERIC_CHECK)
-            ->header('Cache-Control', 'no-cache')
-            ->header('Content-Type', 'application/json');
     }
 }

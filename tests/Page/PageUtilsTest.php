@@ -2,9 +2,9 @@
 
 namespace ShvetsGroup\Tests\JetPages\Page;
 
+use Illuminate\Support\Facades\URL;
 use ShvetsGroup\JetPages\Page\PageUtils;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
-use URL;
 
 class PageUtilsTest extends AbstractTestCase
 {

@@ -1,28 +1,28 @@
 {
     "name": "shvetsgroup/laravel-jet-pages",
     "description": "Pages package for Laravel. Fast as a jet plane. Provides markdown support, localization and static cache.",
-    "keywords": ["pages", "content", "laravel", "php"],
+    "keywords": [
+        "pages",
+        "content",
+        "laravel",
+        "php"
+    ],
     "homepage": "https://github.com/ShvetsGroup/laravel-jet-pages",
     "license": "MIT",
     "require": {
         "php": ">=7.2",
-        "laravel/framework": "^6.0",
-        "league/commonmark": "dev-document-pre-parsed-event as 1.4.x-dev",
-        "symfony/yaml": "^4.0",
-        "mad-web/laravel-robots": "~1.4",
-        "watson/sitemap": "~2.1"
+        "ext-json": "*",
+        "laravel/framework": "^7.0",
+        "league/commonmark": "^1.4",
+        "symfony/yaml": "^5.0",
+        "mad-web/laravel-robots": "~2.0",
+        "watson/sitemap": "~3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^8.0",
+        "phpunit/phpunit": "^8.5",
         "mockery/mockery": "^1.0",
-        "graham-campbell/testbench": "~5.3"
+        "graham-campbell/testbench": "~5.4"
     },
-    "repositories": [
-      {
-        "type": "git",
-        "url": "https://github.com/RefactoringGuru/commonmark"
-      }
-    ],
     "autoload": {
         "psr-4": {
             "ShvetsGroup\\JetPages\\": "src"

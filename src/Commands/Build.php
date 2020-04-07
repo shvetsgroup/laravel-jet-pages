@@ -3,7 +3,7 @@
 namespace ShvetsGroup\JetPages\Commands;
 
 use Illuminate\Console\Command;
-use ShvetsGroup\JetPages\Builders\BaseBuilder;
+use ShvetsGroup\JetPages\PageBuilder\PageBuilder;
 
 class Build extends Command
 {
@@ -24,13 +24,18 @@ class Build extends Command
 
     /**
      * Execute console command.
-     * @param  BaseBuilder  $builder
      */
-    public function handle(BaseBuilder $builder)
+    public function handle()
     {
         $start_time = microtime(true);
         $reset = $this->option('reset');
-        $builder->build($reset);
+
+        $builder = new PageBuilder();
+        if ($reset) {
+            $builder->reset();
+        }
+        $builder->build();
+
         print('Content has been successfully re-built in '.round(microtime(true) - $start_time, 4).'s');
     }
 }

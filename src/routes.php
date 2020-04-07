@@ -5,11 +5,12 @@
 // routes registered after it.
 app()->booted(function () {
 
+    /**
+     * @var $router \Illuminate\Routing\Router
+     */
     $router = app('router');
 
     $router->namespace('ShvetsGroup\JetPages\Controllers')->group(function () use ($router) {
-        $router->get('ajax/jetpages/timestamp', 'PageController@getContentTimestamp');
-
         $router->group(['middleware' => 'static-cache'], function () use ($router) {
             $router->get('robots.txt', 'RobotsTxtController@robots');
             $router->get('sitemap.xml', 'SiteMapController@sitemap');
@@ -34,4 +35,3 @@ app()->booted(function () {
     });
 
 });
-

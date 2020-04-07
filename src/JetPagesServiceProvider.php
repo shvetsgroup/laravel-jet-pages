@@ -5,10 +5,10 @@ namespace ShvetsGroup\JetPages;
 use Exception;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
-use ShvetsGroup\JetPages\Builders\BaseBuilder;
-use ShvetsGroup\JetPages\Builders\Outline;
-use ShvetsGroup\JetPages\Builders\StaticCache;
-use ShvetsGroup\JetPages\Middleware\StaticCache as StaticCacheMiddleware;
+use ShvetsGroup\JetPages\Middleware\StaticCache;
+use ShvetsGroup\JetPages\PageBuilder\PageBuilder;
+use ShvetsGroup\JetPages\PageBuilder\PageMenu;
+use ShvetsGroup\JetPages\PageBuilder\PageOutline;
 
 class JetPagesServiceProvider extends ServiceProvider
 {
@@ -28,32 +28,15 @@ class JetPagesServiceProvider extends ServiceProvider
         $this->app->singleton('page.utils', Page\PageUtils::class);
         $loader->alias('PageUtils', Facades\PageUtils::class);
 
-        $this->app->singleton('pages', function ($app) {
-            $driver = config('jetpages.driver', 'cache');
-            switch ($driver) {
-                case "cache":
-                    return $this->app->make(Page\CachePageRegistry::class);
-                    break;
-                case "database":
-                    return $this->app->make(Page\EloquentPageRegistry::class);
-                    break;
-                default:
-                    throw new Exception("Unknown pages driver '{$driver}'.");
-            }
+        $this->app->singleton('page.outline', function () {
+            return new PageOutline();
         });
-        $this->app->alias('pages', Page\PageRegistry::class);
-        $loader->alias('PageRegistry', Facades\PageRegistry::class);
-
-        $this->app->singleton('jetpages.outline', function () {
-            return new Outline();
+        $this->app->singleton('page.builder', function () {
+            return new PageBuilder();
         });
-        $this->app->singleton('jetpages.staticCache', function () {
-            return new StaticCache();
+        $this->app->singleton('page.menu', function () {
+            return new PageMenu();
         });
-        $this->app->singleton('builder', function () {
-            return new BaseBuilder();
-        });
-        $this->app->alias('builder', BaseBuilder::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -76,9 +59,8 @@ class JetPagesServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/resources/views', 'sg/jetpages');
         $this->publishes([__DIR__.'/resources/views' => base_path('resources/views/vendor/sg/jetpages')], 'views');
         view()->composer('*', 'ShvetsGroup\JetPages\ViewComposers\LocaleComposer');
-        view()->composer('*', 'ShvetsGroup\JetPages\ViewComposers\MenuComposer');
 
-        $this->app['router']->aliasMiddleware('static-cache', StaticCacheMiddleware::class);
+        $this->app['router']->aliasMiddleware('static-cache', StaticCache::class);
 
         $this->loadRoutesFrom(__DIR__.'/routes.php');
     }

@@ -3,7 +3,7 @@
 namespace ShvetsGroup\Tests\JetPages\Controllers;
 
 use ShvetsGroup\JetPages\Controllers\PageController;
-use ShvetsGroup\JetPages\Page\PageRegistry;
+use ShvetsGroup\JetPages\Page\Page;
 use ShvetsGroup\Tests\JetPages\AbstractTestCase;
 
 class PageControllerTest extends AbstractTestCase
@@ -13,16 +13,16 @@ class PageControllerTest extends AbstractTestCase
      */
     private $controller;
 
-    /**
-     * @var PageRegistry
-     */
-    private $pages;
-
     public function setUp(): void
     {
         parent::setUp();
+
+        app()->config->set('jetpages.content_scanners', []);
+        app()->config->set('jetpages.content_parsers', []);
+        app()->config->set('jetpages.content_renderers', []);
+        app()->config->set('jetpages.content_post_processors', []);
+
         $this->controller = app()->make(PageController::class);
-        $this->pages = app()->make('pages');
     }
 
     /**
@@ -30,7 +30,7 @@ class PageControllerTest extends AbstractTestCase
      */
     public function testIndex()
     {
-        $this->pages->createAndSave([
+        Page::create([
             'slug' => 'index',
             'title' => 'Test Index',
         ]);
@@ -42,7 +42,7 @@ class PageControllerTest extends AbstractTestCase
      */
     public function testAPage()
     {
-        $this->pages->createAndSave([
+        Page::create([
             'slug' => 'a-page',
             'title' => 'Test title',
             'content' => 'Test content',
@@ -57,15 +57,5 @@ class PageControllerTest extends AbstractTestCase
     {
         $this->get('/')->assertStatus(404);
         $this->get('non-existing-page')->assertStatus(404);
-    }
-
-    /**
-     * Show timestamp of last updated page.
-     */
-    public function testTimestamp()
-    {
-        $page = $this->pages->createAndSave(['slug' => 'a-page']);
-        $this->pages->updateBuildTime(0);
-        $this->get('ajax/jetpages/timestamp')->assertStatus(200)->assertJson(['timestamp' => strtotime($page->updated_at)]);
     }
 }

@@ -11,5 +11,8 @@ class PageUtils extends Facade
      *
      * @return string
      */
-    protected static function getFacadeAccessor() { return 'page.utils'; }
+    protected static function getFacadeAccessor()
+    {
+        return 'page.utils';
+    }
 }

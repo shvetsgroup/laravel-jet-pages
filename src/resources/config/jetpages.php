@@ -4,19 +4,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Page Data Driver
-    |--------------------------------------------------------------------------
-    |
-    | Page data could be stored in cache or in database table. First option will
-    | work out of the box, but have a downside: on any cache reset, you will need
-    | to rebuild the content. Storing in database does not have this downside,
-    | but it will require a database migration to be run.
-    |
-    */
-    'driver' => 'cache',
-
-    /*
-    |--------------------------------------------------------------------------
     | Content Root
     |--------------------------------------------------------------------------
     |
@@ -36,7 +23,7 @@ return [
     | You will want to configure your webserver to take static pages from there.
     |
     */
-    'cache_directory' => 'cache',
+    'static_cache_public_directory' => 'cache',
 
     /*
     |--------------------------------------------------------------------------
@@ -64,6 +51,10 @@ return [
         '\ShvetsGroup\JetPages\Builders\Parsers\NavigationParser',
         '\ShvetsGroup\JetPages\Builders\Parsers\BreadcrumbParser',
     ],
+
+    'start_breadcrumb_from_index_page' => true,
+
+    'min_breadcrumb_count' => 2,
 
     /*
     |--------------------------------------------------------------------------
@@ -141,6 +132,23 @@ return [
     */
     'sitemap_priority' => [
         'page' => 'default',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sitemap overrides
+    |--------------------------------------------------------------------------
+    |
+    | Temporary sitemap overrides (useful when publishing new content).
+    |
+    */
+    'sitemap_overrides' => [
+        [
+            'conditions' => [
+            ],
+            'overrides' => [
+            ]
+        ]
     ],
 
 ];

@@ -88,7 +88,7 @@ class PageUtils
     /**
      * Extract locale from localeSlug.
      *
-     * @param $uri
+     * @param $localeSlug
      * @return array
      */
     function extractLocaleFromLocaleSlug($localeSlug)
@@ -164,6 +164,7 @@ class PageUtils
      *
      * @param $locale
      * @param $slug
+     * @param  bool  $onMainDomain
      * @return string
      */
     function makeUri($locale, $slug, $onMainDomain = false)
@@ -182,6 +183,7 @@ class PageUtils
      * Get urls prefix for a given locale ("ru/" or '').
      *
      * @param $locale
+     * @param  bool  $onMainDomain
      * @return string
      */
     function getLocalePrefix($locale, $onMainDomain = false)
@@ -279,8 +281,7 @@ class PageUtils
             if ($firstDomainForGivenLocale) {
                 $this->cacheLocaleDomain[$locale] = $firstDomainForGivenLocale;
                 return $firstDomainForGivenLocale;
-            }
-            else {
+            } else {
                 $defaultDomain = $this->getHost($this->configAppUrl);
                 $this->cacheLocaleDomain[$locale] = $defaultDomain;
                 return $defaultDomain;
@@ -329,18 +330,18 @@ class PageUtils
     /**
      * Get the current host. The reason why we use this instead of request()->getHost()
      * is because we want to be able to mock the host in unit tests.
+     * @param  null  $url
      * @return mixed
      */
     function getHost($url = null)
     {
         if (!$url) {
             $url = url()->current();
-        }
-        else {
+        } else {
             $url = trim($url);
 
             // If $url is a host.
-            if (preg_match('#^(((?!-))(xn--|_{1,1})?[a-z0-9-]{0,61}[a-z0-9]{1,1}\.)*(xn--)?([a-z0-9][a-z0-9\-]{0,60}|[a-z0-9-]{1,30}\.[a-z]{2,})$#', $url)) {
+            if (preg_match('#^(((?!-))(xn--|_{1})?[a-z0-9-]{0,61}[a-z0-9]{1}\.)*(xn--)?([a-z0-9][a-z0-9\-]{0,60}|[a-z0-9-]{1,30}\.[a-z]{2,})$#', $url)) {
                 return $url;
             }
         }
@@ -360,6 +361,7 @@ class PageUtils
     /**
      * Get the current baseURL. The reason why we use this instead of request()->getHost()
      * is because we want to be able to mock the host in unit tests.
+     * @param  null  $url
      * @return mixed
      */
     function getBaseUrl($url = null)

@@ -6,7 +6,6 @@ use GrahamCampbell\TestBench\AbstractPackageTestCase;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use MadWeb\Robots\RobotsServiceProvider;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use ShvetsGroup\JetPages\JetPagesServiceProvider;
@@ -39,11 +38,10 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
     protected function getEnvironmentSetUp($app)
     {
         parent::getEnvironmentSetUp($app);
-        $app->config->set('jetpages.driver', 'cache');
-//        $app->config->set('database.default', 'mysql');
+
         $app->config->set('database.connections.sqlite', [
             'driver' => 'sqlite',
-            'database' => __DIR__ . '/test.sqlite',
+            'database' => __DIR__.'/test.sqlite',
         ]);
     }
 
@@ -74,13 +72,18 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
         return JetPagesServiceProvider::class;
     }
 
+    /**
+     * Setup the test environment.
+     *
+     * @return void
+     */
     public function setUp(): void
     {
         $files = new Filesystem();
         $files->deleteDirectory($this->getBasePath().'/storage/app/routes');
         $files->deleteDirectory($this->getBasePath().'/storage/app/menu');
         $files->deleteDirectory($this->getBasePath().'/storage/app/redirects');
-        $files->deleteDirectory($this->getBasePath().'/storage/app/content_timestamps');
+        $files->deleteDirectory($this->getBasePath().'/storage/app/content_hash');
 
         parent::setUp();
 

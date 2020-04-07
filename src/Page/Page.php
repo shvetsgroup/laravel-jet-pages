@@ -2,27 +2,103 @@
 
 namespace ShvetsGroup\JetPages\Page;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use ShvetsGroup\JetPages\Facades\PageUtils;
 
 class Page implements Arrayable
 {
-    /**
-     * @var array
-     */
-    private $attributes;
+    private $contentAttributes = null;
+
+    protected $attributes = [];
+
+    protected $defaults = [
+        'id' => null,
+        'type' => null,
+        'locale' => 'en',
+        'slug' => null,
+        'localeSlug' => null,
+        'uri' => null,
+        'url' => null,
+        'url_without_domain' => null,
+        'title' => null,
+        'content' => null,
+        'private' => false,
+        'cache' => true,
+        'scanner' => null,
+        'path' => null,
+        'hash' => null,
+        'updated_at' => null,
+    ];
+
+    public $exists = false;
+
+    public $hasUnpackedData = false;
+
+    public $hasChangedSinceRehash = false;
 
     public function __construct(array $attributes = [])
     {
-        if (!isset($attributes['locale'])) {
-            $attributes['locale'] = config('app.default_locale', '');
+        $this->attributes = $this->defaults;
+        $this->fill($attributes);
+    }
+
+    /**
+     * @param  array  $attributes
+     * @return Page
+     */
+    public static function create($attributes = [])
+    {
+        $page = new Page($attributes);
+        $page->save();
+        return $page;
+    }
+
+    public function save()
+    {
+        $attributes = [
+            'data' => [],
+        ];
+
+        if ($this->hasUnpackedData()) {
+            $this->unpackData();
         }
 
-        if (!isset($attributes['private'])) {
-            $attributes['private'] = false;
+        if (!isset($this->attributes['hash']) || $this->hasChangedSinceRehash) {
+            $this->rehash();
         }
 
-        $this->setAttributes($attributes, true);
+        foreach ($this->attributes as $key => $value) {
+            if ($key == 'updated_at' && $value instanceof Carbon) {
+                $value = $value->toJSON();
+            }
+
+            if (array_key_exists($key, $this->defaults)) {
+                $attributes[$key] = $value;
+            } else {
+                $attributes['data'][$key] = $value;
+            }
+        }
+        $attributes['data'] = json_encode($attributes['data']);
+
+        if ($this->exists) {
+            PageQuery::where('id', $this->id)->update($attributes);
+        } else {
+            $this->id = PageQuery::insertGetId($attributes);
+            $this->exists = true;
+        }
+    }
+
+    public function fresh()
+    {
+        return PageQuery::where('id', $this->id)->first();
+    }
+
+    public function delete()
+    {
+        return PageQuery::where('id', $this->id)->delete();
     }
 
     /**
@@ -44,47 +120,76 @@ class Page implements Arrayable
     }
 
     /**
-     * Return page's locale/slug combination string.
-     * @param  string  $slugField
-     * @return string
-     * @throws PageException
-     */
-    function localeSlug($slugField = 'slug')
-    {
-        // We cache the value during page object life time.
-        if ($slugField == 'slug' && $localeSlug = $this->getAttribute('localeSlug')) {
-            return $localeSlug;
-        }
-
-        if (!isset($this->attributes[$slugField])) {
-            if ($slugField == 'slug') {
-                throw new PageException("Page requires a slug field.");
-            } else {
-                return null;
-            }
-        }
-
-        $locale = $this->getAttribute('locale');
-        $slug = $this->getAttribute($slugField);
-        $localeSlug = PageUtils::makeLocaleSlug($locale, $slug);
-
-        if ($slugField == 'slug') {
-            $this->setAttribute('localeSlug', $localeSlug);
-        }
-
-        return $localeSlug;
-    }
-
-    /**
      * Convert page to array.
      * @param  array  $attributes
      * @return $this
      */
-    public function setAttributes(array $attributes = [], $force = false)
+    public function fill(array $attributes = [])
     {
-        foreach ($attributes as $key => $value) {
-            $this->setAttribute($key, $value, $force);
+        if (isset($attributes['data'])) {
+            $this->hasUnpackedData = true;
         }
+
+        foreach ($attributes as $key => $value) {
+            $this->attributes[$key] = $value;
+        }
+
+        if (isset($attributes['locale']) || isset($attributes['slug'])) {
+            if (!isset($attributes['localeSlug'])) {
+                $this->updateLocaleSlugAttribute();
+            }
+            if (!isset($attributes['uri']) || !isset($attributes['url']) || !isset($attributes['url_without_domain'])) {
+                $this->updateUrlAttributes();
+            }
+        }
+
+        return $this;
+    }
+
+    public function unpackData()
+    {
+        $data = $this->attributes['data'];
+        if (is_string($data)) {
+            $data = json_decode($data, true);
+        }
+        $this->attributes = array_merge($this->attributes, $data);
+        unset($this->attributes['data']);
+        $this->hasUnpackedData = false;
+    }
+
+    public function hasUnpackedData($key = null)
+    {
+        return $this->hasUnpackedData && isset($this->attributes['data']) && $key && !array_key_exists($key, $this->defaults);
+    }
+
+    /**
+     * Helper to set attribute.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @param  bool  $force
+     * @return $this
+     */
+    public function setAttribute($key, $value)
+    {
+        $this->hasChangedSinceRehash = true;
+
+        if ($this->hasUnpackedData($key)) {
+            $this->unpackData();
+        }
+
+        if ($key == 'locale') {
+            $this->setLocaleAttribute($value);
+        }
+
+        if ($key == 'slug') {
+            $this->setSlugAttribute($value);
+        }
+
+        $this->contentAttributes = null;
+
+        $this->attributes[$key] = $value;
+
         return $this;
     }
 
@@ -97,131 +202,72 @@ class Page implements Arrayable
      */
     public function getAttribute($key, $default = null)
     {
-        if ($key == 'uri' && !isset($this->attributes['uri'])) {
-            $this->attributes['uri'] = $this->uri();
+        if ($this->hasUnpackedData($key)) {
+            $this->unpackData();
+        }
+
+        if ($key === 'hash' && $this->hasChangedSinceRehash) {
+            return $this->rehash();
+        }
+
+        if ($key === 'updated_at') {
+            return new Carbon($this->attributes[$key]);
         }
 
         return $this->attributes[$key] ?? $default;
     }
 
+
     /**
-     * Helper to set attribute.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  bool  $force
-     * @return $this
+     * Set page locale.
+     * @param $locale
      */
-    public function setAttribute($key, $value, $force = false)
+    public function setLocaleAttribute($locale)
     {
-        if (($key == 'created_at' || $key == 'updated_at') && is_object($value)) {
-            $value = $value->timestamp;
-        }
-
-        if ($key == 'slug') {
-            $value = PageUtils::uriToSlug($value);
-            if (!$force) {
-                $this->attributes['oldSlug'] = $this->attributes['slug'] ?? null;
-            }
-        }
-
-        if ($key == 'slug' || $key == 'locale') {
-            unset($this->attributes['localeSlug']);
-        }
-
-        $this->attributes[$key] = $value;
-
-        return $this;
+        $this->attributes['locale'] = $locale;
+        $this->updateLocaleSlugAttribute();
+        $this->updateUrlAttributes();
     }
 
     /**
-     * Remove a key from attributes.
-     *
-     * @param $key
-     * @return $this
+     * Set page slug.
+     * @param $slug
      */
-    public function removeAttribute($key)
+    public function setSlugAttribute($slug)
     {
-        if (isset($this->attributes[$key])) {
-            unset($this->attributes[$key]);
-        }
-
-        return $this;
+        $this->attributes['slug'] = $slug;
+        $this->updateLocaleSlugAttribute();
+        $this->updateUrlAttributes();
     }
 
     /**
-     * Fill the page with an array of attributes.
-     * @param  array  $attributes
-     * @return $this
+     * Update locale-slug value of the page.
      */
-    public function fill(array $attributes = [])
+    function updateLocaleSlugAttribute()
     {
-        foreach ($attributes as $key => $value) {
-            $this->setAttribute($key, $value);
-        }
-        return $this;
-    }
-
-
-    /**
-     * Generate valid uri from locale and slug.
-     * @param  bool  $absolute
-     * @param  bool  $withoutDomain
-     * @return string
-     */
-    function uri($absolute = false, $withoutDomain = false)
-    {
-        if (isset($this->attributes['uri'])) {
-            $uri = $this->getAttribute('uri');
-        }
-
-        if (!isset($uri)) {
-            $locale = $this->getAttribute('locale');
-            $slug = $this->getAttribute('slug');
-            $uri = PageUtils::makeUri($locale, $slug);
-        }
-
-        if (!$absolute) {
-            return $uri;
-        }
-
-        $url = PageUtils::absoluteUrl($uri, $this->locale);
-
-        if ($withoutDomain) {
-            $parsed = parse_url($url);
-            $url = isset($parsed['path']) ? $parsed['path'] : '/';
-        }
-
-        return $url;
+        $locale = $this->getAttribute('locale');
+        $slug = $this->getAttribute('slug');
+        $localeSlug = PageUtils::makeLocaleSlug($locale, $slug);
+        $this->attributes['localeSlug'] = $localeSlug;
     }
 
     /**
-     * Get the translation uris for a page.
-     * @param  bool  $absolute
-     * @return array
+     * Update locale-slug value of the page.
      */
-    function translationUris($absolute = false)
+    function updateUrlAttributes()
     {
-        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
-        if (!is_array($locales) || count($locales) < 2) {
-            return [];
-        }
+        $locale = $this->getAttribute('locale');
+        $slug = $this->getAttribute('slug');
 
-        $locale_uris = [];
-        $pages = app('pages');
-        $this_locale = $this->getAttribute('locale');
-        $this_slug = $this->getAttribute('slug');
+        $uri = PageUtils::makeUri($locale, $slug);
+        $this->attributes['uri'] = $uri;
 
-        foreach ($locales as $locale => $data) {
-            if ($locale == $this_locale) {
-                continue;
-            }
-            if ($page = $pages->findBySlug($locale, $this_slug)) {
-                $locale_uris[$locale] = $page->uri($absolute);
-            }
-        }
+        $url = PageUtils::absoluteUrl($uri, $locale);
+        $this->attributes['url'] = $url;
 
-        return $locale_uris;
+        $parsed = parse_url($url);
+        $url_without_domain = isset($parsed['path']) ? $parsed['path'] : '/';
+        $this->attributes['url_without_domain'] = $url_without_domain;
     }
 
     /**
@@ -232,8 +278,9 @@ class Page implements Arrayable
      */
     function alternativeUris($absolute = false)
     {
-        $locale = $this->getAttribute('locale');
-        $result = array_merge([$locale => $this->uri($absolute)], $this->translationUris($absolute));
+        $locale = $this->attributes['locale'];
+        $href = $this->attributes[$absolute ? 'url' : 'uri'];
+        $result = array_merge([$locale => $href], $this->translationUris($absolute));
         ksort($result);
 
         // Default language first, and rest sorted by alphabet.
@@ -249,14 +296,58 @@ class Page implements Arrayable
     }
 
     /**
+     * Get the translation uris for a page.
+     * @param  bool  $absolute
+     * @return array
+     */
+    function translationUris($absolute = false)
+    {
+        $locales = config('laravellocalization.supportedLocales') ?: config('jetpages.supportedLocales', []);
+        if (!is_array($locales) || count($locales) < 2) {
+            return [];
+        }
+
+        $locale_uris = [];
+        $this_locale = $this->attributes['locale'];
+        $this_slug = $this->attributes['slug'];
+
+        foreach ($locales as $locale => $data) {
+            if ($locale == $this_locale) {
+                continue;
+            }
+            if ($page = PageQuery::findBySlug($locale, $this_slug)) {
+                $locale_uris[$locale] = $page->attributes[$absolute ? 'url' : 'uri'];
+            }
+        }
+
+        return $locale_uris;
+    }
+
+    /**
+     * Get page hash.
+     * @return string
+     */
+    public function rehash()
+    {
+        $attributes = $this->toArray();
+        unset($attributes['id']);
+        unset($attributes['hash']);
+        $this->setAttribute('hash', md5(json_encode($attributes)));
+        $this->hasChangedSinceRehash = false;
+    }
+
+    /**
      * Convert page to array.
      * @return array
      */
     public function toArray()
     {
+        if ($this->hasUnpackedData()) {
+            $this->unpackData();
+        }
+
         $result = $this->attributes ?: [];
-        $result['uri'] = $this->uri();
-        unset($result['localeSlug']);
+
         return $result;
     }
 
@@ -267,9 +358,12 @@ class Page implements Arrayable
     public function renderArray()
     {
         $result = $this->toArray();
-        $result['uri'] = $this->uri();
+        $result['href'] = $this->url_without_domain;
         $result['alternativeUris'] = $this->alternativeUris();
-        $result['href'] = $this->uri(true, true);
+
+        $unwantedFields = ['scanner', 'path', 'relative_path', 'extension', 'id', 'cache', 'private', 'updated_at'];
+        Arr::forget($result, $unwantedFields);
+
         return $result;
     }
 
@@ -292,14 +386,48 @@ class Page implements Arrayable
         return $view;
     }
 
+    public function getTitleHrefArray($customTitle = null, $shortTitle = true)
+    {
+        if ($customTitle) {
+            $title = $customTitle;
+        } else {
+            if ($shortTitle && $shortTitle = $this->getAttribute('title_short')) {
+                $title = $shortTitle;
+            } else {
+                $title = $this->getAttribute('title');
+            }
+        }
+
+        return [
+            'title' => $title,
+            'href' => $this->getAttribute('url_without_domain'),
+        ];
+    }
+
     /**
      * Render page to HTML.
      *
      * @return string
      */
-    public function render($reset = false)
+    public function render()
     {
         return view($this->getRenderableView(), $this->renderArray())->render();
+    }
+
+    /**
+     * Return array of content attribute names (content_*).
+     * @return array
+     */
+    public function getContentAttributes()
+    {
+        if ($this->contentAttributes === null) {
+            $contentAttributes = array_filter(array_keys($this->attributes), function ($key) {
+                return Str::startsWith($key, 'content_');
+            });
+            $contentAttributes = array_merge(['content'], $contentAttributes);
+            $this->contentAttributes = $contentAttributes;
+        }
+        return $this->contentAttributes;
     }
 
     /**
