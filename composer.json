@@ -7,7 +7,7 @@
     "require": {
         "php": ">=7.2",
         "laravel/framework": "^6.0",
-        "league/commonmark": "dev-document-pre-parsed-event",
+        "league/commonmark": "dev-document-pre-parsed-event as 1.4.x-dev",
         "symfony/yaml": "^4.0",
         "mad-web/laravel-robots": "~1.4",
         "watson/sitemap": "~2.1"
