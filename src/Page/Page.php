@@ -159,7 +159,19 @@ class Page implements Arrayable
 
     public function hasUnpackedData($key = null)
     {
-        return $this->hasUnpackedData && isset($this->attributes['data']) && $key && !array_key_exists($key, $this->defaults);
+        if (!$this->hasUnpackedData) {
+            return false;
+        }
+
+        if (!isset($this->attributes['data'])) {
+            return false;
+        }
+
+        if ($key !== null && array_key_exists($key, $this->defaults)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

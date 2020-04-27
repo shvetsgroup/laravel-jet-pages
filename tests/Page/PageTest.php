@@ -52,6 +52,18 @@ class PageTest extends AbstractTestCase
         $this->assertEquals(['test' => 1], $page->data);
     }
 
+    public function testAttributeOperations2()
+    {
+        $page = Page::create([
+            'slug' => 'test',
+            'weird-stuff' => 123,
+        ]);
+        $page = $page->fresh();
+
+        $renderArray = $page->renderArray();
+        $this->assertArrayHasKey('weird-stuff', $renderArray);
+    }
+
     public function testLocaleSlug()
     {
         $page = new Page($this->testAttributes);
