@@ -49,7 +49,7 @@ class PageQuery
         return null;
     }
 
-    public function _chunk(integer $count, callable $callback)
+    public function _chunk(int $count, callable $callback)
     {
         $query = $this->getQuery();
         $query->orderBy('id', 'asc');
