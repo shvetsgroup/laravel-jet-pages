@@ -34,7 +34,7 @@ class Cache extends Command
     {
         $start_time = microtime(true);
         if ($cache_dir = $this->option('cache_dir')) {
-            config(['jetpages.cache_dir' => $cache_dir]);
+            config(['jetpages.static_cache_public_directory' => $cache_dir]);
         }
 
         if (app()->bound('laravellocalization')) {
