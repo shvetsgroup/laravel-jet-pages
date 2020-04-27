@@ -23,7 +23,7 @@ class NavigationParserTest extends AbstractTestCase
     {
         parent::setUp();
         $this->outline = app('page.outline');
-        $this->parser = new NavigationParser();
+        $this->parser = new NavigationParser($this->outline);
     }
 
     public function testDecorate()
