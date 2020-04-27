@@ -14,7 +14,8 @@ use function ShvetsGroup\JetPages\content_path;
 
 class PageBuilder
 {
-    const ROUTES_CACHE_PATH = 'app/routes/routes.json';
+    const JETPAGES_DIR = 'app/jetpages';
+    const ROUTES_CACHE_PATH = 'app/jetpages/routes.json';
 
     /**
      * @var Store
@@ -53,6 +54,7 @@ class PageBuilder
     {
         $this->cache = app('cache.store');
         $this->files = app('Illuminate\Filesystem\Filesystem');
+        $this->jetpagesDir = storage_path(static::JETPAGES_DIR);
         $this->routesCacheFile = storage_path(static::ROUTES_CACHE_PATH);
         $this->routesCacheDir = dirname($this->routesCacheFile);
 
@@ -159,7 +161,14 @@ class PageBuilder
         $this->cache->forget('jetpages:scans');
         $this->cache->forget('jetpages:jetpages:menu_timestamps');
 
-        $this->files->delete($this->routesCacheFile);
+        $locales = config('laravellocalization.supportedLocales') ?: [config('app.default_locale') => []];
+        foreach ($locales as $locale => $data) {
+            $this->cache->forget('jetpages:menu:'.$locale);
+        }
+
+        if ($this->files->exists($this->jetpagesDir)) {
+            $this->files->deleteDirectory($this->jetpagesDir);
+        }
     }
 
     public function forcePagesToRebuild($localeSlugs = [])
@@ -301,7 +310,7 @@ class PageBuilder
 
     public function getBuildHash()
     {
-        $hashFile = storage_path('app/content_hash/build.json');
+        $hashFile = storage_path('app/jetpages/content_hash/build.json');
 
         if (!file_exists($hashFile)) {
             $this->updateBuildHash();
@@ -322,8 +331,8 @@ class PageBuilder
         });
         $hash = md5($hash);
 
-        $this->files->makeDirectory(storage_path('app/content_hash'), 0755, true, true);
-        $this->files->put(storage_path('app/content_hash/build.json'), json_encode($hash));
+        $this->files->makeDirectory(storage_path('app/jetpages/content_hash'), 0755, true, true);
+        $this->files->put(storage_path('app/jetpages/content_hash/build.json'), json_encode($hash));
 
         return $hash;
     }

@@ -80,10 +80,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
     public function setUp(): void
     {
         $files = new Filesystem();
-        $files->deleteDirectory($this->getBasePath().'/storage/app/routes');
-        $files->deleteDirectory($this->getBasePath().'/storage/app/menu');
-        $files->deleteDirectory($this->getBasePath().'/storage/app/redirects');
-        $files->deleteDirectory($this->getBasePath().'/storage/app/content_hash');
+        $files->deleteDirectory($this->getBasePath().'/storage/app/jetpages');
 
         parent::setUp();
 

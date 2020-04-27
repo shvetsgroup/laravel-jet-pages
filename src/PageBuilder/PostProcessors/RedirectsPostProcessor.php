@@ -10,7 +10,7 @@ use function ShvetsGroup\JetPages\content_path;
 
 class RedirectsPostProcessor implements PostProcessor
 {
-    const REDIRECT_CACHE_PATH = 'app/redirects/redirects.json';
+    const REDIRECT_CACHE_PATH = 'app/jetpages/redirects/redirects.json';
 
     const CLEAN_JSON = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK;
 

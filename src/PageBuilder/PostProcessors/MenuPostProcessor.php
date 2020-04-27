@@ -14,7 +14,7 @@ class MenuPostProcessor implements PostProcessor
 {
     const CLEAN_JSON = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK;
 
-    const MENU_CACHE_PATH = 'app/menu/menu.json';
+    const MENU_CACHE_PATH = 'app/jetpages/menu/menu.json';
 
     /**
      * @var Store
