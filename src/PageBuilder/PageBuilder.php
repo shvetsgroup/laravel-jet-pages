@@ -163,7 +163,7 @@ class PageBuilder
         $this->cache->forget('jetpages:routes');
         $this->cache->forget('jetpages:redirects');
         $this->cache->forget('jetpages:scans');
-        $this->cache->forget('jetpages:jetpages:menu_timestamps');
+        $this->cache->forget('jetpages:menu_timestamps');
 
         $locales = config('laravellocalization.supportedLocales') ?: [config('app.default_locale') => []];
         foreach ($locales as $locale => $data) {
