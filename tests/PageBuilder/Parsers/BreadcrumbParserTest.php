@@ -1,6 +1,6 @@
 <?php
 
-namespace ShvetsGroup\Tests\JetPages\Builders\Parsers;
+namespace ShvetsGroup\Tests\JetPages\PageBuilder\Parsers;
 
 use ShvetsGroup\JetPages\Page\PageCollection;
 use ShvetsGroup\JetPages\PageBuilder\PageOutline;
