@@ -21,7 +21,7 @@ class NavigationParser implements Parser
 
     public function __construct($outline = null)
     {
-        $this->outline = $outline ?: app('page.outline');
+        $this->outline = $outline ?? (new PageOutline())->setFilename('outline');
         $this->isDebug = config('app.debug');
     }
 

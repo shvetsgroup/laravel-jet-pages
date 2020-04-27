@@ -32,7 +32,7 @@ class BreadcrumbParser implements Parser
 
     public function __construct($outline = null)
     {
-        $this->outline = $outline ?: app('page.outline');
+        $this->outline = $outline ?? (new PageOutline())->setFilename('outline');
         $this->startBreadcrumbFromIndexPage = config('jetpages.start_breadcrumb_from_index_page', true);
         $this->minBreadcrumbCount = config('jetpages.min_breadcrumb_count', 2);
         $this->pageUtils = app('page.utils');
