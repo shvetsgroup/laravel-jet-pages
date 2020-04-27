@@ -14,7 +14,7 @@ class MenuPostProcessor implements PostProcessor
 {
     const CLEAN_JSON = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK;
 
-    const MENU_CACHE_PATH = 'app/jetpages/menu/menu.json';
+    const MENU_CACHE_PATH = 'app/jetpages/menu.json';
 
     /**
      * @var Store
@@ -38,8 +38,6 @@ class MenuPostProcessor implements PostProcessor
 
     protected $menuCacheFile;
 
-    protected $menuCacheDir;
-
     public function __construct()
     {
         $this->cache = app('cache.store');
@@ -47,13 +45,11 @@ class MenuPostProcessor implements PostProcessor
         $this->outline = (new PageOutline())->setFilename('menu');
         $this->pageUtils = app('page.utils');
         $this->menuCacheFile = storage_path(static::MENU_CACHE_PATH);
-        $this->menuCacheDir = dirname($this->menuCacheFile);
     }
 
     public function getMenuCacheFile($locale)
     {
-        $menuCacheFile = storage_path(static::MENU_CACHE_PATH);
-        return Str::replaceLast('.json', "-$locale.json", $menuCacheFile);
+        return Str::replaceLast('.json', "-$locale.json", $this->menuCacheFile);
     }
 
     public function rebuildCache($locale)
@@ -100,7 +96,6 @@ class MenuPostProcessor implements PostProcessor
 
             $this->cache->forever('jetpages:menu:'.$locale, $menu);
 
-            $this->files->makeDirectory($this->menuCacheDir, 0755, true, true);
             $this->files->put($this->getMenuCacheFile($locale), json_encode($menu, static::CLEAN_JSON));
 
             $timestamps[$locale] = $timestamp;

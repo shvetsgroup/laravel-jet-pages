@@ -100,7 +100,7 @@ class MarkdownRenderer extends AbstractRenderer
                 $localizedPage = $pages->findBySlug($pageLocale, $page->slug) ?: $localizedPage;
             }
 
-            $localizedURL = $localizedPage->getAttribute('url_without_domain') ?? '';
+            $localizedURL = $localizedPage->getAttribute('href') ?? '';
             $localizedTitle = $localizedPage->getAttribute('title') ?? '';
 
             $index[$locale][$title] = [

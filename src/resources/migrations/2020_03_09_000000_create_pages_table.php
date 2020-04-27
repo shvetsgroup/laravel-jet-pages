@@ -25,7 +25,7 @@ class CreatePagesTable extends Migration
             $table->string('localeSlug')->index();
             $table->string('uri')->nullable();
             $table->string('url')->nullable();
-            $table->string('url_without_domain')->nullable();
+            $table->string('href')->nullable();
             $table->string('title', 500)->nullable()->index();
             $table->longText('content')->nullable();
             $table->boolean('private')->nullable();

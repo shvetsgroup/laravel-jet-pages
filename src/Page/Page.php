@@ -22,7 +22,7 @@ class Page implements Arrayable
         'localeSlug' => null,
         'uri' => null,
         'url' => null,
-        'url_without_domain' => null,
+        'href' => null,
         'title' => null,
         'content' => null,
         'private' => false,
@@ -138,7 +138,7 @@ class Page implements Arrayable
             if (!isset($attributes['localeSlug'])) {
                 $this->updateLocaleSlugAttribute();
             }
-            if (!isset($attributes['uri']) || !isset($attributes['url']) || !isset($attributes['url_without_domain'])) {
+            if (!isset($attributes['uri']) || !isset($attributes['url']) || !isset($attributes['href'])) {
                 $this->updateUrlAttributes();
             }
         }
@@ -278,8 +278,8 @@ class Page implements Arrayable
         $this->attributes['url'] = $url;
 
         $parsed = parse_url($url);
-        $url_without_domain = isset($parsed['path']) ? $parsed['path'] : '/';
-        $this->attributes['url_without_domain'] = $url_without_domain;
+        $href = isset($parsed['path']) ? $parsed['path'] : '/';
+        $this->attributes['href'] = $href;
     }
 
     /**
@@ -370,7 +370,6 @@ class Page implements Arrayable
     public function renderArray()
     {
         $result = $this->toArray();
-        $result['href'] = $this->url_without_domain;
         $result['alternativeUris'] = $this->alternativeUris();
 
         $unwantedFields = ['scanner', 'path', 'relative_path', 'extension', 'id', 'cache', 'private', 'updated_at'];
@@ -412,7 +411,7 @@ class Page implements Arrayable
 
         return [
             'title' => $title,
-            'href' => $this->getAttribute('url_without_domain'),
+            'href' => $this->getAttribute('href'),
         ];
     }
 

@@ -48,10 +48,10 @@ class PageBuilderTest extends AbstractTestCase
         $this->builder->build();
 
         $this->assertEquals(4, PageQuery::count());
-        $this->assertDatabaseHas('pages', ['locale' => 'en', 'slug' => 'index', 'localeSlug' => 'en/index', 'uri' => '/', 'url' => 'http://localhost', 'url_without_domain' => '/']);
-        $this->assertDatabaseHas('pages', ['localeSlug' => 'en/test/test', 'uri' => 'test/test', 'url_without_domain' => '/test/test']);
-        $this->assertDatabaseHas('pages', ['localeSlug' => 'en/test', 'uri' => 'test', 'url_without_domain' => '/test']);
-        $this->assertDatabaseHas('pages', ['localeSlug' => 'en/test', 'uri' => 'test', 'url_without_domain' => '/test']);
+        $this->assertDatabaseHas('pages', ['locale' => 'en', 'slug' => 'index', 'localeSlug' => 'en/index', 'uri' => '/', 'url' => 'http://localhost', 'href' => '/']);
+        $this->assertDatabaseHas('pages', ['localeSlug' => 'en/test/test', 'uri' => 'test/test', 'href' => '/test/test']);
+        $this->assertDatabaseHas('pages', ['localeSlug' => 'en/test', 'uri' => 'test', 'href' => '/test']);
+        $this->assertDatabaseHas('pages', ['localeSlug' => 'en/test', 'uri' => 'test', 'href' => '/test']);
     }
 
     /**
@@ -120,6 +120,6 @@ class PageBuilderTest extends AbstractTestCase
     public function testContentHash()
     {
         Page::create(['slug' => 'a-page']);
-        $this->assertEquals('a6311bd864f1a6c5f4f97a6dbe5bd81e', $this->builder->getBuildHash());
+        $this->assertEquals('cf8cd01a835a6bf047e8ff45ccb17639', $this->builder->getBuildHash());
     }
 }

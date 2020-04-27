@@ -70,19 +70,19 @@ class PageTest extends AbstractTestCase
         $this->assertEquals('en/test', $page->localeSlug);
         $this->assertEquals('test', $page->uri);
         $this->assertEquals('http://localhost/test', $page->url);
-        $this->assertEquals('/test', $page->url_without_domain);
+        $this->assertEquals('/test', $page->href);
 
         $page->locale = 'ru';
         $this->assertEquals('ru/test', $page->localeSlug);
         $this->assertEquals('ru/test', $page->uri);
         $this->assertEquals('http://localhost/ru/test', $page->url);
-        $this->assertEquals('/ru/test', $page->url_without_domain);
+        $this->assertEquals('/ru/test', $page->href);
 
         $page->slug = 'index';
         $this->assertEquals('ru/index', $page->localeSlug);
         $this->assertEquals('ru', $page->uri);
         $this->assertEquals('http://localhost/ru', $page->url);
-        $this->assertEquals('/ru', $page->url_without_domain);
+        $this->assertEquals('/ru', $page->href);
     }
 
     public function testGetContentAttributes()

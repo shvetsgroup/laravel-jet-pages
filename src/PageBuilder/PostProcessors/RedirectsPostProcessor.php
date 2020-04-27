@@ -10,7 +10,7 @@ use function ShvetsGroup\JetPages\content_path;
 
 class RedirectsPostProcessor implements PostProcessor
 {
-    const REDIRECT_CACHE_PATH = 'app/jetpages/redirects/redirects.json';
+    const REDIRECT_CACHE_PATH = 'app/jetpages/redirects.json';
 
     const CLEAN_JSON = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK;
 
@@ -26,14 +26,11 @@ class RedirectsPostProcessor implements PostProcessor
 
     protected $redirectCacheFile;
 
-    protected $redirectCacheDir;
-
     public function __construct()
     {
         $this->cache = app('cache.store');
         $this->files = app('Illuminate\Filesystem\Filesystem');
         $this->redirectCacheFile = storage_path(static::REDIRECT_CACHE_PATH);
-        $this->redirectCacheDir = dirname($this->redirectCacheFile);
     }
 
     /**
@@ -49,7 +46,6 @@ class RedirectsPostProcessor implements PostProcessor
 
             $this->cache->forever('jetpages:redirects', $redirects);
 
-            $this->files->makeDirectory($this->redirectCacheDir, 0755, true, true);
             $this->files->put($this->redirectCacheFile, json_encode($redirects, static::CLEAN_JSON));
         }
     }

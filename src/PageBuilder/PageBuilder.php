@@ -16,6 +16,7 @@ class PageBuilder
 {
     const JETPAGES_DIR = 'app/jetpages';
     const ROUTES_CACHE_PATH = 'app/jetpages/routes.json';
+    const CONTENT_HASH_PATH = 'app/jetpages/content_hash.json';
 
     /**
      * @var Store
@@ -47,8 +48,11 @@ class PageBuilder
 
     protected $postProcessors = [];
 
+    protected $jetpagesDir;
+
     protected $routesCacheFile;
-    protected $routesCacheDir;
+
+    protected $contentHashFile;
 
     public function __construct($scanners = [], $parsers = [], $renderers = [], $postProcessors = [])
     {
@@ -56,7 +60,7 @@ class PageBuilder
         $this->files = app('Illuminate\Filesystem\Filesystem');
         $this->jetpagesDir = storage_path(static::JETPAGES_DIR);
         $this->routesCacheFile = storage_path(static::ROUTES_CACHE_PATH);
-        $this->routesCacheDir = dirname($this->routesCacheFile);
+        $this->contentHashFile = storage_path(static::CONTENT_HASH_PATH);
 
         $scanners = $scanners ?: config('jetpages.content_scanners', ['pages']);
         $scanners = is_array($scanners) ? $scanners : [$scanners];
@@ -181,6 +185,8 @@ class PageBuilder
      */
     public function build()
     {
+        $this->files->makeDirectory($this->jetpagesDir, 0755, true, true);
+
         $this->loadPages();
 
         $this->scan();
@@ -310,13 +316,11 @@ class PageBuilder
 
     public function getBuildHash()
     {
-        $hashFile = storage_path('app/jetpages/content_hash/build.json');
-
-        if (!file_exists($hashFile)) {
+        if (!file_exists($this->contentHashFile)) {
             $this->updateBuildHash();
         }
 
-        return json_decode(file_get_contents($hashFile));
+        return json_decode(file_get_contents($this->contentHashFile));
     }
 
     protected function updateBuildHash()
@@ -331,8 +335,8 @@ class PageBuilder
         });
         $hash = md5($hash);
 
-        $this->files->makeDirectory(storage_path('app/jetpages/content_hash'), 0755, true, true);
-        $this->files->put(storage_path('app/jetpages/content_hash/build.json'), json_encode($hash));
+        $this->files->makeDirectory($this->jetpagesDir, 0755, true, true);
+        $this->files->put($this->contentHashFile, json_encode($hash));
 
         return $hash;
     }
@@ -344,7 +348,6 @@ class PageBuilder
         });
 
         $this->cache->forever('jetpages:routes', $routes);
-        $this->files->makeDirectory($this->routesCacheDir, 0755, true, true);
         $this->files->put($this->routesCacheFile, json_encode($routes));
     }
 }
