@@ -19,11 +19,13 @@ class MarkdownRenderer extends AbstractRenderer
 
     protected $converters = [];
     protected $references = [];
+    protected $isMarkdownCacheEnabled = false;
 
     public function __construct()
     {
         parent::__construct();
         $this->cache = app('cache.store');
+        $this->isMarkdownCacheEnabled = config('jetpages.cache_markdown', false);
     }
 
     /**
@@ -35,7 +37,19 @@ class MarkdownRenderer extends AbstractRenderer
     public function renderContent($content, Page $page, PageCollection $pages)
     {
         if ($page->getAttribute('extension') == 'md') {
+            if ($this->isMarkdownCacheEnabled) {
+                $key = 'jetpages:markdown:'.md5($content);
+                if ($this->cache->has($key)) {
+                    $content = $this->cache->get($key);
+                    return $content;
+                }
+            }
+
             $content = $this->mdToHtml($content, $page->getAttribute('locale'), $pages);
+
+            if ($this->isMarkdownCacheEnabled) {
+                $this->cache->forever($key, $content);
+            }
         }
 
         return $content;

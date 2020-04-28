@@ -90,7 +90,7 @@ class PageTest extends AbstractTestCase
         $page = new Page($this->testAttributes);
         $page->content_description = '123';
 
-        $this->assertEquals(['content', 'content_description'], $page->getContentAttributes());
+        $this->assertEquals(['content', 'content_description'], array_keys($page->getContentAttributes()));
     }
 
     public function testPageRender()

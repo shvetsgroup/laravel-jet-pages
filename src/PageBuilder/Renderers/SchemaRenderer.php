@@ -10,6 +10,13 @@ use ShvetsGroup\JetPages\Page\PageCollection;
  */
 class SchemaRenderer implements Renderer
 {
+    public $schema;
+
+    public function __construct()
+    {
+        $this->schema = config('jetpages.schema');
+    }
+
     /**
      * @param  Page  $page
      * @param  PageCollection  $pages
@@ -17,9 +24,8 @@ class SchemaRenderer implements Renderer
     public function render(Page $page, PageCollection $pages)
     {
         $locale = $page->getAttribute('locale');
-        $schema = config('jetpages.schema');
 
-        if (!isset($schema[$locale])) {
+        if (!isset($this->schema[$locale])) {
             return;
         }
 
@@ -29,6 +35,6 @@ class SchemaRenderer implements Renderer
             $pageSchema = [];
         }
 
-        $page->setAttribute('schema', array_merge($schema[$locale], $pageSchema));
+        $page->setAttribute('schema', array_merge($this->schema[$locale], $pageSchema));
     }
 }

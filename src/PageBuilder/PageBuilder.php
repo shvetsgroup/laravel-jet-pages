@@ -282,6 +282,9 @@ class PageBuilder
         }
 
         $this->pages = $this->pages->merge($this->updatedPages);
+        $this->pages->each(function(Page $page){
+            $page->_pages = $this->pages;
+        });
     }
 
     private function makeScanner($scanner_pair): Scanner

@@ -10,7 +10,7 @@ use ShvetsGroup\JetPages\Facades\PageUtils;
 
 class Page implements Arrayable
 {
-    private $contentAttributes = null;
+    private $contentAttributes = ['content' => 'content'];
 
     protected $attributes = [];
 
@@ -32,6 +32,8 @@ class Page implements Arrayable
         'hash' => null,
         'updated_at' => null,
     ];
+
+    public $_pages = null;
 
     public $exists = false;
 
@@ -132,6 +134,7 @@ class Page implements Arrayable
 
         foreach ($attributes as $key => $value) {
             $this->attributes[$key] = $value;
+            $this->updateContentAttributes($key);
         }
 
         if (isset($attributes['locale']) || isset($attributes['slug'])) {
@@ -198,11 +201,20 @@ class Page implements Arrayable
             $this->setSlugAttribute($value);
         }
 
-        $this->contentAttributes = null;
-
         $this->attributes[$key] = $value;
 
+        $this->updateContentAttributes($key);
+
         return $this;
+    }
+
+    private function updateContentAttributes($key)
+    {
+        if (!array_key_exists($key, $this->defaults) && !array_key_exists($key, $this->contentAttributes)) {
+            if (Str::startsWith($key, 'content_')) {
+                $this->contentAttributes[$key] = $key;
+            }
+        }
     }
 
     /**
@@ -327,7 +339,15 @@ class Page implements Arrayable
             if ($locale == $this_locale) {
                 continue;
             }
-            if ($page = PageQuery::findBySlug($locale, $this_slug)) {
+
+            if ($this->_pages) {
+                $page = $this->_pages->findBySlug($locale, $this_slug);
+            }
+            else {
+                $page = PageQuery::findBySlug($locale, $this_slug);
+            }
+
+            if ($page) {
                 $locale_uris[$locale] = $page->attributes[$absolute ? 'url' : 'uri'];
             }
         }
@@ -431,13 +451,6 @@ class Page implements Arrayable
      */
     public function getContentAttributes()
     {
-        if ($this->contentAttributes === null) {
-            $contentAttributes = array_filter(array_keys($this->attributes), function ($key) {
-                return Str::startsWith($key, 'content_');
-            });
-            $contentAttributes = array_merge(['content'], $contentAttributes);
-            $this->contentAttributes = $contentAttributes;
-        }
         return $this->contentAttributes;
     }
 

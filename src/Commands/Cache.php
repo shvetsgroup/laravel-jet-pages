@@ -49,7 +49,7 @@ class Cache extends Command
 
         $cacheBuilder = new PageCache();
         $currentLocale = app()->getLocale();
-        foreach (PageQuery::get() as $page) {
+        foreach (PageQuery::where('private', false)->where('cache', true)->get() as $page) {
             $localization->setLocale($page->getAttribute('locale'));
             $cacheBuilder->cachePage($page, true);
         }
