@@ -202,9 +202,7 @@ class PageBuilder
 
         $this->render();
 
-        $this->updatedPages->each(function (Page $page) {
-            $page->save();
-        });
+        $this->updatedPages->saveAll();
 
         $this->postProcess();
 
@@ -282,9 +280,7 @@ class PageBuilder
         }
 
         $this->pages = $this->pages->merge($this->updatedPages);
-        $this->pages->each(function(Page $page){
-            $page->_pages = $this->pages;
-        });
+        $this->pages->makePagesUseCollectionInsteadOfQuery();
     }
 
     private function makeScanner($scanner_pair): Scanner

@@ -86,4 +86,18 @@ class PageCollection extends Collection
             $this->localeTitleIndex[$locale][$title] = $localeSlug;
         }
     }
+
+    public function saveAll()
+    {
+        $this->each(function (Page $page) {
+            $page->save();
+        });
+    }
+
+    public function makePagesUseCollectionInsteadOfQuery()
+    {
+        $this->each(function (Page $page) {
+            $page->_pages = $this;
+        });
+    }
 }
