@@ -372,7 +372,7 @@ class Page implements Arrayable
         $result = $this->toArray();
         $result['alternativeUris'] = $this->alternativeUris();
 
-        $unwantedFields = ['scanner', 'path', 'relative_path', 'extension', 'id', 'cache', 'private', 'hash', 'updated_at'];
+        $unwantedFields = ['scanner', 'path', 'relative_path', 'extension', 'id', 'cache', 'cache_bag', 'private', 'hash', 'updated_at'];
         Arr::forget($result, $unwantedFields);
 
         return $result;

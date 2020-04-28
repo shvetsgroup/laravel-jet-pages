@@ -25,6 +25,8 @@ return [
     */
     'static_cache_public_directory' => 'cache',
 
+    'default_cache_bag' => 'default',
+
     /*
     |--------------------------------------------------------------------------
     | Content scanners

@@ -23,8 +23,10 @@ class PageCache
     /**
      * @param  Request  $request
      * @param  Response  $response
+     * @param  null  $cache_bag
+     * @return bool
      */
-    public function handleRequest(Request $request, Response $response)
+    public function handleRequest(Request $request, Response $response, $cache_bag = null)
     {
         if (config('app.debug', false)) {
             return false;
@@ -48,7 +50,7 @@ class PageCache
         $path = $request->path();
         $content = $response->getContent();
         $content_type = $response->headers->get('Content-Type');
-        $this->write($path, $content, Str::startsWith($content_type, 'text/html'));
+        $this->write($path, $content, Str::startsWith($content_type, 'text/html'), $cache_bag);
 
         return true;
     }
@@ -56,10 +58,11 @@ class PageCache
     /**
      * Write cache for a given page.
      * @param  Page  $page
+     * @param  bool  $force
      */
-    public function cachePage(Page $page)
+    public function cachePage(Page $page, $force = false)
     {
-        if (config('app.debug', false)) {
+        if (config('app.debug', false) && !$force) {
             return;
         }
         if (!auth()->guest()) {
@@ -73,7 +76,7 @@ class PageCache
         }
 
         $content = $page->render();
-        $this->write($page->getAttribute('uri'), $content, true);
+        $this->write($page->getAttribute('uri'), $content, true, $page->getAttribute('cache_bag'));
     }
 
     /**
@@ -81,11 +84,13 @@ class PageCache
      * @param $path
      * @param $content
      * @param  bool  $is_html
+     * @param  null  $cache_bag
      */
-    public function write($path, $content, $is_html = true)
+    public function write($path, $content, $is_html = true, $cache_bag = null)
     {
-        $cache_dir = config('jetpages.static_cache_public_directory', 'cache');
-        $cache_path = public_path($cache_dir.'/'.$path);
+        $cache_dir = config('jetpages.static_cache_public_dir', 'cache');
+        $cache_bag = $cache_bag ?? config('jetpages.default_cache_bag', 'default');
+        $cache_path = public_path($cache_dir.'/'.$cache_bag.'/'.$path);
 
         // Do not create file cache for very long filenames.
         foreach (explode('/', $cache_path) as $part) {

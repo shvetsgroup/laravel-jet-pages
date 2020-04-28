@@ -54,6 +54,8 @@ class PageBuilder
 
     protected $contentHashFile;
 
+    protected $cacheDir;
+
     public function __construct($scanners = [], $parsers = [], $renderers = [], $postProcessors = [])
     {
         $this->cache = app('cache.store');
@@ -61,6 +63,7 @@ class PageBuilder
         $this->jetpagesDir = storage_path(static::JETPAGES_DIR);
         $this->routesCacheFile = storage_path(static::ROUTES_CACHE_PATH);
         $this->contentHashFile = storage_path(static::CONTENT_HASH_PATH);
+        $this->cacheDir = public_path(config('jetpages.static_cache_public_dir', 'cache'));
 
         $scanners = $scanners ?: config('jetpages.content_scanners', ['pages']);
         $scanners = is_array($scanners) ? $scanners : [$scanners];
@@ -172,6 +175,10 @@ class PageBuilder
 
         if ($this->files->exists($this->jetpagesDir)) {
             $this->files->deleteDirectory($this->jetpagesDir);
+        }
+
+        if ($this->files->exists($this->cacheDir)) {
+            $this->files->deleteDirectory($this->cacheDir);
         }
     }
 

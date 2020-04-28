@@ -14,16 +14,16 @@ class StaticCache
      *
      * @param  Request  $request
      * @param  Closure  $next
-     *
+     * @param  null  $cache_bag
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle($request, Closure $next, $cache_bag = null)
     {
         /* @var $response Response */
         $response = $next($request);
 
         $pageCache = new PageCache();
-        $pageCache->handleRequest($request, $response);
+        $pageCache->handleRequest($request, $response, $cache_bag);
 
         return $response;
     }

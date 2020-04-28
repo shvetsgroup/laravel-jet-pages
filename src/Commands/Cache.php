@@ -15,9 +15,7 @@ class Cache extends Command
      *
      * @var string
      */
-    protected $signature = 'jetpages:cache
-                            {--d|cache_dir= : Override standard cache directory.}
-                            {--u|base_url= : Base url for the generated cache files.}';
+    protected $signature = 'jetpages:cache';
 
     /**
      * The console command description.
@@ -33,8 +31,11 @@ class Cache extends Command
     public function handle(PageBuilder $builder)
     {
         $start_time = microtime(true);
-        if ($cache_dir = $this->option('cache_dir')) {
-            config(['jetpages.static_cache_public_directory' => $cache_dir]);
+
+        $files = app('files');
+        $cacheDir = public_path(config('jetpages.static_cache_public_dir', 'cache'));
+        if ($files->exists($cacheDir)) {
+            $files->deleteDirectory($cacheDir);
         }
 
         if (app()->bound('laravellocalization')) {
@@ -43,18 +44,14 @@ class Cache extends Command
             $localization = app();
         }
 
-        $baseUrl = $this->option('base_url') ?? config('app.url');
+        $baseUrl = config('app.url');
         url()->forceRootUrl($baseUrl);
-        $localesOnThisDomain = PageUtils::getLocalesOnDomain($baseUrl);
 
         $cacheBuilder = new PageCache();
         $currentLocale = app()->getLocale();
         foreach (PageQuery::get() as $page) {
-            if ($localesOnThisDomain && !in_array($page->getAttribute('locale'), $localesOnThisDomain)) {
-                continue;
-            }
             $localization->setLocale($page->getAttribute('locale'));
-            $cacheBuilder->cachePage($page);
+            $cacheBuilder->cachePage($page, true);
         }
         $localization->setLocale($currentLocale);
 
