@@ -89,15 +89,15 @@ class PageCollection extends Collection
 
     public function saveAll()
     {
-        $this->each(function (Page $page) {
+        foreach ($this->items as $page) {
             $page->save();
-        });
+        }
     }
 
     public function makePagesUseCollectionInsteadOfQuery()
     {
-        $this->each(function (Page $page) {
+        foreach ($this->items as $page) {
             $page->_pages = $this;
-        });
+        }
     }
 }
