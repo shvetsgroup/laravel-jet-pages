@@ -26,9 +26,9 @@ class PageCache
      * @param  null  $cache_bag
      * @return bool
      */
-    public function handleRequest(Request $request, Response $response, $cache_bag = null)
+    public function handleRequest(Request $request, Response $response, $cache_bag = null, $force = false)
     {
-        if (config('app.debug', false)) {
+        if (config('app.debug', false) && !$force) {
             return false;
         }
         if (!auth()->guest()) {

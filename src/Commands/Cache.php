@@ -3,7 +3,6 @@
 namespace ShvetsGroup\JetPages\Commands;
 
 use Illuminate\Console\Command;
-use ShvetsGroup\JetPages\Facades\PageUtils;
 use ShvetsGroup\JetPages\Page\PageQuery;
 use ShvetsGroup\JetPages\PageBuilder\PageBuilder;
 use ShvetsGroup\JetPages\PageBuilder\PageCache;

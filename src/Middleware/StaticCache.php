@@ -22,10 +22,12 @@ class StaticCache
         /* @var $response Response */
         $response = $next($request);
 
+        $cache_bag = $request->server('cache_bag', $cache_bag);
+        $force = $request->server('force_static_cache', false);
+
         $pageCache = new PageCache();
-        $pageCache->handleRequest($request, $response, $cache_bag);
+        $pageCache->handleRequest($request, $response, $cache_bag, $force);
 
         return $response;
     }
-
 }
