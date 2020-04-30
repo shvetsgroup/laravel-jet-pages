@@ -83,7 +83,7 @@ class Page implements Arrayable
                 $attributes['data'][$key] = $value;
             }
         }
-        $attributes['data'] = json_encode($attributes['data']);
+        $attributes['data'] = json_encode($attributes['data'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
 
         if ($this->exists) {
             PageQuery::where('id', $this->id)->update($attributes);

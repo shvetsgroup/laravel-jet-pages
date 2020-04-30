@@ -115,7 +115,7 @@ trait DynamicFields
         $attributes = parent::getAttributes();
 
         if (!$fast) {
-            $attributes['data'] = json_encode($this->data);
+            $attributes['data'] = json_encode($this->data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
         }
 
         return $attributes;

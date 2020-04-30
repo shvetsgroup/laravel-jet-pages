@@ -21,17 +21,20 @@ class MetaInfoParser implements Parser
         }
 
         $matches = [];
-        if (!preg_match_all('#(^|(?<=[\n\r]))---\R#u', $content, $matches) || count($matches[0]) < 2) {
+        if (!preg_match_all('#(^|(?<=[\n\r]))---\R#u', $content . "\n", $matches) || count($matches[0]) < 2) {
             return;
         }
 
-        $values = preg_split('|^---\R|mu', $content, 2, PREG_SPLIT_NO_EMPTY);
+        $values = preg_split('|^---\R|mu', $content . "\n", 3);
+        if (isset($values[0]) && $values[0] === "") {
+            array_shift($values);
+        }
 
         if (count($values) == 1) {
-            $page->setAttribute('content', Arr::first($values));
+            $page->setAttribute('content', trim(Arr::first($values), " \n"));
         } else {
             list($meta, $content) = $values;
-            $page->setAttribute('content', $content);
+            $page->setAttribute('content', trim($content, " \n"));
 
             $meta = Yaml::parse($meta);
             foreach ($meta as $key => $value) {
