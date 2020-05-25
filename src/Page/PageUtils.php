@@ -121,6 +121,12 @@ class PageUtils
         }
     }
 
+    function toMainDomainUri($uri, $locale) {
+        $prefix = $this->getLocalePrefix($locale, true);
+
+        return $prefix . $uri;
+    }
+
     /**
      * Check if the passed value is valid locale.
      *

@@ -56,7 +56,7 @@ class PageController extends Controller
     {
         list($uri, $locale, $slug) = $this->getUriLocaleSlug($request, $uri);
 
-        if ($redirect = $this->getRedirect($uri)) {
+        if ($redirect = $this->getRedirect($uri, $locale)) {
             return redirect($redirect, 301);
         }
 
@@ -115,9 +115,11 @@ class PageController extends Controller
         return [$uri, $locale, $slug];
     }
 
-    protected function getRedirect($uri)
+    protected function getRedirect($uri, $locale)
     {
         $redirects = $this->cache->get('jetpages:redirects');
+
+        $uri = $this->pageUtils->toMainDomainUri($uri, $locale);
 
         if ($redirects === null) {
             if (file_exists($this->redirectCacheFile)) {
