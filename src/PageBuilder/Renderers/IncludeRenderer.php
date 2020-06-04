@@ -41,6 +41,10 @@ class IncludeRenderer extends AbstractRenderer
                 // Normalize line-endings.
                 $contents = preg_replace("%(\r\n|\r|\n)%u", "\n", $contents);
                 $contents = rtrim($contents, "\n");
+
+                if (preg_match('/\.(html|md)$/u', $include_path)) {
+                    $contents = preg_replace('|^\-\-\-\n([\s\S]*?)\-\-\-\n|u', '', $contents);
+                }
             }
 
             return $contents;
