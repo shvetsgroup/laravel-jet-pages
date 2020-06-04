@@ -37,8 +37,10 @@ class MetaInfoParser implements Parser
             $page->setAttribute('content', trim($content, " \n"));
 
             $meta = Yaml::parse($meta);
-            foreach ($meta as $key => $value) {
-                $page->setAttribute($key, $value);
+            if ($meta) {
+                foreach ($meta as $key => $value) {
+                    $page->setAttribute($key, $value);
+                }
             }
         }
     }

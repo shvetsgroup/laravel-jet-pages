@@ -58,11 +58,19 @@ class PageUtilsTest extends AbstractTestCase
     public function setConfigToMultipleLocaleDomains()
     {
         config(['laravellocalization' => []]);
+        config(['sg.main_domains' => ['example.com']]);
         config([
             'sg.localeDomains' => [
                 'en' => '',
                 'ru' => '',
                 'zh' => 'example.cn',
+            ],
+        ]);
+        config([
+            'laravellocalization.supportedLocales' => [
+                'en' => ['name' => 'English', 'script' => 'Latn', 'native' => 'English', 'regional' => 'en_GB'],
+                'ru' => ['name' => 'Russian', 'script' => 'Cyrl', 'native' => 'Русский', 'regional' => 'ru_RU'],
+                'zh' => ['name' => 'Chinese', 'script' => 'Hans', 'native' => '中文', 'regional' => 'zh_CN'],
             ],
         ]);
         app()->setLocale('en');
@@ -295,5 +303,14 @@ class PageUtilsTest extends AbstractTestCase
 
         $this->assertEquals('http://example.cn/', $this->freshPageUtils()->getBaseUrl('http://example.cn/'));
         $this->assertEquals('http://example.com/', $this->freshPageUtils()->getBaseUrl('example.cn'));
+    }
+
+    public function testToMainDomainUri()
+    {
+        $this->setConfigToMultipleLocaleDomains();
+        $this->assertEquals('index', $this->freshPageUtils()->toMainDomainUri('index', 'en'));
+        $this->assertEquals('zh/index', $this->freshPageUtils()->toMainDomainUri('index', 'zh'));
+        $this->assertEquals('zh/zh/index', $this->freshPageUtils()->toMainDomainUri('zh/index', 'zh'));
+        $this->assertEquals('ru/index', $this->freshPageUtils()->toMainDomainUri('ru/index', 'ru'));
     }
 }

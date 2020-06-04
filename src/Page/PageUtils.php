@@ -12,6 +12,7 @@ class PageUtils
     protected $configDefaultLocale;
     protected $configHideDefaultLocaleInURL;
     protected $configSupportedLocales;
+    protected $configMainDomains;
     protected $configAppUrl;
     protected $cacheLocalePrefix;
     protected $cacheLocaleDomain;
@@ -27,6 +28,7 @@ class PageUtils
         $this->configSSL = config('sg.ssl');
         $this->configDefaultLocale = config('app.default_locale', 'en');
         $this->configHideDefaultLocaleInURL = config('laravellocalization.hideDefaultLocaleInURL', true);
+        $this->configMainDomains = config('sg.main_domains');
         $this->configSupportedLocales = config('laravellocalization.supportedLocales');
         $this->configAppUrl = config('app.url');
 
@@ -124,7 +126,20 @@ class PageUtils
     function toMainDomainUri($uri, $locale) {
         $prefix = $this->getLocalePrefix($locale, true);
 
-        return $prefix . $uri;
+        if ($this->configMainDomains) {
+            $localesOnMainDomains = [];
+            foreach ($this->configMainDomains as $domain) {
+                $localesOnMainDomains += $this->getLocalesOnDomain($domain);
+            }
+            $localesOnMainDomains = array_flip($localesOnMainDomains);
+        }
+        else {
+            $localesOnMainDomains = $this->configSupportedLocales;
+        }
+
+        list($locale, $_uri) = $this->extractLocale($uri, false, null, $localesOnMainDomains);
+
+        return $prefix . $_uri;
     }
 
     /**
@@ -312,7 +327,8 @@ class PageUtils
             $localesOnThisDomain = [];
             foreach ($this->configLocaleDomains as $locale => $domains) {
                 $domains = Arr::wrap($domains);
-                if (in_array($domain, $domains)) {
+                if (in_array($domain, $domains) ||
+                    (in_array('', $domains) && is_array($this->configMainDomains) && in_array($domain, $this->configMainDomains))) {
                     $localesOnThisDomain[] = $locale;
                 }
             }
