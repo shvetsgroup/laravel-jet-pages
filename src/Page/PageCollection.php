@@ -61,6 +61,8 @@ class PageCollection extends Collection
 
     public function findByLocaleTitle($locale, $title)
     {
+        $title = $this->stripTypography($title);
+
         if ($this->localeTitleIndex === null) {
             $this->updateLocaleTitleIndex();
         }
@@ -77,7 +79,7 @@ class PageCollection extends Collection
         foreach ($this->getIterator() as $page) {
             $localeSlug = $page->getAttribute('localeSlug');
             $locale = $page->getAttribute('locale');
-            $title = $page->getAttribute('title');
+            $title = $this->stripTypography($page->getAttribute('title'));
 
             if (!isset($this->localeTitleIndex[$locale])) {
                 $this->localeTitleIndex[$locale] = [];
@@ -85,6 +87,14 @@ class PageCollection extends Collection
 
             $this->localeTitleIndex[$locale][$title] = $localeSlug;
         }
+    }
+
+    private function stripTypography($string) {
+        $string = preg_replace('/ /u', ' ', $string);
+        $string = preg_replace('/[‘’]]/u', "'", $string);
+        $string = preg_replace('/[“”]/u', '"', $string);
+        $string = preg_replace('/[«»]/u', '"', $string);
+        return $string;
     }
 
     public function saveAll()
