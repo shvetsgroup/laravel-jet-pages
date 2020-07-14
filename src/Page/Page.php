@@ -238,6 +238,10 @@ class Page implements Arrayable
             return new Carbon($this->attributes[$key]);
         }
 
+        if ($key === 'title_short' && !isset($this->attributes[$key])) {
+            return $this->attributes['title'] ?? $default;
+        }
+
         return $this->attributes[$key] ?? $default;
     }
 
