@@ -15,6 +15,7 @@ use function ShvetsGroup\JetPages\content_path;
 class PageBuilder
 {
     const JETPAGES_DIR = 'app/jetpages';
+    const SCANNER_CACHE_PATH = 'app/jetpages/scanner.json';
     const ROUTES_CACHE_PATH = 'app/jetpages/routes.json';
     const CONTENT_HASH_PATH = 'app/jetpages/content_hash.json';
 
@@ -61,6 +62,7 @@ class PageBuilder
         $this->cache = app('cache.store');
         $this->files = app('Illuminate\Filesystem\Filesystem');
         $this->jetpagesDir = storage_path(static::JETPAGES_DIR);
+        $this->scannerCacheFile = storage_path(static::SCANNER_CACHE_PATH);
         $this->routesCacheFile = storage_path(static::ROUTES_CACHE_PATH);
         $this->contentHashFile = storage_path(static::CONTENT_HASH_PATH);
         $this->cacheDir = public_path(config('jetpages.static_cache_public_dir', 'cache'));
@@ -222,6 +224,16 @@ class PageBuilder
 
         $lastScans = $this->cache->get('jetpages:scans');
 
+        if ($lastScans === null) {
+            if (file_exists($this->scannerCacheFile)) {
+                $lastScans = json_decode(file_get_contents($this->scannerCacheFile), true);
+            }
+            if (!is_array($lastScans)) {
+                $lastScans = [];
+            }
+            $this->cache->forever('jetpages:scans', $lastScans);
+        }
+
         $pagesByScanner = $this->pages->groupBy('scanner', true);
 
         foreach ($this->scanners as $scanner_pair) {
@@ -242,7 +254,7 @@ class PageBuilder
                 $forceUpdatePaths = $pagesOfThisScanner->whereIn('localeSlug', $this->forcePagesToRebuild)->pluck('localeSlug', 'path');
             }
 
-            $lastScanFiles = $lastScans[$scannerClass] ?? new Collection();
+            $lastScanFiles = new Collection($lastScans[$scannerClass] ?? []);
 
             if ($lastScanFiles->count()) {
                 foreach ($files as $key => $file) {
@@ -261,13 +273,14 @@ class PageBuilder
 
             $up = $files->pluck('timestamp', 'path');
             $lastScanFiles = $lastScanFiles->merge($up);
-            $lastScans[$scannerClass] = $lastScanFiles;
+            $lastScans[$scannerClass] = $lastScanFiles->toArray();
 
             $scanner->processFiles($files);
 
             $this->updatedPages = $this->updatedPages->merge($scanner->getPages());
         }
         $this->cache->forever('jetpages:scans', $lastScans);
+        $this->files->put($this->scannerCacheFile, json_encode($lastScans));
 
         if ($this->pages->isNotEmpty()) {
             $this->updatedPages->each(function (Page $page) {
