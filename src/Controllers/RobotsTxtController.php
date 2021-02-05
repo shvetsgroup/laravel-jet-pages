@@ -16,7 +16,7 @@ class RobotsTxtController extends Controller
     {
         $robots->addUserAgent('*');
 
-        if ($robots->shouldIndex()) {
+        if (config('jetpages.robots_should_index', true)) {
             // If on the live server, serve a nice, welcoming robots.txt.
             $robots->addDisallow('/admin');
             $robots->addSitemap('sitemap.xml');

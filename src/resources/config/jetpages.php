@@ -114,6 +114,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Whether or not allow search index crawlers indexing in robots.txt
+    |--------------------------------------------------------------------------
+    |
+    | You would want to disallow this on staging.
+    |
+    */
+    'robots_should_index' => env('ROBOTS_SHOULD_INDEX', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Sitemap change frequency
     |--------------------------------------------------------------------------
     |
