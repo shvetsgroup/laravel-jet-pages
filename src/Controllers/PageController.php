@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Arr;
 use ReflectionObject;
 use ShvetsGroup\JetPages\Page\PageQuery;
 use ShvetsGroup\JetPages\Page\PageUtils;
@@ -56,8 +57,19 @@ class PageController extends Controller
     {
         list($uri, $locale, $slug) = $this->getUriLocaleSlug($request, $uri);
 
-        if ($redirect = $this->getRedirect($uri, $locale)) {
-            return redirect($redirect, 301);
+        if ($redirectPath = $this->getRedirect($uri, $locale)) {
+            if (preg_match('|^https?://|', $redirectPath)) {
+                return redirect($redirectPath, 301);
+            }
+            $query = $request->query();
+            if (count($query) > 0) {
+                $question = $request->getBaseUrl().$redirectPath === '/' ? '/?' : '?';
+                $redirectUrl = $redirectPath.$question.Arr::query($query);
+            }
+            else {
+                $redirectUrl = $redirectPath;
+            }
+            return redirect($redirectUrl, 301);
         }
 
         $this->setAppLocale($locale);
