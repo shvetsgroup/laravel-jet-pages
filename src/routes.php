@@ -1,5 +1,11 @@
 <?php
 
+use ShvetsGroup\JetPages\Controllers\PageController;
+use ShvetsGroup\JetPages\Controllers\RobotsTxtController;
+use ShvetsGroup\JetPages\Controllers\SiteMapController;
+use ShvetsGroup\JetPages\Middleware\StaticCache;
+use ShvetsGroup\JetPages\Middleware\StaticMix;
+
 // Add these routes after bootstrap is done in order to make them last in
 // the route list. Otherwise, catch-all route will break some other
 // routes registered after it.
@@ -10,28 +16,26 @@ app()->booted(function () {
      */
     $router = app('router');
 
-    $router->namespace('ShvetsGroup\JetPages\Controllers')->group(function () use ($router) {
-        $router->group(['middleware' => 'static-cache'], function () use ($router) {
-            $router->get('robots.txt', 'RobotsTxtController@robots');
-            $router->get('sitemap.xml', 'SiteMapController@sitemap');
-        });
-
-        // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
-        $router->middleware('static-cache')->get('/', 'PageController@show');
-
-        $exceptions = [];
-
-        if ($nova = config('nova.path', '')) {
-            $nova = trim($nova, '/');
-            $exceptions[] = $nova.'$';
-            $exceptions[] = $nova.'/';
-            $exceptions[] = 'nova-api/';
-        }
-
-        $exceptions = $exceptions ? '(?!'.implode('|', $exceptions).')' : '';
-
-        $router->middleware('static-cache')->get('{all}', 'PageController@show')->where(['all' => '^'.$exceptions.'.*$']);
-
+    $router->group(['middleware' => StaticCache::class], function () use ($router) {
+        $router->get('robots.txt', [RobotsTxtController::class, 'robots']);
+        $router->get('sitemap.xml', [SiteMapController::class, 'sitemap']);
     });
 
+    // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
+    $router->middleware([StaticCache::class, StaticMix::class])->get('/', [PageController::class, 'show']);
+
+    $exceptions = [];
+
+    if ($nova = config('nova.path', '')) {
+        $nova = trim($nova, '/');
+        $exceptions[] = $nova.'$';
+        $exceptions[] = $nova.'/';
+        $exceptions[] = 'nova-api/';
+    }
+
+    $exceptions = $exceptions ? '(?!'.implode('|', $exceptions).')' : '';
+
+    $router->middleware([StaticCache::class, StaticMix::class])
+        ->get('{all}', [PageController::class, 'show',])
+        ->where(['all' => '^'.$exceptions.'.*$']);
 });
