@@ -5,6 +5,7 @@ namespace ShvetsGroup\JetPages\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use ShvetsGroup\JetPages\PageBuilder\PageImageMix;
 
 class StaticMix
 {
