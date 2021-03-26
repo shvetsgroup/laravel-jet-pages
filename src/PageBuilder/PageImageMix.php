@@ -58,11 +58,13 @@ class PageImageMix
             $sets = explode(',', $matches[1]);
             $resultingSets = [];
             foreach ($sets as $set) {
-                if (preg_match('#\s*(.+?\.[a-z]{0,3})(?:\s+([0-9]+[wx]))?\s*#', $set, $matches)) {
-                    $url = $matches[1];
-                    $descriptor = $matches[2] ?? '';
+                if (preg_match('#^\s*(.+?\.[a-z]{0,3}(\?[^\s]*)?)(?:\s+([0-9]+[wx]))?\s*$#', $set, $m)) {
+                    $url = $m[1];
+                    $descriptor = $m[3] ?? '';
 
-                    $url = $this->mixImgUrl($url);
+                    if (!$m[2]) {
+                        $url = $this->mixImgUrl($url);
+                    }
                     $resultingSets[$descriptor] = $url.($descriptor ? ' '.$descriptor : '');
                 } else {
                     $resultingSets[] = $set;
