@@ -62,7 +62,7 @@ class PageImageMix
                     $url = $m[1];
                     $descriptor = $m[3] ?? '';
 
-                    if (!$m[2]) {
+                    if (!isset($m[2]) || !$m[2]) {
                         $url = $this->mixImgUrl($url);
                     }
                     $resultingSets[$descriptor] = $url.($descriptor ? ' '.$descriptor : '');
