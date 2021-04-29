@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 use ShvetsGroup\JetPages\Middleware\StaticCache;
-use ShvetsGroup\JetPages\Middleware\StaticMix;
 use ShvetsGroup\JetPages\PageBuilder\PageBuilder;
 use ShvetsGroup\JetPages\PageBuilder\PageMenu;
 use ShvetsGroup\JetPages\PageBuilder\PageOutline;
@@ -61,7 +60,6 @@ class JetPagesServiceProvider extends ServiceProvider
         $this->publishes([__DIR__.'/resources/views' => base_path('resources/views/vendor/sg/jetpages')], 'views');
         view()->composer('*', 'ShvetsGroup\JetPages\ViewComposers\LocaleComposer');
 
-        $this->app['router']->aliasMiddleware('static-mix', StaticMix::class);
         $this->app['router']->aliasMiddleware('static-cache', StaticCache::class);
 
         $this->loadRoutesFrom(__DIR__.'/routes.php');

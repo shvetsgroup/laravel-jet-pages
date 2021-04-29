@@ -4,7 +4,6 @@ use ShvetsGroup\JetPages\Controllers\PageController;
 use ShvetsGroup\JetPages\Controllers\RobotsTxtController;
 use ShvetsGroup\JetPages\Controllers\SiteMapController;
 use ShvetsGroup\JetPages\Middleware\StaticCache;
-use ShvetsGroup\JetPages\Middleware\StaticMix;
 
 // Add these routes after bootstrap is done in order to make them last in
 // the route list. Otherwise, catch-all route will break some other
@@ -22,7 +21,7 @@ app()->booted(function () {
     });
 
     // Specific override for a front page to overcome default laravel's route in app/Http/routes.php
-    $router->middleware([StaticCache::class, StaticMix::class])->get('/', [PageController::class, 'show']);
+    $router->middleware([StaticCache::class])->get('/', [PageController::class, 'show']);
 
     $exceptions = [];
 
@@ -35,7 +34,7 @@ app()->booted(function () {
 
     $exceptions = $exceptions ? '(?!'.implode('|', $exceptions).')' : '';
 
-    $router->middleware([StaticCache::class, StaticMix::class])
+    $router->middleware([StaticCache::class])
         ->get('{all}', [PageController::class, 'show',])
         ->where(['all' => '^'.$exceptions.'.*$']);
 });

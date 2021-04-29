@@ -323,11 +323,6 @@ class PageBuilder
                 $obj->render($page, $this->pages);
             }
         }
-
-        $pageImgMix = new PageImageMix();
-        foreach ($this->updatedPages as $page) {
-            $page->content = $pageImgMix->processImageUrls($page->content);
-        }
     }
 
     private function postProcess()

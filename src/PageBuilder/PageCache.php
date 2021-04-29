@@ -49,6 +49,10 @@ class PageCache
 
         $path = $request->path();
         $content = $response->getContent();
+
+        $pageImgMix = new PageImageMix();
+        $content = $pageImgMix->processImageUrls($content);
+
         $content_type = $response->headers->get('Content-Type');
         $this->write($path, $content, Str::startsWith($content_type, 'text/html'), $cache_bag);
 
@@ -76,6 +80,10 @@ class PageCache
         }
 
         $content = $page->render();
+
+        $pageImgMix = new PageImageMix();
+        $content = $pageImgMix->processImageUrls($content);
+
         $this->write($page->getAttribute('uri'), $content, true, $page->getAttribute('cache_bag'));
     }
 
