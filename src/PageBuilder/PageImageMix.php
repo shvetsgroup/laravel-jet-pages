@@ -46,11 +46,11 @@ class PageImageMix
 
     public function processImageUrls($content)
     {
-        $content = preg_replace_callback('#href="([^"]*?\.(ico|png|svg|css|js|json|xml|zip|pdf|epub|mobi|kfx))"#', function ($matches) {
+        $content = preg_replace_callback('#href="([^"]*?\.(?:ico|png|svg|css|js|json|xml|zip|pdf|epub|mobi|kfx))"#', function ($matches) {
             return 'href="'.$this->mixImgUrl($matches[1]).'"';
         }, $content);
 
-        $content = preg_replace_callback('#src="([^"]*?)"#', function ($matches) {
+        $content = preg_replace_callback('#src="([^"]*?\.(?:ico|png|svg|css|js|json|xml|zip|pdf|epub|mobi|kfx))"#', function ($matches) {
             return 'src="'.$this->mixImgUrl($matches[1]).'"';
         }, $content);
 
