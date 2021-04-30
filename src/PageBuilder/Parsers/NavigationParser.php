@@ -44,18 +44,18 @@ class NavigationParser implements Parser
         $ordered_list_indexes = array_flip($ordered_list);
         $index = $ordered_list_indexes[$slug];
 
-        $getNavData = function ($locale, $slug) use ($pages) {
-            $page = $pages->findBySlug($locale, $slug);
+        $getNavData = function ($locale, $slug) use ($page, $pages) {
+            $navPage = $pages->findBySlug($locale, $slug);
 
-            if (!$page) {
+            if (!$navPage) {
                 if ($this->isDebug) {
-                    throw new RuntimeException("Can not find page with id '$locale/$slug'.");
+                    throw new RuntimeException("Can not find page with id '$locale/$slug' in '$page->localeSlug'.");
                 } else {
                     return null;
                 }
             }
 
-            return $page->getTitleHrefArray();
+            return $navPage->getTitleHrefArray();
         };
 
         if (isset($ordered_list[$index - 1]) && $depths[$slug] > 1) {

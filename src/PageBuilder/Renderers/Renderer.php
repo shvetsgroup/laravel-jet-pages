@@ -12,4 +12,8 @@ interface Renderer
      * @param  PageCollection  $pages
      */
     public function render(Page $page, PageCollection $pages);
+
+    public function start();
+
+    public function finish();
 }

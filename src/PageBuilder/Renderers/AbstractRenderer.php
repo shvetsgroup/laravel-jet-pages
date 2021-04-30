@@ -83,4 +83,12 @@ abstract class AbstractRenderer implements Renderer
                 return $code[$m[1] - 1];
             }, $content);
     }
+
+    public function start() {
+
+    }
+
+    public function finish() {
+
+    }
 }

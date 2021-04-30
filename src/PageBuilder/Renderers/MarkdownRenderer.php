@@ -12,20 +12,49 @@ use ShvetsGroup\JetPages\PageBuilder\Renderers\MarkdownOverrides\ReferenceCacheP
 
 class MarkdownRenderer extends AbstractRenderer
 {
-    /**
-     * @var Store
-     */
-    protected $cache;
-
     protected $converters = [];
     protected $references = [];
     protected $isMarkdownCacheEnabled = false;
 
+    static $cache = [];
+
     public function __construct()
     {
         parent::__construct();
-        $this->cache = app('cache.store');
         $this->isMarkdownCacheEnabled = config('jetpages.cache_markdown', false);
+        if ($this->isMarkdownCacheEnabled) {
+            if (! file_exists(storage_path('app/jetpages-md-cache'))) {
+                mkdir(storage_path('app/jetpages-md-cache'), 0777, true);
+            }
+            if (! file_exists(storage_path('app/jetpages-md-cache/cache.txt'))) {
+                file_put_contents(storage_path('app/jetpages-md-cache/cache.txt'), serialize([]));
+            }
+            static::$cache = unserialize(file_get_contents(storage_path('app/jetpages-md-cache/cache.txt')));
+        }
+    }
+
+    protected function cachePath($content)
+    {
+        return md5($content);
+    }
+
+    protected function cacheHas($path)
+    {
+        return isset(static::$cache[$path]);
+    }
+
+    protected function cacheGet($path)
+    {
+        return static::$cache[$path];
+    }
+
+    protected function cacheSet($path, $content)
+    {
+        static::$cache[$path] = $content;
+    }
+
+    public function finish() {
+        file_put_contents(storage_path('app/jetpages-md-cache/cache.txt'), serialize(static::$cache));
     }
 
     /**
@@ -38,9 +67,9 @@ class MarkdownRenderer extends AbstractRenderer
     {
         if ($page->getAttribute('extension') == 'md') {
             if ($this->isMarkdownCacheEnabled) {
-                $key = 'jetpages:markdown:'.md5($content);
-                if ($this->cache->has($key)) {
-                    $content = $this->cache->get($key);
+                $path = $this->cachePath($content);
+                if ($this->cacheHas($path)) {
+                    $content = $this->cacheGet($path);
                     return $content;
                 }
             }
@@ -48,7 +77,7 @@ class MarkdownRenderer extends AbstractRenderer
             $content = $this->mdToHtml($content, $page->getAttribute('locale'), $pages);
 
             if ($this->isMarkdownCacheEnabled) {
-                $this->cache->forever($key, $content);
+                $this->cacheSet($path, $content);
             }
         }
 
@@ -60,19 +89,19 @@ class MarkdownRenderer extends AbstractRenderer
      */
     public function mdToHtml($content, $locale, PageCollection $pages)
     {
-        if (!config('jetpages.cache_markdown')) {
+        if (! config('jetpages.cache_markdown')) {
             return $this->getConverter($locale, $pages)->convertToHtml($content);
         }
 
-        $hash = 'md_'.$locale.md5($content);
+        $path = $this->cachePath('md_'.$locale.$content);
 
-        if (!$this->cache->has($hash)) {
+        if (! $this->cacheHas($path)) {
             $result = $this->getConverter($locale, $pages)->convertToHtml($content);
-            $this->cache->forever($hash, $result);
+            $this->cacheSet($path, $result);
             return $result;
         }
 
-        return $this->cache->get($hash);
+        return $this->cacheGet($path);
     }
 
     /**
@@ -80,7 +109,7 @@ class MarkdownRenderer extends AbstractRenderer
      */
     protected function getConverter($locale, PageCollection $pages)
     {
-        if (!isset($this->converters[$locale])) {
+        if (! isset($this->converters[$locale])) {
             $env = Environment::createCommonMarkEnvironment();
             $env->mergeConfig([
                 'html_input' => 'allow',

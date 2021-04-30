@@ -37,4 +37,12 @@ class SchemaRenderer implements Renderer
 
         $page->setAttribute('schema', array_merge($this->schema[$locale], $pageSchema));
     }
+
+    public function start() {
+
+    }
+
+    public function finish() {
+
+    }
 }

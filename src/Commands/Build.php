@@ -36,6 +36,6 @@ class Build extends Command
         }
         $builder->build();
 
-        print('Content has been successfully re-built in '.round(microtime(true) - $start_time, 4).'s');
+        print('Content has been re-built in '.round(microtime(true) - $start_time, 4).'s');
     }
 }

@@ -57,6 +57,8 @@ class PageBuilder
 
     protected $cacheDir;
 
+    protected $exceptions = [];
+
     public function __construct($scanners = [], $parsers = [], $renderers = [], $postProcessors = [])
     {
         $this->cache = app('cache.store');
@@ -211,6 +213,13 @@ class PageBuilder
         $this->updateBuildHash();
 
         $this->updateCaches();
+
+        if (count($this->exceptions)) {
+            print("\nWARNING! FINISHED WITH ".count($this->exceptions)." EXCEPTIONS\n\n");
+            foreach ($this->exceptions as $exception) {
+                print($exception->getMessage()."\n\n");
+            }
+        }
     }
 
     private function loadPages()
@@ -310,7 +319,12 @@ class PageBuilder
         foreach ($this->parsers as $parser) {
             $obj = new $parser();
             foreach ($this->updatedPages as $page) {
-                $obj->parse($page, $this->pages);
+                try {
+                    $obj->parse($page, $this->pages);
+                }
+                catch (\Exception $e) {
+                    $this->exceptions[] = $e;
+                }
             }
         }
     }
@@ -319,17 +333,29 @@ class PageBuilder
     {
         foreach ($this->renderers as $renderer) {
             $obj = new $renderer();
+            $obj->start();
             foreach ($this->updatedPages as $page) {
-                $obj->render($page, $this->pages);
+                try {
+                    $obj->render($page, $this->pages);
+                }
+                catch (\Exception $e) {
+                    $this->exceptions[] = $e;
+                }
             }
+            $obj->finish();
         }
     }
 
     private function postProcess()
     {
         foreach ($this->postProcessors as $postProcessor) {
-            $obj = new $postProcessor();
-            $obj->postProcess($this->updatedPages, $this->pages);
+            try {
+                $obj = new $postProcessor();
+                $obj->postProcess($this->updatedPages, $this->pages);
+            }
+            catch (\Exception $e) {
+                $this->exceptions[] = $e;
+            }
         }
     }
 
