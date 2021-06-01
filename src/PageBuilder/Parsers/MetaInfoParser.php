@@ -24,7 +24,7 @@ class MetaInfoParser implements Parser
      */
     public function parse(Page $page, PageCollection $pages)
     {
-         $this->setMetaFromMetaFile($page, $pages);
+        $this->setMetaFromMetaFile($page, $pages);
 
         $content = $page->getAttribute('content');
 
@@ -91,15 +91,20 @@ class MetaInfoParser implements Parser
     public function getGlobalMetaArray($locale = 'en'): array
     {
         static $allMeta = [];
-        $allMeta[$locale] = $allMeta[$locale] ?? [];
-        $outlinePath = content_path("meta.yml");
-        $localizedPath = Str::replaceLast('.yml', "-{$locale}.yml", $outlinePath);
-        $candidates = [$localizedPath, $outlinePath];
-        foreach ($candidates as $possiblePath) {
-            if ($this->files->exists($possiblePath)) {
-                $allMeta[$locale] = Yaml::parse($this->files->get($possiblePath));
-                return $allMeta[$locale];
+
+        if (!isset($allMeta[$locale])) {
+            $allMeta[$locale] = [];
+            $outlinePath = content_path("meta.yml");
+            $localizedPath = Str::replaceLast('.yml', "-{$locale}.yml", $outlinePath);
+            $candidates = [$localizedPath, $outlinePath];
+            foreach ($candidates as $possiblePath) {
+                if ($this->files->exists($possiblePath)) {
+                    $allMeta[$locale] = Yaml::parse($this->files->get($possiblePath));
+                    return $allMeta[$locale];
+                }
             }
         }
+
+        return $allMeta[$locale];
     }
 }
